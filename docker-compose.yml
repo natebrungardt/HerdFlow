@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: herdflow_db
+    environment:
+      POSTGRES_USER: herdflow
+      POSTGRES_PASSWORD: herdflow_password
+      POSTGRES_DB: herdflow
+    volumes:
+      - herdflow_data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+
+volumes:
+  herdflow_data:
