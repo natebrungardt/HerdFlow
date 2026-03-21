@@ -11,8 +11,10 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddOpenApi();
 builder.Services.AddScoped<CowService>();
 
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql("Host=localhost;Port=5433;Database=herdflow;Username=herdflow;Password=herdflow_password"));
+    options.UseNpgsql(connectionString));
 
 builder.Services.AddCors(options =>
 {
