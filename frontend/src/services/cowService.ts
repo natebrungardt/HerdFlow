@@ -1,6 +1,6 @@
 import type { Cow } from "../types/cow";
 
-const API_BASE_URL = "http://localhost:5062/api/cow";
+const API_BASE_URL = import.meta.env.VITE_API_URL;
 
 export async function getCows(): Promise<Cow[]> {
   const response = await fetch(API_BASE_URL);
