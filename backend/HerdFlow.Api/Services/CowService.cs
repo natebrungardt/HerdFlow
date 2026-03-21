@@ -16,7 +16,7 @@ public class CowService
     {
         var cow = new Cow
         {
-            TagNumber = dto.TagNumber,
+            TagNumber = dto.TagNumber.Trim(),
             Breed = dto.Breed,
             HealthStatus = dto.HealthStatus,
             HeatStatus = dto.HeatStatus,

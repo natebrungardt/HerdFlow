@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using HerdFlow.Api.DTOs;
 using HerdFlow.Api.Services;
+using Microsoft.EntityFrameworkCore;
+using Npgsql;
 
 namespace HerdFlow.Api.Controllers;
 
@@ -25,7 +27,23 @@ public class CowController : ControllerBase
     [HttpPost]
     public IActionResult CreateCow([FromBody] CreateCowDto dto)
     {
-        var cow = _cowService.CreateCow(dto);
-        return Ok(cow);
+        try
+        {
+            var cow = _cowService.CreateCow(dto);
+            return Ok(cow);
+        }
+        catch (DbUpdateException ex)
+        {
+            if (ex.InnerException is PostgresException pgEx && pgEx.SqlState == "23505")
+            {
+                return Conflict(new
+                {
+                    status = 409,
+                    message = "Tag number already exists."
+                });
+            }
+
+            throw;
+        }
     }
 }

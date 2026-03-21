@@ -1,5 +1,8 @@
+using Microsoft.EntityFrameworkCore;
+
 namespace HerdFlow.Api.Models;
 
+[Index(nameof(TagNumber), IsUnique = true)]
 public class Cow
 {
     public int Id { get; set; }
