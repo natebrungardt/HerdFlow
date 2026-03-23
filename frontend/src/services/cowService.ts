@@ -83,3 +83,14 @@ export async function createCow(cowData: CreateCowInput): Promise<Cow> {
 
   return response.json();
 }
+
+export async function getCowById(id: number): Promise<Cow> {
+  const response = await fetch(`${API_BASE_URL}/${id}`);
+
+  if (!response.ok) {
+    const error = await parseError(response);
+    throw new Error(error.message);
+  }
+
+  return response.json();
+}
