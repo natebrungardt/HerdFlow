@@ -24,6 +24,27 @@ public class CowController : ControllerBase
 
         return Ok(cows);
     }
+    [HttpGet("{id}")]
+    public IActionResult GetCow(int id)
+    {
+        var cow = _cowService.GetCowById(id);
+
+        if (cow == null)
+            return NotFound();
+
+        return Ok(cow);
+    }
+    [HttpPut("{id}")]
+    public IActionResult UpdateCow(int id, [FromBody] CreateCowDto dto)
+    {
+        var updatedCow = _cowService.UpdateCow(id, dto);
+
+        if (updatedCow == null)
+            return NotFound();
+
+        return Ok(updatedCow);
+    }
+
     [HttpPost]
     public IActionResult CreateCow([FromBody] CreateCowDto dto)
     {
@@ -45,5 +66,15 @@ public class CowController : ControllerBase
 
             throw;
         }
+    }
+    [HttpDelete("{id}")]
+    public IActionResult DeleteCow(int id)
+    {
+        var success = _cowService.DeleteCow(id);
+
+        if (!success)
+            return NotFound();
+
+        return NoContent();
     }
 }
