@@ -125,3 +125,24 @@ export async function deleteCow(id: number): Promise<void> {
     throw new Error(error.message);
   }
 }
+export async function getRemovedCows(): Promise<Cow[]> {
+  const response = await fetch(`${API_BASE_URL}/removed`);
+
+  if (!response.ok) {
+    const error = await parseError(response);
+    throw new Error(error.message);
+  }
+
+  return response.json();
+}
+
+export async function restoreCow(id: number): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/restore/${id}`, {
+    method: "PUT",
+  });
+
+  if (!response.ok) {
+    const error = await parseError(response);
+    throw new Error(error.message);
+  }
+}

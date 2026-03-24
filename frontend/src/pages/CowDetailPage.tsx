@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { deleteCow, getCowById } from "../services/cowService";
+import { deleteCow, getCowById, restoreCow } from "../services/cowService";
 import type { Cow } from "../types/cow";
 import "../styles/CowDetailPage.css";
 
@@ -71,6 +71,24 @@ function CowDetailPage() {
       setError(message);
     }
   }
+  async function handleRestore() {
+    if (!cow) return;
+
+    const confirmed = window.confirm(
+      `Restore cow with tag #${cow.tagNumber}? This cow will be moved back to your active herd.`,
+    );
+
+    if (!confirmed) return;
+
+    try {
+      await restoreCow(cow.id);
+      navigate("/removed"); // 👈 better UX (go back to active herd)
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to restore cow";
+      setError(message);
+    }
+  }
 
   if (loading) return <p>Loading cow...</p>;
   if (error) return <p style={{ color: "red" }}>{error}</p>;
@@ -94,10 +112,15 @@ function CowDetailPage() {
                     data.
                   </p>
                 </div>
-
-                <button className="deleteButton" onClick={handleDelete}>
-                  Remove Cow
-                </button>
+                {cow.isRemoved ? (
+                  <button className="restoreButton" onClick={handleRestore}>
+                    Restore Cow
+                  </button>
+                ) : (
+                  <button className="deleteButton" onClick={handleDelete}>
+                    Remove Cow
+                  </button>
+                )}
               </div>
 
               <div className="metricsGrid">

@@ -4,6 +4,7 @@ import CowDetailPage from "./pages/CowDetailPage";
 import Navbar from "./components/Navbar";
 import Dashboard from "./pages/Dashboard";
 import AddCowButton from "./pages/AddCow";
+import RemovedCows from "./pages/RemovedCows";
 
 function App() {
   return (
@@ -14,6 +15,7 @@ function App() {
         <Route path="/cows" element={<AllCowPage />} />
         <Route path="/cows/:id" element={<CowDetailPage />} />
         <Route path="/add-cow" element={<AddCowButton />} />
+        <Route path="/removed" element={<RemovedCows />} />
       </Routes>
     </BrowserRouter>
   );

@@ -28,4 +28,5 @@ public class Cow
     public DateOnly? SaleDate { get; set; }
 
     public string? Notes { get; set; }
+    public bool IsRemoved { get; set; } = false;
 }

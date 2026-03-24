@@ -22,7 +22,7 @@ public class CowService
     public List<Cow> GetCows()
     {
         return _context.Cows
-            .OrderByDescending(c => c.Id)
+            .Where(c => !c.IsRemoved)
             .ToList();
     }
     public Cow? GetCowById(int id)
@@ -89,9 +89,23 @@ public class CowService
         if (cow == null)
             return false;
 
-        _context.Cows.Remove(cow);
+        cow.IsRemoved = true;
         _context.SaveChanges();
 
         return true;
+    }
+    public List<Cow> GetRemovedCows()
+    {
+        return _context.Cows
+            .Where(c => c.IsRemoved)
+            .ToList();
+    }
+    public void RestoreCow(int id)
+    {
+        var cow = _context.Cows.Find(id);
+        if (cow == null) return;
+
+        cow.IsRemoved = false;
+        _context.SaveChanges();
     }
 }

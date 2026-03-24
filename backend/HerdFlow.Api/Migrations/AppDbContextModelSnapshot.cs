@@ -46,9 +46,11 @@ namespace HerdFlow.Api.Migrations
                     b.Property<string>("HeatStatus")
                         .HasColumnType("text");
 
-                    b.Property<string>("LivestockGroup")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<bool>("IsRemoved")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("LivestockGroup")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Notes")
                         .HasColumnType("text");

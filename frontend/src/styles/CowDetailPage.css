@@ -328,3 +328,18 @@
     grid-template-columns: 1fr;
   }
 }
+.restoreButton {
+  background: linear-gradient(180deg, #3ecf8e 0%, #2ea86f 100%);
+  color: white;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.restoreButton:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(62, 207, 142, 0.3);
+}

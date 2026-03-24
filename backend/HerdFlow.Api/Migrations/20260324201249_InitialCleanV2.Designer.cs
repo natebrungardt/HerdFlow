@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace HerdFlow.Api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260323231256_InitialClean")]
-    partial class InitialClean
+    [Migration("20260324201249_InitialCleanV2")]
+    partial class InitialCleanV2
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -34,17 +34,12 @@ namespace HerdFlow.Api.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Breed")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("BreedingStatus")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<DateOnly?>("DateOfBirth")
-                        .HasColumnType("date");
-
-                    b.Property<DateOnly?>("HarvestDate")
                         .HasColumnType("date");
 
                     b.Property<string>("HealthStatus")
@@ -52,12 +47,13 @@ namespace HerdFlow.Api.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("HeatStatus")
-                        .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("LivestockGroup")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<bool>("IsRemoved")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("LivestockGroup")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Notes")
                         .HasColumnType("text");
@@ -79,7 +75,6 @@ namespace HerdFlow.Api.Migrations
                         .HasColumnType("numeric");
 
                     b.Property<string>("Sex")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("TagNumber")

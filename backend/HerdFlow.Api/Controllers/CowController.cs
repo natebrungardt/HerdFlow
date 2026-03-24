@@ -34,7 +34,7 @@ public class CowController : ControllerBase
 
         return Ok(cow);
     }
-    [HttpPut("{id}")]
+    [HttpPut("{id:int}")]
     public IActionResult UpdateCow(int id, [FromBody] CreateCowDto dto)
     {
         var updatedCow = _cowService.UpdateCow(id, dto);
@@ -77,4 +77,23 @@ public class CowController : ControllerBase
 
         return NoContent();
     }
+
+    [HttpGet("removed")]
+    public IActionResult GetRemovedCows()
+    {
+        var cows = _cowService.GetRemovedCows();
+        return Ok(cows);
+    }
+
+    [HttpPut("restore/{id}")]
+    public IActionResult RestoreCow(int id)
+    {
+        var cow = _cowService.GetCowById(id);
+        if (cow == null)
+            return NotFound();
+
+        _cowService.RestoreCow(id);
+        return Ok();
+    }
+
 }
