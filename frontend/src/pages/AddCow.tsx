@@ -69,6 +69,8 @@ function AddCowPage() {
   ) {
     const { name, value } = event.target;
 
+    setError("");
+
     setFormData((current) => ({
       ...current,
       [name]: value,
@@ -114,6 +116,21 @@ function AddCowPage() {
 
   return (
     <div className="cowDetailPage">
+      {error && (
+        <div
+          style={{
+            color: "#ff6b6b",
+            background: "rgba(255, 0, 0, 0.08)",
+            padding: "10px 14px",
+            borderRadius: "8px",
+            marginBottom: "12px",
+            fontSize: "0.9rem",
+            border: "1px solid rgba(255, 0, 0, 0.2)",
+          }}
+        >
+          {error}
+        </div>
+      )}
       <div className="cowDetailShell">
         <form className="cowDashboardGrid" onSubmit={handleSubmit}>
           <div className="leftColumn">
@@ -270,7 +287,9 @@ function AddCowPage() {
                       padding: 0,
                     }}
                   >
-                    <option value="">Select group</option>
+                    <option value="" disabled>
+                      Select group
+                    </option>
                     <option value="Breeding">Breeding</option>
                     <option value="Market">Market</option>
                     <option value="Feeder">Feeder</option>
@@ -657,18 +676,6 @@ function AddCowPage() {
                 }}
               />
             </section>
-
-            {error ? (
-              <section className="dashboardCard">
-                <div className="dataCardHeader">
-                  <h2 className="cardTitle">Error</h2>
-                  <span className="cardSubtle">Submission issue</span>
-                </div>
-                <div className="notesBody" style={{ color: "#ffb4b4" }}>
-                  {error}
-                </div>
-              </section>
-            ) : null}
           </div>
         </form>
       </div>

@@ -37,12 +37,29 @@ public class CowController : ControllerBase
     [HttpPut("{id:int}")]
     public IActionResult UpdateCow(int id, [FromBody] CreateCowDto dto)
     {
-        var updatedCow = _cowService.UpdateCow(id, dto);
+        try
+        {
+            var updatedCow = _cowService.UpdateCow(id, dto);
 
-        if (updatedCow == null)
-            return NotFound();
+            if (updatedCow == null)
+                return NotFound();
 
-        return Ok(updatedCow);
+            return Ok(updatedCow);
+        }
+        catch (DbUpdateException ex)
+        {
+            if (ex.InnerException is PostgresException pgEx && pgEx.SqlState == "23505")
+            {
+                return Conflict(new
+                {
+                    status = 409,
+                    message = "Tag number already exists."
+                });
+            }
+
+            throw;
+        }
+
     }
 
     [HttpPost]

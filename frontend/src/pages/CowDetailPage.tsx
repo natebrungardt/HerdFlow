@@ -115,23 +115,49 @@ function CowDetailPage() {
   async function saveCowUpdates() {
     if (!formData || !cow) return;
 
+    const prev = cow; // store previous state
+
     try {
       const updated = await updateCow(cow.id, formData);
       setCow(updated);
       setFormData(updated);
     } catch (err) {
-      const message =
-        err instanceof Error ? err.message : "Failed to update cow";
+      let message = "Failed to update cow";
+      const apiErr = err as any;
+      // If backend returned 400 (duplicate tag)
+      if (apiErr?.status === 400) {
+        message = "Tag number already exists";
+      } else if (err instanceof Error) {
+        message = err.message;
+      }
+
       setError(message);
+
+      // 🔥 rollback
+      setFormData(prev);
     }
   }
 
   if (loading) return <p>Loading cow...</p>;
-  if (error) return <p style={{ color: "red" }}>{error}</p>;
   if (!cow) return <p>Cow not found</p>;
 
   return (
     <div className="cowDetailPage">
+      {error && (
+        <div
+          style={{
+            color: "#ff6b6b",
+            background: "rgba(255, 0, 0, 0.08)",
+            padding: "10px 14px",
+            borderRadius: "8px",
+            marginBottom: "12px",
+            fontSize: "0.9rem",
+            border: "1px solid rgba(255, 0, 0, 0.2)",
+          }}
+        >
+          {error}
+        </div>
+      )}
       <div className="cowDetailShell">
         <div className="cowDashboardGrid">
           <div className="leftColumn">
@@ -140,8 +166,41 @@ function CowDetailPage() {
 
               <div className="heroHeader">
                 <div className="titleBlock">
-                  <h1 className="cowTitle">
-                    Tag #{formatValue(cow.tagNumber)}
+                  <h1
+                    className="cowTitle"
+                    onDoubleClick={() => {
+                      if (editingField !== "tagNumber")
+                        setEditingField("tagNumber");
+                    }}
+                  >
+                    {editingField === "tagNumber" ? (
+                      <input
+                        name="tagNumber"
+                        value={formData?.tagNumber || ""}
+                        onChange={handleChange}
+                        onBlur={async () => {
+                          setEditingField(null);
+                          await saveCowUpdates();
+                        }}
+                        onKeyDown={async (e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            setEditingField(null);
+                            await saveCowUpdates();
+                          }
+                        }}
+                        autoFocus
+                        style={{
+                          background: "transparent",
+                          border: "none",
+                          outline: "none",
+                          color: "inherit",
+                          font: "inherit",
+                        }}
+                      />
+                    ) : (
+                      <>Tag #{formatValue(formData?.tagNumber)}</>
+                    )}
                   </h1>
                   <p className="cowSubtitle">
                     Detailed record for herd tracking, ownership, and lifecycle
@@ -163,24 +222,177 @@ function CowDetailPage() {
               <div className="metricsGrid">
                 <div className="metricCard">
                   <div className="metricLabel">Health Status</div>
-                  <div className="metricValue">
-                    {formatLabel(cow.healthStatus)}
+                  <div
+                    style={{
+                      marginTop: "8px",
+                      display: "flex",
+                      gap: "8px",
+                      width: "100%",
+                      justifyContent: "center",
+                      alignItems: "center",
+                    }}
+                  >
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        if (!formData || !cow) return;
+                        const next = {
+                          ...formData,
+                          healthStatus: "Healthy",
+                        } as any;
+                        setFormData(next);
+                        const updated = await updateCow(cow.id, next);
+                        setCow(updated);
+                        setFormData(updated);
+                      }}
+                      style={{
+                        height: "60px",
+                        flex: 1,
+                        padding: "8px 1px",
+                        borderRadius: "12px",
+                        border: "none",
+                        minWidth: "100px",
+                        background:
+                          (formData?.healthStatus || cow.healthStatus) ===
+                          "Healthy"
+                            ? "linear-gradient(180deg, #4caf50 0%, #3d8b40 100%)"
+                            : "rgba(255,255,255,0.12)",
+                        color: "#ffffff",
+                        fontWeight: 700,
+                        fontSize: "0.95rem",
+                        cursor: "pointer",
+                        boxShadow:
+                          (formData?.healthStatus || cow.healthStatus) ===
+                          "Healthy"
+                            ? "0 10px 25px rgba(76, 175, 80, 0.22)"
+                            : "none",
+                        transition:
+                          "transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease",
+                      }}
+                    >
+                      Healthy
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        if (!formData || !cow) return;
+                        const next = {
+                          ...formData,
+                          healthStatus: "NeedsTreatment",
+                        } as any;
+                        setFormData(next);
+                        const updated = await updateCow(cow.id, next);
+                        setCow(updated);
+                        setFormData(updated);
+                      }}
+                      style={{
+                        height: "60px",
+                        flex: 1,
+                        padding: "8px 1px",
+                        borderRadius: "12px",
+                        border: "none",
+                        minWidth: "100px",
+                        background:
+                          (formData?.healthStatus || cow.healthStatus) ===
+                          "NeedsTreatment"
+                            ? "linear-gradient(180deg, #c74652 0%, #9f2e39 100%)"
+                            : "rgba(255,255,255,0.12)",
+                        color: "#ffffff",
+                        fontWeight: 700,
+                        fontSize: "0.95rem",
+                        cursor: "pointer",
+                        boxShadow:
+                          (formData?.healthStatus || cow.healthStatus) ===
+                          "NeedsTreatment"
+                            ? "0 10px 25px rgba(217, 76, 87, 0.22)"
+                            : "none",
+                        transition:
+                          "transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease",
+                      }}
+                    >
+                      Needs Treatment
+                    </button>
                   </div>
-                  <div className="metricAccent" />
+                  <div />
                 </div>
 
                 <div className="metricCard">
                   <div className="metricLabel">Livestock Group</div>
-                  <div className="metricValue">
-                    {formatValue(cow.livestockGroup)}
+                  <div
+                    className="metricValue"
+                    onDoubleClick={() => {
+                      if (editingField !== "livestockGroup")
+                        setEditingField("livestockGroup");
+                    }}
+                  >
+                    {editingField === "livestockGroup" ? (
+                      <select
+                        name="livestockGroup"
+                        value={formData?.livestockGroup || ""}
+                        onChange={handleChange}
+                        onBlur={async () => {
+                          setEditingField(null);
+                          await saveCowUpdates();
+                        }}
+                        autoFocus
+                        style={{
+                          width: "100%",
+                          background: "transparent",
+                          border: "none",
+                          outline: "none",
+                          color: "inherit",
+                          font: "inherit",
+                        }}
+                      >
+                        <option value="Breeding">Breeding</option>
+                        <option value="Market">Market</option>
+                        <option value="Feeder">Feeder</option>
+                      </select>
+                    ) : (
+                      <span>{formatValue(formData?.livestockGroup)}</span>
+                    )}
                   </div>
                   <div className="metricAccent" />
                 </div>
 
                 <div className="metricCard">
                   <div className="metricLabel">Breeding Status</div>
-                  <div className="metricValue">
-                    {formatValue(cow.breedingStatus)}
+                  <div
+                    className="metricValue"
+                    onDoubleClick={() => {
+                      if (editingField !== "breedingStatus")
+                        setEditingField("breedingStatus");
+                    }}
+                  >
+                    {editingField === "breedingStatus" ? (
+                      <select
+                        name="breedingStatus"
+                        value={formData?.breedingStatus || ""}
+                        onChange={handleChange}
+                        onBlur={async () => {
+                          setEditingField(null);
+                          await saveCowUpdates();
+                        }}
+                        autoFocus
+                        style={{
+                          width: "100%",
+                          background: "transparent",
+                          border: "none",
+                          outline: "none",
+                          color: "inherit",
+                          font: "inherit",
+                        }}
+                      >
+                        <option value="">Select</option>
+                        <option value="Open">Open</option>
+                        <option value="Bred">Bred</option>
+                        <option value="Pregnant">Pregnant</option>
+                        <option value="N/A">N/A</option>
+                      </select>
+                    ) : (
+                      <span>{formatValue(formData?.breedingStatus)}</span>
+                    )}
                   </div>
                   <div className="metricAccent" />
                 </div>
