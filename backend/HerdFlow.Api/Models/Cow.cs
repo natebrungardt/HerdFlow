@@ -13,7 +13,7 @@ public class Cow
     [Required]
     public string OwnerName { get; set; } = null!;
     [Required]
-    public string LivestockGroup { get; set; } = null!;
+    public LivestockGroupType LivestockGroup { get; set; }
     public string? Sex { get; set; }
     public string? Breed { get; set; }
     public DateOnly? DateOfBirth { get; set; }

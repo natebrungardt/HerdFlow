@@ -271,9 +271,9 @@ function AddCowPage() {
                     }}
                   >
                     <option value="">Select group</option>
-                    <option value="Breeding Cow">Breeding</option>
-                    <option value="Market Cow">Market</option>
-                    <option value="Feeder Cow">Feeder</option>
+                    <option value="Breeding">Breeding</option>
+                    <option value="Market">Market</option>
+                    <option value="Feeder">Feeder</option>
                   </select>
                   <div className="metricAccent" style={{ marginTop: "4px" }} />
                 </div>

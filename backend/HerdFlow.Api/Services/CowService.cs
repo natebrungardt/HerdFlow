@@ -12,6 +12,13 @@ public class CowService
     {
         _context = context;
     }
+
+    private void ValidateCreateCow(CreateCowDto dto)
+    {
+        if (dto.LivestockGroup == LivestockGroupType.None)
+            throw new ArgumentException("Livestock group is required");
+    }
+
     public List<Cow> GetCows()
     {
         return _context.Cows
@@ -28,6 +35,8 @@ public class CowService
 
         if (cow == null)
             return null;
+
+        ValidateCreateCow(dto);
 
         cow.TagNumber = dto.TagNumber;
         cow.OwnerName = dto.OwnerName;
@@ -50,6 +59,8 @@ public class CowService
     }
     public Cow CreateCow(CreateCowDto dto)
     {
+        ValidateCreateCow(dto);
+
         var cow = new Cow
         {
             TagNumber = dto.TagNumber,
