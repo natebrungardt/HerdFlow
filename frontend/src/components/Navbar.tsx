@@ -3,7 +3,9 @@ import { Link } from "react-router-dom";
 function Navbar() {
   return (
     <div className="navbar">
-      <div className="navbar-left">HerdFlow</div>
+      <Link className="navbar-left" to="/">
+        HerdFlow
+      </Link>
       <div className="navbar-links">
         <Link to="/">Dashboard</Link>
         <Link to="/cows">Herd</Link>

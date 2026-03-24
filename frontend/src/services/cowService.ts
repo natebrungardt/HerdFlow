@@ -95,7 +95,7 @@ export async function getCowById(id: number): Promise<Cow> {
   return response.json();
 }
 
-export async function deleteCow(id: number) {
+export async function deleteCow(id: number): Promise<void> {
   const response = await fetch(`${API_BASE_URL}/${id}`, {
     method: "DELETE",
   });
