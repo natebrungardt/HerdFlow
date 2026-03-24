@@ -14,7 +14,9 @@ public class CowService
     }
     public List<Cow> GetCows()
     {
-        return _context.Cows.ToList();
+        return _context.Cows
+            .OrderByDescending(c => c.Id)
+            .ToList();
     }
     public Cow? GetCowById(int id)
     {
