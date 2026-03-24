@@ -199,7 +199,7 @@ function CowDetailPage() {
                         }}
                       />
                     ) : (
-                      <>Tag #{formatValue(formData?.tagNumber)}</>
+                      <>{formatValue(formData?.tagNumber)}</>
                     )}
                   </h1>
                   <p className="cowSubtitle">
@@ -537,20 +537,13 @@ function CowDetailPage() {
                   <div className="infoLabel">Heat Status</div>
                   <div className="infoValue">
                     {editingField === "heatStatus" ? (
-                      <input
+                      <select
                         name="heatStatus"
                         value={formData?.heatStatus || ""}
                         onChange={handleChange}
                         onBlur={async () => {
                           setEditingField(null);
                           await saveCowUpdates();
-                        }}
-                        onKeyDown={async (e) => {
-                          if (e.key === "Enter") {
-                            e.preventDefault();
-                            setEditingField(null);
-                            await saveCowUpdates();
-                          }
                         }}
                         autoFocus
                         style={{
@@ -561,7 +554,12 @@ function CowDetailPage() {
                           color: "inherit",
                           font: "inherit",
                         }}
-                      />
+                      >
+                        <option value="">Select</option>
+                        <option value="WatchHeat">Watch Heat</option>
+                        <option value="InHeat">In Heat</option>
+                        <option value="NotInHeat">Not in Heat</option>
+                      </select>
                     ) : (
                       <span>{formatValue(formData?.heatStatus)}</span>
                     )}
@@ -757,20 +755,6 @@ function CowDetailPage() {
                   <span className="kpiLabel">Sale Price</span>
                   <span className="kpiValue">
                     {formatCurrency(cow.salePrice)}
-                  </span>
-                </div>
-
-                <div className="kpiRow">
-                  <span className="kpiLabel">Status</span>
-                  <span className="kpiValue">
-                    {formatValue(cow.breedingStatus)}
-                  </span>
-                </div>
-
-                <div className="kpiRow">
-                  <span className="kpiLabel">Tag Number</span>
-                  <span className="kpiValue">
-                    #{formatValue(cow.tagNumber)}
                   </span>
                 </div>
               </div>

@@ -20,7 +20,7 @@ public class CreateCowDto
     [EnumDataType(typeof(HealthStatusType))]
     public HealthStatusType HealthStatus { get; set; } = HealthStatusType.Healthy;
 
-    public string? HeatStatus { get; set; }
+    public HeatStatusType HeatStatus { get; set; } = HeatStatusType.NotInHeat;
     public string? BreedingStatus { get; set; }
 
     public decimal? PurchasePrice { get; set; }

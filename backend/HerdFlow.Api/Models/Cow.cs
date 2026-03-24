@@ -19,7 +19,7 @@ public class Cow
     public DateOnly? DateOfBirth { get; set; }
     [Required]
     public HealthStatusType HealthStatus { get; set; } = HealthStatusType.Healthy;
-    public string? HeatStatus { get; set; }
+    public HeatStatusType HeatStatus { get; set; }
     public string? BreedingStatus { get; set; }
 
     public decimal? PurchasePrice { get; set; }
