@@ -1,6 +1,11 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { deleteCow, getCowById, restoreCow } from "../services/cowService";
+import {
+  deleteCow,
+  getCowById,
+  restoreCow,
+  updateCow,
+} from "../services/cowService";
 import type { Cow } from "../types/cow";
 import "../styles/CowDetailPage.css";
 
@@ -34,6 +39,9 @@ function CowDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const [isEditing, setIsEditing] = useState(false);
+  const [formData, setFormData] = useState<Cow | null>(null);
+  const [editingField, setEditingField] = useState<string | null>(null);
 
   useEffect(() => {
     async function loadCow() {
@@ -41,6 +49,7 @@ function CowDetailPage() {
         if (!id) return;
         const data = await getCowById(Number(id));
         setCow(data);
+        setFormData(data);
       } catch (err) {
         const message =
           err instanceof Error ? err.message : "Failed to load cow";
@@ -57,7 +66,7 @@ function CowDetailPage() {
     if (!cow) return;
 
     const confirmed = window.confirm(
-      `Delete cow with tag #${cow.tagNumber}? If removed, this cow's record will be moved to the removed cows archive.'`,
+      `Delete cow with tag #${cow.tagNumber}? If removed, this cow's record will be moved to the removed cows archive.`,
     );
 
     if (!confirmed) return;
@@ -82,10 +91,37 @@ function CowDetailPage() {
 
     try {
       await restoreCow(cow.id);
-      navigate("/removed"); // 👈 better UX (go back to active herd)
+      navigate("/removed");
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Failed to restore cow";
+      setError(message);
+    }
+  }
+
+  function handleChange(
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+  ) {
+    const { name, value } = e.target;
+
+    setFormData((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        [name]: value,
+      };
+    });
+  }
+  async function saveCowUpdates() {
+    if (!formData || !cow) return;
+
+    try {
+      const updated = await updateCow(cow.id, formData);
+      setCow(updated);
+      setFormData(updated);
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to update cow";
       setError(message);
     }
   }
@@ -112,6 +148,7 @@ function CowDetailPage() {
                     data.
                   </p>
                 </div>
+
                 {cow.isRemoved ? (
                   <button className="restoreButton" onClick={handleRestore}>
                     Restore Cow
@@ -157,43 +194,276 @@ function CowDetailPage() {
               </div>
 
               <div className="infoGrid">
-                <div className="infoTile">
+                <div
+                  className="infoTile"
+                  onDoubleClick={() => {
+                    if (editingField !== "ownerName") {
+                      setEditingField("ownerName");
+                    }
+                  }}
+                >
                   <div className="infoLabel">Owner</div>
-                  <div className="infoValue">{formatValue(cow.ownerName)}</div>
+                  <div className="infoValue">
+                    {editingField === "ownerName" ? (
+                      <input
+                        name="ownerName"
+                        value={formData?.ownerName || ""}
+                        onChange={handleChange}
+                        onBlur={async () => {
+                          setEditingField(null);
+                          await saveCowUpdates();
+                        }}
+                        onKeyDown={async (e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            setEditingField(null);
+                            await saveCowUpdates();
+                          }
+                        }}
+                        autoFocus
+                        style={{
+                          width: "100%",
+                          background: "transparent",
+                          border: "none",
+                          outline: "none",
+                          color: "inherit",
+                          font: "inherit",
+                        }}
+                      />
+                    ) : (
+                      <span>{formatValue(formData?.ownerName)}</span>
+                    )}
+                  </div>
                 </div>
 
-                <div className="infoTile">
+                <div
+                  className="infoTile"
+                  onDoubleClick={() => {
+                    if (editingField !== "breed") setEditingField("breed");
+                  }}
+                >
                   <div className="infoLabel">Breed</div>
-                  <div className="infoValue">{formatValue(cow.breed)}</div>
+                  <div className="infoValue">
+                    {editingField === "breed" ? (
+                      <input
+                        name="breed"
+                        value={formData?.breed || ""}
+                        onChange={handleChange}
+                        onBlur={async () => {
+                          setEditingField(null);
+                          await saveCowUpdates();
+                        }}
+                        onKeyDown={async (e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            setEditingField(null);
+                            await saveCowUpdates();
+                          }
+                        }}
+                        autoFocus
+                        style={{
+                          width: "100%",
+                          background: "transparent",
+                          border: "none",
+                          outline: "none",
+                          color: "inherit",
+                          font: "inherit",
+                        }}
+                      />
+                    ) : (
+                      <span>{formatValue(formData?.breed)}</span>
+                    )}
+                  </div>
                 </div>
 
-                <div className="infoTile">
+                <div
+                  className="infoTile"
+                  onDoubleClick={() => {
+                    if (editingField !== "sex") setEditingField("sex");
+                  }}
+                >
                   <div className="infoLabel">Sex</div>
-                  <div className="infoValue">{formatValue(cow.sex)}</div>
+                  <div className="infoValue">
+                    {editingField === "sex" ? (
+                      <select
+                        name="sex"
+                        value={formData?.sex || ""}
+                        onChange={handleChange}
+                        onBlur={async () => {
+                          setEditingField(null);
+                          await saveCowUpdates();
+                        }}
+                        style={{
+                          width: "100%",
+                          background: "transparent",
+                          border: "none",
+                          outline: "none",
+                          color: "inherit",
+                          font: "inherit",
+                        }}
+                        autoFocus
+                      >
+                        <option value="">Select</option>
+                        <option value="Cow">Cow</option>
+                        <option value="Bull">Bull</option>
+                        <option value="Heifer">Heifer</option>
+                        <option value="Steer">Steer</option>
+                      </select>
+                    ) : (
+                      <span>{formatValue(formData?.sex)}</span>
+                    )}
+                  </div>
                 </div>
 
-                <div className="infoTile">
+                <div
+                  className="infoTile"
+                  onDoubleClick={() => {
+                    if (editingField !== "heatStatus")
+                      setEditingField("heatStatus");
+                  }}
+                >
                   <div className="infoLabel">Heat Status</div>
-                  <div className="infoValue">{formatValue(cow.heatStatus)}</div>
+                  <div className="infoValue">
+                    {editingField === "heatStatus" ? (
+                      <input
+                        name="heatStatus"
+                        value={formData?.heatStatus || ""}
+                        onChange={handleChange}
+                        onBlur={async () => {
+                          setEditingField(null);
+                          await saveCowUpdates();
+                        }}
+                        onKeyDown={async (e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            setEditingField(null);
+                            await saveCowUpdates();
+                          }
+                        }}
+                        autoFocus
+                        style={{
+                          width: "100%",
+                          background: "transparent",
+                          border: "none",
+                          outline: "none",
+                          color: "inherit",
+                          font: "inherit",
+                        }}
+                      />
+                    ) : (
+                      <span>{formatValue(formData?.heatStatus)}</span>
+                    )}
+                  </div>
                 </div>
 
-                <div className="infoTile">
+                <div
+                  className="infoTile"
+                  onDoubleClick={() => {
+                    if (editingField !== "dateOfBirth")
+                      setEditingField("dateOfBirth");
+                  }}
+                >
                   <div className="infoLabel">Date of Birth</div>
                   <div className="infoValue">
-                    {formatValue(cow.dateOfBirth)}
+                    {editingField === "dateOfBirth" ? (
+                      <input
+                        type="date"
+                        name="dateOfBirth"
+                        value={
+                          (formData?.dateOfBirth || "")
+                            .toString()
+                            .split("T")[0] || ""
+                        }
+                        onChange={handleChange}
+                        onBlur={async () => {
+                          setEditingField(null);
+                          await saveCowUpdates();
+                        }}
+                        onKeyDown={async (e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            setEditingField(null);
+                            await saveCowUpdates();
+                          }
+                        }}
+                      />
+                    ) : (
+                      <span>{formatValue(formData?.dateOfBirth)}</span>
+                    )}
                   </div>
                 </div>
 
-                <div className="infoTile">
+                <div
+                  className="infoTile"
+                  onDoubleClick={() => {
+                    if (editingField !== "purchaseDate")
+                      setEditingField("purchaseDate");
+                  }}
+                >
                   <div className="infoLabel">Purchase Date</div>
                   <div className="infoValue">
-                    {formatValue(cow.purchaseDate)}
+                    {editingField === "purchaseDate" ? (
+                      <input
+                        type="date"
+                        name="purchaseDate"
+                        value={
+                          (formData?.purchaseDate || "")
+                            .toString()
+                            .split("T")[0] || ""
+                        }
+                        onChange={handleChange}
+                        onBlur={async () => {
+                          setEditingField(null);
+                          await saveCowUpdates();
+                        }}
+                        onKeyDown={async (e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            setEditingField(null);
+                            await saveCowUpdates();
+                          }
+                        }}
+                      />
+                    ) : (
+                      <span>{formatValue(formData?.purchaseDate)}</span>
+                    )}
                   </div>
                 </div>
 
-                <div className="infoTile">
+                <div
+                  className="infoTile"
+                  onDoubleClick={() => {
+                    if (editingField !== "saleDate")
+                      setEditingField("saleDate");
+                  }}
+                >
                   <div className="infoLabel">Sale Date</div>
-                  <div className="infoValue">{formatValue(cow.saleDate)}</div>
+                  <div className="infoValue">
+                    {editingField === "saleDate" ? (
+                      <input
+                        type="date"
+                        name="saleDate"
+                        value={
+                          (formData?.saleDate || "").toString().split("T")[0] ||
+                          ""
+                        }
+                        onChange={handleChange}
+                        onBlur={async () => {
+                          setEditingField(null);
+                          await saveCowUpdates();
+                        }}
+                        onKeyDown={async (e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            setEditingField(null);
+                            await saveCowUpdates();
+                          }
+                        }}
+                      />
+                    ) : (
+                      <span>{formatValue(formData?.saleDate)}</span>
+                    )}
+                  </div>
                 </div>
 
                 <div className="infoTile">

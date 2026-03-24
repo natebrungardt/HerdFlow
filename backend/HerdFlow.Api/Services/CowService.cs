@@ -31,7 +31,7 @@ public class CowService
     }
     public Cow? UpdateCow(int id, CreateCowDto dto)
     {
-        var cow = _context.Cows.FirstOrDefault(c => c.Id == id);
+        var cow = _context.Cows.Find(id);
 
         if (cow == null)
             return null;

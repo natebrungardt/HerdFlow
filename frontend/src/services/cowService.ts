@@ -146,3 +146,38 @@ export async function restoreCow(id: number): Promise<void> {
     throw new Error(error.message);
   }
 }
+
+export async function updateCow(
+  id: number,
+  cowData: CreateCowInput,
+): Promise<Cow> {
+  const response = await fetch(`${API_BASE_URL}/${id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      tagNumber: cowData.tagNumber,
+      ownerName: cowData.ownerName,
+      livestockGroup: cowData.livestockGroup,
+      sex: cowData.sex,
+      breed: cowData.breed,
+      dateOfBirth: cowData.dateOfBirth,
+      healthStatus: cowData.healthStatus,
+      heatStatus: cowData.heatStatus,
+      breedingStatus: cowData.breedingStatus,
+      purchasePrice: cowData.purchasePrice,
+      salePrice: cowData.salePrice,
+      purchaseDate: cowData.purchaseDate,
+      saleDate: cowData.saleDate,
+      notes: cowData.notes,
+    }),
+  });
+
+  if (!response.ok) {
+    const error = await parseError(response);
+    throw new Error(error.message);
+  }
+
+  return response.json();
+}

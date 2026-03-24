@@ -343,3 +343,8 @@
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(62, 207, 142, 0.3);
 }
+
+.infoTile:hover {
+  background: rgba(255, 255, 255, 0.03);
+  cursor: pointer;
+}
