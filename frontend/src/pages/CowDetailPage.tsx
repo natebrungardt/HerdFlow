@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { deleteCow, getCowById } from "../services/cowService";
 import type { Cow } from "../types/cow";
-import "../../CowDetailPage.css";
+import "../styles/CowDetailPage.css";
 
 function formatValue(value: string | number | null | undefined) {
   if (value === null || value === undefined || value === "") return "—";

@@ -1,0 +1,338 @@
+.allCowsShell {
+  padding: 24px;
+}
+
+.allCowsContent {
+  position: relative;
+  z-index: 1;
+}
+
+.allCowsHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 22px;
+}
+
+.titleBlock {
+  min-width: 0;
+}
+
+.pageTitle {
+  margin: 0;
+  font-size: 2rem;
+  line-height: 1.1;
+  font-weight: 700;
+  color: #f3f6ff;
+}
+
+.pageSubtitle {
+  margin: 8px 0 0;
+  color: #95a0b8;
+  font-size: 0.96rem;
+}
+
+.addCowButton {
+  border: none;
+  border-radius: 12px;
+  padding: 12px 18px;
+  min-width: 140px;
+  background: linear-gradient(180deg, #6ea97f 0%, #4c7a5b 100%);
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+  box-shadow: 0 10px 25px rgba(76, 122, 91, 0.22);
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    filter 0.18s ease;
+}
+
+.addCowButton:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.04);
+  box-shadow: 0 14px 30px rgba(76, 122, 91, 0.3);
+}
+
+.addCowButton:active {
+  transform: translateY(0);
+}
+
+.toolbarCard,
+.statsCard,
+.cowListCard {
+  padding: 18px;
+}
+
+.toolbarCard {
+  margin-bottom: 18px;
+}
+
+.searchInput {
+  width: 100%;
+  height: 48px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.025);
+  color: #f3f6ff;
+  padding: 0 14px;
+  box-sizing: border-box;
+  font-size: 0.95rem;
+  outline: none;
+  transition:
+    border-color 0.18s ease,
+    box-shadow 0.18s ease,
+    background 0.18s ease;
+}
+
+.searchInput::placeholder {
+  color: #7f8aa3;
+}
+
+.searchInput:focus {
+  border-color: rgba(107, 143, 120, 0.7);
+  box-shadow: 0 0 0 3px rgba(76, 122, 91, 0.16);
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.filterRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.filterChip {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.02);
+  color: #f0f4ff;
+  border-radius: 999px;
+  padding: 10px 17px;
+  font-weight: 600;
+  font-size: 0.92rem;
+  cursor: pointer;
+  transition:
+    border-color 0.18s ease,
+    background 0.18s ease,
+    transform 0.18s ease;
+}
+
+.filterChip:hover {
+  transform: translateY(-1px);
+  border-color: rgba(107, 143, 120, 0.5);
+  background: rgba(76, 122, 91, 0.14);
+  box-shadow: 0 8px 18px rgba(76, 122, 91, 0.12);
+}
+
+.filterChip.active {
+  background: linear-gradient(180deg, #6ea97f 0%, #4c7a5b 100%);
+  border-color: rgba(134, 193, 151, 0.22);
+  color: #ffffff;
+  box-shadow:
+    0 10px 22px rgba(76, 122, 91, 0.24),
+    0 0 0 1px rgba(255, 255, 255, 0.04) inset;
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.statsCard {
+  min-width: 0;
+  border-color: rgba(107, 143, 120, 0.18);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.03),
+    0 0 0 1px rgba(76, 122, 91, 0.04);
+}
+
+.statLabel {
+  color: #8f99b2;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 8px;
+}
+
+.statValue {
+  color: #f5f7ff;
+  font-size: 1.7rem;
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+.cowListCard {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  border-color: rgba(107, 143, 120, 0.18);
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.sectionTitle {
+  margin: 0;
+  color: #f3f6ff;
+  font-size: 1.08rem;
+  font-weight: 700;
+}
+
+.sectionSubtle {
+  color: #7f8aa3;
+  font-size: 0.84rem;
+}
+
+.cowRowCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 20px;
+  cursor: pointer;
+  transition:
+    transform 0.18s ease,
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.cowRowCard:hover {
+  transform: translateY(-2px);
+  border-color: rgba(107, 143, 120, 0.42);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.03),
+    0 14px 30px rgba(0, 0, 0, 0.22),
+    0 0 0 1px rgba(76, 122, 91, 0.04);
+}
+
+.cowRowCard:focus-visible {
+  outline: none;
+  transform: translateY(-2px);
+  border-color: rgba(110, 169, 127, 0.65);
+  box-shadow:
+    0 0 0 3px rgba(76, 122, 91, 0.18),
+    0 14px 30px rgba(0, 0, 0, 0.22);
+}
+
+.cowRowMain {
+  min-width: 0;
+  flex: 1;
+}
+
+.cowRowTitle {
+  margin: 0 0 6px;
+  color: #f3f6ff;
+  font-size: 1.12rem;
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  word-break: break-word;
+}
+
+.cowRowMeta {
+  color: #8f99b2;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  margin-bottom: 10px;
+  word-break: break-word;
+}
+
+.cowRowOwner {
+  color: #dfe6f5;
+  font-size: 0.88rem;
+  font-weight: 600;
+  word-break: break-word;
+}
+
+.cowRowActions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.statusPill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 96px;
+  padding: 10px 16px;
+  border-radius: 999px;
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: #ffffff;
+  background: linear-gradient(180deg, #44c767 0%, #2eaa53 100%);
+  box-shadow: 0 10px 24px rgba(68, 199, 103, 0.2);
+  letter-spacing: 0.01em;
+}
+
+.allCowsPage .statusPill.needsTreatment {
+  background: linear-gradient(180deg, #c74652 0%, #9f2e39 100%);
+  box-shadow: 0 10px 24px rgba(199, 70, 82, 0.22);
+}
+
+.statusPill.market {
+  background: linear-gradient(180deg, #4d94ff 0%, #2f6ed0 100%);
+  box-shadow: 0 10px 24px rgba(77, 148, 255, 0.2);
+}
+
+.statusPill.breeding {
+  background: linear-gradient(180deg, #9b7bff 0%, #7557dd 100%);
+  box-shadow: 0 10px 24px rgba(155, 123, 255, 0.2);
+}
+
+.emptyState {
+  color: #98a3b9;
+  padding: 6px 2px;
+}
+
+@media (max-width: 1080px) {
+  .statsGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .allCowsPage {
+    padding: 20px 16px 28px;
+  }
+
+  .allCowsShell {
+    padding: 18px;
+    border-radius: 20px;
+  }
+
+  .allCowsHeader,
+  .cowRowCard {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .addCowButton {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .statsGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .cowRowActions {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 520px) {
+  .statsGrid {
+    grid-template-columns: 1fr;
+  }
+}

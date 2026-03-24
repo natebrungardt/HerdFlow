@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getCows } from "../services/cowService";
 import type { Cow } from "../types/cow";
+import "../styles/allCows.css";
 
 function AllCowPage() {
   const [cows, setCows] = useState<Cow[]>([]);
@@ -72,232 +73,138 @@ function AllCowPage() {
   ).length;
 
   return (
-    <div
-      style={{
-        width: "100%",
-        maxWidth: "1100px",
-        margin: "0 auto",
-        padding: "24px",
-      }}
-    >
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: "20px",
-        }}
-      >
-        <h1 style={{ margin: 0 }}>All Cows</h1>
+    <div className="allCowsPage">
+      <div className="allCowsShell">
+        <div className="allCowsContent">
+          <div className="allCowsHeader">
+            <div className="titleBlock">
+              <h1 className="pageTitle">All Cows</h1>
+              <p className="pageSubtitle">
+                View, search, and manage herd records across your operation.
+              </p>
+            </div>
 
-        <button
-          onClick={() => navigate("/add-cow")}
-          style={{
-            padding: "15px 25px",
-            borderRadius: "8px",
-            border: "none",
-            background: "#5da475ff",
-            color: "white",
-            fontWeight: "bold",
-            cursor: "pointer",
-            fontSize: "1.25rem",
-          }}
-        >
-          + Add Cow
-        </button>
-      </div>
-
-      <div style={{ marginBottom: "16px" }}>
-        <input
-          type="text"
-          placeholder="Search by tag number or owner name..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          style={{
-            boxSizing: "border-box",
-            width: "100%",
-            padding: "12px",
-            borderRadius: "8px",
-            border: "1px solid #444",
-            background: "#151717",
-            color: "white",
-            marginBottom: "12px",
-          }}
-        />
-
-        <div style={{ display: "flex", gap: "10px", marginBottom: "16px" }}>
-          {["All", "Breeding", "Feeder", "Market", "Needs Treatment"].map(
-            (group) => (
-              <button
-                key={group}
-                onClick={() => setSelectedGroup(group)}
-                style={{
-                  padding: "12px 20px",
-                  borderRadius: "200px",
-                  border:
-                    selectedGroup === group
-                      ? "1px solid #4c7a5b"
-                      : "1px solid #444",
-                  background:
-                    selectedGroup === group ? "#4c7a5b" : "transparent",
-                  color: "white",
-                  cursor: "pointer",
-                }}
-              >
-                {group}
-              </button>
-            ),
-          )}
-        </div>
-
-        <div style={{ display: "flex", gap: "12px", marginBottom: "20px" }}>
-          <div
-            style={{
-              flex: 1,
-              padding: "14px",
-              borderRadius: "10px",
-              background: "#151717",
-              border: "1px solid #333",
-            }}
-          >
-            <div style={{ fontSize: "1.15rem", color: "#9aa5b1" }}>
-              Total Cows
-            </div>
-            <div style={{ fontSize: "1.5rem", fontWeight: "bold" }}>
-              {cows.length}
-            </div>
-          </div>
-
-          <div
-            style={{
-              flex: 1,
-              padding: "14px",
-              borderRadius: "10px",
-              background: "#151717",
-              border: "1px solid #333",
-            }}
-          >
-            <div style={{ fontSize: "1.15rem", color: "#9aa5b1" }}>Healthy</div>
-            <div style={{ fontSize: "1.5rem", fontWeight: "bold" }}>
-              {healthyCount}
-            </div>
-          </div>
-
-          <div
-            style={{
-              flex: 1,
-              padding: "14px",
-              borderRadius: "10px",
-              background: "#151717",
-              border: "1px solid #333",
-            }}
-          >
-            <div style={{ fontSize: "1.15rem", color: "#9aa5b1" }}>
-              Needs Treatment
-            </div>
-            <div style={{ fontSize: "1.5rem", fontWeight: "bold" }}>
-              {needsAttentionCount}
-            </div>
-          </div>
-          <div
-            style={{
-              flex: 1,
-              padding: "14px",
-              borderRadius: "10px",
-              background: "#151717",
-              border: "1px solid #333",
-            }}
-          >
-            <div style={{ fontSize: "1.15rem", color: "#9aa5b1" }}>
-              Breeding
-            </div>
-            <div style={{ fontSize: "1.5rem", fontWeight: "bold" }}>
-              {breedingCount}
-            </div>
-          </div>
-          <div
-            style={{
-              flex: 1,
-              padding: "14px",
-              borderRadius: "10px",
-              background: "#151717",
-              border: "1px solid #333",
-            }}
-          >
-            <div style={{ fontSize: "1.15rem", color: "#9aa5b1" }}>Feeder</div>
-            <div style={{ fontSize: "1.5rem", fontWeight: "bold" }}>
-              {feederCount}
-            </div>
-          </div>
-          <div
-            style={{
-              flex: 1,
-              padding: "14px",
-              borderRadius: "10px",
-              background: "#151717",
-              border: "1px solid #333",
-            }}
-          >
-            <div style={{ fontSize: "1.15rem", color: "#9aa5b1" }}>Market</div>
-            <div style={{ fontSize: "1.4rem", fontWeight: "bold" }}>
-              {marketCount}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {loading ? (
-        <p>Loading cows...</p>
-      ) : error ? (
-        <p style={{ color: "red" }}>{error}</p>
-      ) : filteredCows.length === 0 ? (
-        <p>No cows found.</p>
-      ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-          {filteredCows.map((cow) => (
-            <div
-              key={cow.id}
-              onClick={() => navigate(`/cows/${cow.id}`)}
-              style={{
-                padding: "15px",
-                border: "1px solid #ccc",
-                borderRadius: "8px",
-                cursor: "pointer",
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-              }}
+            <button
+              className="addCowButton"
+              onClick={() => navigate("/add-cow")}
             >
-              <div>
-                <div style={{ fontWeight: "bold", fontSize: "1.75rem" }}>
-                  Tag #{cow.tagNumber}
-                </div>
+              + Add Cow
+            </button>
+          </div>
 
-                <div style={{ color: "#c5cdd5ff", fontSize: "1.2rem" }}>
-                  {cow.livestockGroup} • {cow.sex} • {cow.breedingStatus}
-                </div>
+          <div className="toolbarCard">
+            <input
+              className="searchInput"
+              type="text"
+              placeholder="Search by tag number or owner name..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
 
-                <div style={{ marginTop: "4px", fontSize: "1.25rem" }}>
-                  Owner: {cow.ownerName}
-                </div>
-              </div>
-
-              <div
-                style={{
-                  padding: "6px 12px",
-                  borderRadius: "20px",
-                  background:
-                    cow.healthStatus === "Healthy" ? "#22c55e" : "#ef4444",
-                  color: "white",
-                  fontWeight: "bold",
-                }}
-              >
-                {cow.healthStatus.replace(/([A-Z])/g, " $1").trim()}
-              </div>
+            <div className="filterRow">
+              {["All", "Breeding", "Feeder", "Market", "Needs Treatment"].map(
+                (group) => (
+                  <button
+                    key={group}
+                    className={`filterChip ${selectedGroup === group ? "active" : ""}`.trim()}
+                    onClick={() => setSelectedGroup(group)}
+                  >
+                    {group}
+                  </button>
+                ),
+              )}
             </div>
-          ))}
+          </div>
+
+          <div className="statsGrid">
+            <div className="statsCard">
+              <div className="statLabel">Total Cows</div>
+              <div className="statValue">{cows.length}</div>
+            </div>
+
+            <div className="statsCard">
+              <div className="statLabel">Healthy</div>
+              <div className="statValue">{healthyCount}</div>
+            </div>
+
+            <div className="statsCard">
+              <div className="statLabel">Needs Treatment</div>
+              <div className="statValue">{needsAttentionCount}</div>
+            </div>
+
+            <div className="statsCard">
+              <div className="statLabel">Breeding</div>
+              <div className="statValue">{breedingCount}</div>
+            </div>
+
+            <div className="statsCard">
+              <div className="statLabel">Feeder</div>
+              <div className="statValue">{feederCount}</div>
+            </div>
+
+            <div className="statsCard">
+              <div className="statLabel">Market</div>
+              <div className="statValue">{marketCount}</div>
+            </div>
+          </div>
+
+          <div className="cowListCard">
+            <div className="sectionHeader">
+              <h2 className="sectionTitle">Herd Records</h2>
+              <span className="sectionSubtle">{filteredCows.length} shown</span>
+            </div>
+
+            {loading ? (
+              <p className="emptyState">Loading cows...</p>
+            ) : error ? (
+              <p className="emptyState">{error}</p>
+            ) : filteredCows.length === 0 ? (
+              <p className="emptyState">No cows found.</p>
+            ) : (
+              filteredCows.map((cow) => {
+                const healthStatus = (cow.healthStatus ?? "Unknown")
+                  .replace(/([A-Z])/g, " $1")
+                  .trim();
+                const statusClassName =
+                  cow.healthStatus === "Healthy"
+                    ? "statusPill"
+                    : "statusPill needsTreatment";
+
+                return (
+                  <div
+                    key={cow.id}
+                    className="cowRowCard"
+                    onClick={() => navigate(`/cows/${cow.id}`)}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        navigate(`/cows/${cow.id}`);
+                      }
+                    }}
+                  >
+                    <div className="cowRowMain">
+                      <div className="cowRowTitle">Tag #{cow.tagNumber}</div>
+                      <div className="cowRowMeta">
+                        {cow.livestockGroup || "Unassigned"} •{" "}
+                        {cow.sex || "Unknown sex"} •{" "}
+                        {cow.breedingStatus || "No breeding status"}
+                      </div>
+                      <div className="cowRowOwner">
+                        Owner: {cow.ownerName || "Unknown owner"}
+                      </div>
+                    </div>
+
+                    <div className="cowRowActions">
+                      <div className={statusClassName}>{healthStatus}</div>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
         </div>
-      )}
+      </div>
     </div>
   );
 }
