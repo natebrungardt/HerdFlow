@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { createCow } from "../services/cowService";
 import "../styles/CowDetailPage.css";
+import Notes from "../components/Notes";
 
 type FormState = {
   tagNumber: string;
@@ -639,23 +640,20 @@ function AddCowPage() {
                 <span className="cardSubtle">Internal record</span>
               </div>
 
-              <textarea
-                name="notes"
+              <div
                 className="notesBody"
-                value={formData.notes}
-                onChange={handleChange}
-                placeholder="Add internal notes, treatment details, breeding context, or anything else worth tracking..."
                 style={{
                   width: "100%",
                   minHeight: "180px",
-                  background: "transparent",
-                  border: "none",
-                  outline: "none",
-                  resize: "vertical",
-                  color: "inherit",
-                  font: "inherit",
+                  color: "rgba(255,255,255,0.55)",
+                  fontStyle: "italic",
+                  padding: "16px",
+                  display: "flex",
+                  alignItems: "flex-start",
                 }}
-              />
+              >
+                Notes are available after creating this cow.
+              </div>
             </section>
           </div>
         </form>

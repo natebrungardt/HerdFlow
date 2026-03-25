@@ -10,6 +10,18 @@ import type { Cow } from "../types/cow";
 import "../styles/CowDetailPage.css";
 import Notes from "../components/Notes";
 
+const editableFields = [
+  "ownerName",
+  "breed",
+  "sex",
+  "heatStatus",
+  "dateOfBirth",
+  "purchaseDate",
+  "purchasePrice",
+  "saleDate",
+  "salePrice",
+];
+
 function formatValue(value: string | number | null | undefined) {
   if (value === null || value === undefined || value === "") return "—";
   return String(value);
@@ -107,9 +119,17 @@ function CowDetailPage() {
 
     setFormData((prev) => {
       if (!prev) return prev;
+
+      const normalizedValue =
+        name === "purchasePrice" || name === "salePrice"
+          ? value === ""
+            ? null
+            : Number(value)
+          : value;
+
       return {
         ...prev,
-        [name]: value,
+        [name]: normalizedValue,
       };
     });
   }
@@ -432,6 +452,16 @@ function CowDetailPage() {
                             setEditingField(null);
                             await saveCowUpdates();
                           }
+
+                          if (e.key === "Tab") {
+                            e.preventDefault();
+                            const currentIndex = editableFields.indexOf(
+                              editingField!,
+                            );
+                            const nextField = editableFields[currentIndex + 1];
+                            setEditingField(nextField || null);
+                            await saveCowUpdates();
+                          }
                         }}
                         autoFocus
                         style={{
@@ -472,6 +502,16 @@ function CowDetailPage() {
                             setEditingField(null);
                             await saveCowUpdates();
                           }
+
+                          if (e.key === "Tab") {
+                            e.preventDefault();
+                            const currentIndex = editableFields.indexOf(
+                              editingField!,
+                            );
+                            const nextField = editableFields[currentIndex + 1];
+                            setEditingField(nextField || null);
+                            await saveCowUpdates();
+                          }
                         }}
                         autoFocus
                         style={{
@@ -505,6 +545,22 @@ function CowDetailPage() {
                         onBlur={async () => {
                           setEditingField(null);
                           await saveCowUpdates();
+                        }}
+                        onKeyDown={async (e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            setEditingField(null);
+                            await saveCowUpdates();
+                          }
+                          if (e.key === "Tab") {
+                            e.preventDefault();
+                            const currentIndex = editableFields.indexOf(
+                              editingField!,
+                            );
+                            const nextField = editableFields[currentIndex + 1];
+                            setEditingField(nextField || null);
+                            await saveCowUpdates();
+                          }
                         }}
                         style={{
                           width: "100%",
@@ -545,6 +601,22 @@ function CowDetailPage() {
                         onBlur={async () => {
                           setEditingField(null);
                           await saveCowUpdates();
+                        }}
+                        onKeyDown={async (e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            setEditingField(null);
+                            await saveCowUpdates();
+                          }
+                          if (e.key === "Tab") {
+                            e.preventDefault();
+                            const currentIndex = editableFields.indexOf(
+                              editingField!,
+                            );
+                            const nextField = editableFields[currentIndex + 1];
+                            setEditingField(nextField || null);
+                            await saveCowUpdates();
+                          }
                         }}
                         autoFocus
                         style={{
@@ -596,6 +668,16 @@ function CowDetailPage() {
                             setEditingField(null);
                             await saveCowUpdates();
                           }
+
+                          if (e.key === "Tab") {
+                            e.preventDefault();
+                            const currentIndex = editableFields.indexOf(
+                              editingField!,
+                            );
+                            const nextField = editableFields[currentIndex + 1];
+                            setEditingField(nextField || null);
+                            await saveCowUpdates();
+                          }
                         }}
                       />
                     ) : (
@@ -631,6 +713,16 @@ function CowDetailPage() {
                           if (e.key === "Enter") {
                             e.preventDefault();
                             setEditingField(null);
+                            await saveCowUpdates();
+                          }
+
+                          if (e.key === "Tab") {
+                            e.preventDefault();
+                            const currentIndex = editableFields.indexOf(
+                              editingField!,
+                            );
+                            const nextField = editableFields[currentIndex + 1];
+                            setEditingField(nextField || null);
                             await saveCowUpdates();
                           }
                         }}
@@ -669,6 +761,16 @@ function CowDetailPage() {
                             setEditingField(null);
                             await saveCowUpdates();
                           }
+
+                          if (e.key === "Tab") {
+                            e.preventDefault();
+                            const currentIndex = editableFields.indexOf(
+                              editingField!,
+                            );
+                            const nextField = editableFields[currentIndex + 1];
+                            setEditingField(nextField || null);
+                            await saveCowUpdates();
+                          }
                         }}
                       />
                     ) : (
@@ -677,51 +779,97 @@ function CowDetailPage() {
                   </div>
                 </div>
 
+                <div
+                  className="infoTile"
+                  onDoubleClick={() => {
+                    if (editingField !== "purchasePrice")
+                      setEditingField("purchasePrice");
+                  }}
+                >
+                  <div className="infoLabel">Purchase Price</div>
+                  <div className="infoValue">
+                    {editingField === "purchasePrice" ? (
+                      <input
+                        type="number"
+                        name="purchasePrice"
+                        value={formData?.purchasePrice ?? ""}
+                        onChange={handleChange}
+                        onBlur={async () => {
+                          setEditingField(null);
+                          await saveCowUpdates();
+                        }}
+                        onKeyDown={async (e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            setEditingField(null);
+                            await saveCowUpdates();
+                          }
+
+                          if (e.key === "Tab") {
+                            e.preventDefault();
+                            const currentIndex = editableFields.indexOf(
+                              editingField!,
+                            );
+                            const nextField = editableFields[currentIndex + 1];
+                            setEditingField(nextField || null);
+                            await saveCowUpdates();
+                          }
+                        }}
+                        autoFocus
+                      />
+                    ) : (
+                      <span>{formatCurrency(formData?.purchasePrice)}</span>
+                    )}
+                  </div>
+                </div>
+
+                <div
+                  className="infoTile"
+                  onDoubleClick={() => {
+                    if (editingField !== "salePrice")
+                      setEditingField("salePrice");
+                  }}
+                >
+                  <div className="infoLabel">Sale Price</div>
+                  <div className="infoValue">
+                    {editingField === "salePrice" ? (
+                      <input
+                        type="number"
+                        name="salePrice"
+                        value={formData?.salePrice ?? ""}
+                        onChange={handleChange}
+                        onBlur={async () => {
+                          setEditingField(null);
+                          await saveCowUpdates();
+                        }}
+                        onKeyDown={async (e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            setEditingField(null);
+                            await saveCowUpdates();
+                          }
+
+                          if (e.key === "Tab") {
+                            e.preventDefault();
+                            const currentIndex = editableFields.indexOf(
+                              editingField!,
+                            );
+                            const nextField = editableFields[currentIndex + 1];
+                            setEditingField(nextField || null);
+                            await saveCowUpdates();
+                          }
+                        }}
+                        autoFocus
+                      />
+                    ) : (
+                      <span>{formatCurrency(formData?.salePrice)}</span>
+                    )}
+                  </div>
+                </div>
+
                 <div className="infoTile">
                   <div className="infoLabel">Record ID</div>
                   <div className="infoValue">#{cow.id}</div>
-                </div>
-              </div>
-            </section>
-
-            <section className="dashboardCard activityCard">
-              <div className="dataCardHeader">
-                <h2 className="cardTitle">Activity Log</h2>
-                <span className="cardSubtle">Recent timeline</span>
-              </div>
-
-              <div className="activityList">
-                <div className="activityItem">
-                  <div className="activityDot" />
-                  <div>
-                    <div className="activityText">
-                      Cow record created in HerdFlow.
-                    </div>
-                    <div className="activityMeta">System event</div>
-                  </div>
-                </div>
-
-                <div className="activityItem">
-                  <div className="activityDot" />
-                  <div>
-                    <div className="activityText">
-                      Health status saved as {formatLabel(cow.healthStatus)}.
-                    </div>
-                    <div className="activityMeta">Current profile value</div>
-                  </div>
-                </div>
-
-                <div className="activityItem">
-                  <div className="activityDot" />
-                  <div>
-                    <div className="activityText">
-                      Livestock group assigned to{" "}
-                      {formatValue(cow.livestockGroup)}.
-                    </div>
-                    <div className="activityMeta">
-                      Current herd classification
-                    </div>
-                  </div>
                 </div>
               </div>
             </section>
@@ -762,6 +910,49 @@ function CowDetailPage() {
             </section>
             <Notes cowId={cow.id} />
           </div>
+        </div>
+        <div className="fullWidthRow" style={{ marginTop: "20px" }}>
+          <section className="dashboardCard activityCard">
+            <div className="dataCardHeader" style={{ marginTop: "10px" }}>
+              <h2 className="cardTitle">Activity Log</h2>
+              <span className="cardSubtle">Recent timeline</span>
+            </div>
+
+            <div className="activityList">
+              <div className="activityItem">
+                <div className="activityDot" />
+                <div>
+                  <div className="activityText">
+                    Cow record created in HerdFlow.
+                  </div>
+                  <div className="activityMeta">System event</div>
+                </div>
+              </div>
+
+              <div className="activityItem">
+                <div className="activityDot" />
+                <div>
+                  <div className="activityText">
+                    Health status saved as {formatLabel(cow.healthStatus)}.
+                  </div>
+                  <div className="activityMeta">Current profile value</div>
+                </div>
+              </div>
+
+              <div className="activityItem">
+                <div className="activityDot" />
+                <div>
+                  <div className="activityText">
+                    Livestock group assigned to{" "}
+                    {formatValue(cow.livestockGroup)}.
+                  </div>
+                  <div className="activityMeta">
+                    Current herd classification
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
         </div>
       </div>
     </div>

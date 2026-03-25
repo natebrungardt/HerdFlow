@@ -2,6 +2,7 @@
   display: grid;
   grid-template-columns: minmax(0, 1.85fr) minmax(290px, 0.95fr);
   gap: 20px;
+  align-items: stretch;
 }
 
 .leftColumn,
@@ -9,6 +10,8 @@
   display: flex;
   flex-direction: column;
   gap: 20px;
+  height: 100%;
+  align-items: stretch;
 }
 
 .dashboardCard {
@@ -142,13 +145,22 @@
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 14px;
+  flex: 1;
+  align-content: stretch;
+}
+
+.leftColumn > .dashboardCard:last-child,
+.rightColumn > .dashboardCard:last-child {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
 }
 
 .infoTile {
   background: rgba(255, 255, 255, 0.022);
   border: 1px solid rgba(255, 255, 255, 0.07);
   border-radius: 14px;
-  padding: 14px 16px;
+  padding: 16px 18px;
   min-width: 0;
 }
 
@@ -350,12 +362,12 @@
 .notesContainer {
   display: flex;
   flex-direction: column;
-  height: calc(100% - 8px);
+  flex: 1;
+  height: 100%;
 }
 
 .notesBody {
   flex: 1;
-  max-height: 650px;
   overflow-y: auto;
   padding-right: 6px;
   scrollbar-width: thin;
@@ -401,7 +413,7 @@
   flex-direction: column;
   gap: 4px;
   flex: 1;
-  font-size: 1.2rem;
+  font-size: 0.95rem;
 }
 
 .noteContent input {
@@ -409,7 +421,7 @@
   border: none;
   outline: none;
   color: #e6ebff;
-  font-size: 1.5rem;
+  font-size: 0.95rem;
   font-family: inherit;
   width: 100%;
   line-height: 1.4;
@@ -421,7 +433,7 @@
   border: none;
   outline: none;
   color: #e6ebff;
-  font-size: 1.2rem;
+  font-size: 0.95rem;
   font-family: inherit;
   width: 100%;
   resize: none;
@@ -439,7 +451,7 @@
 
 .noteContent span {
   word-break: break-word;
-  font-size: 1.2rem;
+  font-size: 0.95rem;
   line-height: 1.4;
 }
 
@@ -468,8 +480,8 @@
   display: flex;
   gap: 8px;
   margin-top: 6px;
-  padding-bottom: 2px;
-  font-size: 1.2rem;
+  padding-bottom: 12px;
+  font-size: 0.95rem;
 }
 
 .addNoteRow textarea {
@@ -485,12 +497,11 @@
   line-height: 1.4;
   outline: none;
   min-height: 64px;
-  font-size: 1.2rem;
 }
 
 .addNoteRow textarea::placeholder {
   color: #8f99b2;
-  font-size: 1.2rem;
+  font-size: 0.95rem;
 }
 
 .addNoteRow textarea:focus {
@@ -509,4 +520,21 @@
 }
 .noteItem:first-child {
   border-color: rgba(76, 122, 91, 0.4);
+}
+
+/* Make Cow Details stretch */
+.fullWidthRow {
+  grid-column: 1 / -1;
+}
+
+.leftColumn {
+  height: 100%;
+}
+
+.rightColumn {
+  height: 100%;
+}
+
+.cowDashboardGrid {
+  align-items: stretch;
 }
