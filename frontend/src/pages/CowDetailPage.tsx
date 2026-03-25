@@ -634,7 +634,7 @@ function CowDetailPage() {
                         <option value="NotInHeat">Not in Heat</option>
                       </select>
                     ) : (
-                      <span>{formatValue(formData?.heatStatus)}</span>
+                      <span>{formatLabel(formData?.heatStatus)}</span>
                     )}
                   </div>
                 </div>

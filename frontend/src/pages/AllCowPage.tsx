@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { getCows } from "../services/cowService";
 import type { Cow } from "../types/cow";
 import "../styles/allCows.css";
@@ -171,17 +171,10 @@ function AllCowPage() {
                     : "statusPill needsTreatment";
 
                 return (
-                  <div
+                  <Link
                     key={cow.id}
                     className="cowRowCard"
-                    onClick={() => navigate(`/cows/${cow.id}`)}
-                    role="button"
-                    tabIndex={0}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" || e.key === " ") {
-                        navigate(`/cows/${cow.id}`);
-                      }
-                    }}
+                    to={`/cows/${cow.id}`}
                   >
                     <div className="cowRowMain">
                       <div className="cowRowTitle">Tag #{cow.tagNumber}</div>
@@ -198,7 +191,7 @@ function AllCowPage() {
                     <div className="cowRowActions">
                       <div className={statusClassName}>{healthStatus}</div>
                     </div>
-                  </div>
+                  </Link>
                 );
               })
             )}
