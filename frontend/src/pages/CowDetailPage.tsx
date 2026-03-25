@@ -11,6 +11,7 @@ import {
 import type { Cow } from "../types/cow";
 import "../styles/CowDetailPage.css";
 import Notes from "../components/Notes";
+import Modal from "../components/Modal";
 
 type ActivityLogEntry = {
   id: number;
@@ -85,6 +86,8 @@ function CowDetailPage() {
   const [activities, setActivities] = useState<ActivityLogEntry[]>([]);
   const [loadingActivities, setLoadingActivities] = useState(false);
   const [activitiesError, setActivitiesError] = useState("");
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showRestoreModal, setShowRestoreModal] = useState(false);
 
   useEffect(() => {
     async function loadCow() {
@@ -144,11 +147,7 @@ function CowDetailPage() {
   async function handleDelete() {
     if (!cow) return;
 
-    const confirmed = window.confirm(
-      `Delete cow with tag #${cow.tagNumber}? If removed, this cow's record will be moved to the removed cows archive.`,
-    );
-
-    if (!confirmed) return;
+    console.log("Deleting cow:", cow.id);
 
     try {
       await deleteCow(cow.id);
@@ -161,12 +160,6 @@ function CowDetailPage() {
   }
   async function handleRestore() {
     if (!cow) return;
-
-    const confirmed = window.confirm(
-      `Restore cow with tag #${cow.tagNumber}? This cow will be moved back to your active herd.`,
-    );
-
-    if (!confirmed) return;
 
     try {
       await restoreCow(cow.id);
@@ -298,11 +291,17 @@ function CowDetailPage() {
                 </div>
 
                 {cow.isRemoved ? (
-                  <button className="restoreButton" onClick={handleRestore}>
+                  <button
+                    className="restoreButton"
+                    onClick={() => setShowRestoreModal(true)}
+                  >
                     Restore Cow
                   </button>
                 ) : (
-                  <button className="deleteButton" onClick={handleDelete}>
+                  <button
+                    className="deleteButton"
+                    onClick={() => setShowDeleteModal(true)}
+                  >
                     Remove Cow
                   </button>
                 )}
@@ -1028,6 +1027,29 @@ function CowDetailPage() {
           </section>
         </div>
       </div>
+      {/* Delete confirmation modal */}
+      <Modal
+        isOpen={showDeleteModal}
+        title="Remove Cow"
+        message={`Are you sure you want to remove cow #${cow.tagNumber}? This will move it to the removed cows archive.`}
+        onCancel={() => setShowDeleteModal(false)}
+        onConfirm={() => {
+          console.log("CONFIRM CLICKED");
+          handleDelete();
+          setShowDeleteModal(false);
+        }}
+      />
+      {/* Restore confirmation modal */}
+      <Modal
+        isOpen={showRestoreModal}
+        title="Restore Cow"
+        message={`Are you sure you want to restore cow #${cow.tagNumber}? This will move it back to your active herd.`}
+        onCancel={() => setShowRestoreModal(false)}
+        onConfirm={async () => {
+          await handleRestore();
+          setShowRestoreModal(false);
+        }}
+      />
     </div>
   );
 }

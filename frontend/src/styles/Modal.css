@@ -1,0 +1,80 @@
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+.modalCard {
+  background: #0f1a14;
+  border: 1px solid #1f2d24;
+  border-radius: 12px;
+  padding: 20px;
+  width: 400px;
+}
+
+.modalActions {
+  margin-top: 20px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.modalActions button {
+  border: none;
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+/* Cancel button */
+.modalActions button:not(.danger) {
+  background: rgba(255, 255, 255, 0.08);
+  color: #d1d5db;
+}
+
+.modalActions button:not(.danger):hover {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+/* Remove button */
+.modalActions .danger {
+  background: linear-gradient(180deg, #c74652 0%, #9f2e39 100%);
+  color: white;
+  box-shadow: 0 4px 14px rgba(199, 70, 82, 0.4);
+}
+
+.modalActions .danger:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(199, 70, 82, 0.6);
+}
+
+.modalActions .danger:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(199, 70, 82, 0.4);
+}
+
+.modalOverlay {
+  position: fixed; /* 👈 THIS is what fixes it */
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: rgba(0, 0, 0, 0.6); /* dark overlay */
+  backdrop-filter: blur(4px); /* nice blur effect */
+
+  z-index: 9999; /* 👈 makes sure it's on top of everything */
+}
