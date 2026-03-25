@@ -29,4 +29,6 @@ public class Cow
 
     public List<Note> Notes { get; set; } = new();
     public bool IsRemoved { get; set; } = false;
+
+    public List<WorkdayCow> WorkdayCows { get; set; } = new();
 }
