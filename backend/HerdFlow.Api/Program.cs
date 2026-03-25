@@ -1,8 +1,7 @@
 using HerdFlow.Api.Data;
+using HerdFlow.Api.Middleware;
 using Microsoft.EntityFrameworkCore;
 using HerdFlow.Api.Services;
-using HerdFlow.Api.Models.Enums;
-
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,6 +21,8 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddScoped<CowService>();
 builder.Services.AddScoped<ActivityLogService>();
+builder.Services.AddScoped<CowChangeLogService>();
+builder.Services.AddScoped<NoteService>();
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
@@ -30,9 +31,13 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 builder.Services.AddCors(options =>
 {
+    var allowedOrigins = builder.Configuration
+        .GetSection("Cors:AllowedOrigins")
+        .Get<string[]>() ?? ["http://localhost:5173"];
+
     options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.WithOrigins("http://localhost:5173")
+        policy.WithOrigins(allowedOrigins)
               .AllowAnyHeader()
               .AllowAnyMethod();
     });
@@ -40,11 +45,12 @@ builder.Services.AddCors(options =>
 
 
 var app = builder.Build();
+app.UseMiddleware<ExceptionHandlingMiddleware>();
+app.UseCors("AllowFrontend");
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.UseCors("AllowFrontend");
     // app.MapOpenApi();
     app.UseSwagger();
     app.UseSwaggerUI(options =>

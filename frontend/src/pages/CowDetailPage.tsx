@@ -234,7 +234,7 @@ function CowDetailPage() {
     } catch (err) {
       let message = "Failed to update cow";
       const apiErr = err as ApiError;
-      if (apiErr?.status === 400) {
+      if (apiErr?.status === 409) {
         message = "Tag number already exists";
       } else if (err instanceof Error) {
         message = err.message;

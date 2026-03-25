@@ -1,6 +1,8 @@
 using HerdFlow.Api.DTOs;
 using HerdFlow.Api.Models;
 using HerdFlow.Api.Data;
+using HerdFlow.Api.Exceptions;
+using Microsoft.EntityFrameworkCore;
 
 namespace HerdFlow.Api.Services;
 
@@ -8,81 +10,45 @@ public class CowService
 {
     private readonly AppDbContext _context;
     private readonly ActivityLogService _activityLogService;
-    public CowService(AppDbContext context, ActivityLogService activityLogService)
+    private readonly CowChangeLogService _cowChangeLogService;
+
+    public CowService(
+        AppDbContext context,
+        ActivityLogService activityLogService,
+        CowChangeLogService cowChangeLogService)
     {
         _context = context;
         _activityLogService = activityLogService;
+        _cowChangeLogService = cowChangeLogService;
     }
+
     private void ValidateCreateCow(CreateCowDto dto)
     {
         if (dto.LivestockGroup == LivestockGroupType.None)
-            throw new ArgumentException("Livestock group is required");
+        {
+            throw new ValidationException("Livestock group is required.");
+        }
     }
 
-    public List<Cow> GetCows()
+    public async Task<List<Cow>> GetCowsAsync()
     {
-        return _context.Cows
+        return await _context.Cows
             .Where(c => !c.IsRemoved)
-            .ToList();
+            .ToListAsync();
     }
-    public Cow? GetCowById(int id)
+
+    public async Task<Cow> GetCowByIdAsync(int id)
     {
-        return _context.Cows.FirstOrDefault(c => c.Id == id);
+        var cow = await _context.Cows.FirstOrDefaultAsync(c => c.Id == id);
+        return cow ?? throw new NotFoundException("Cow not found.");
     }
-    public Cow? UpdateCow(int id, CreateCowDto dto)
+
+    public async Task<Cow> UpdateCowAsync(int id, CreateCowDto dto)
     {
-        var cow = _context.Cows.Find(id);
-
-        if (cow == null)
-            return null;
-
+        var cow = await FindCowAsync(id);
         ValidateCreateCow(dto);
-        var changes = new List<string>();
-
-
-        if (_context.Cows.Any(c => c.TagNumber == dto.TagNumber && c.Id != id))
-            throw new ArgumentException("Tag number already exists");
-
-        if (cow.TagNumber != dto.TagNumber)
-            changes.Add($"Tag number changed from {cow.TagNumber} to {dto.TagNumber}");
-
-        if (cow.OwnerName != dto.OwnerName)
-            changes.Add($"Owner changed from {cow.OwnerName} to {dto.OwnerName}");
-
-        if (cow.LivestockGroup != dto.LivestockGroup)
-            changes.Add($"Livestock group changed from {cow.LivestockGroup} to {dto.LivestockGroup}");
-
-        if (cow.HealthStatus != dto.HealthStatus)
-            changes.Add($"Health status changed from {cow.HealthStatus} to {dto.HealthStatus}");
-
-        if (cow.Breed != dto.Breed)
-            changes.Add($"Breed changed from {cow.Breed} to {dto.Breed}");
-
-        if (cow.Sex != dto.Sex)
-            changes.Add($"Sex changed from {cow.Sex} to {dto.Sex}");
-
-        if (cow.PurchasePrice != dto.PurchasePrice)
-            changes.Add($"Purchase price changed from {cow.PurchasePrice} to {dto.PurchasePrice}");
-
-        if (cow.SalePrice != dto.SalePrice)
-            changes.Add($"Sale price changed from {cow.SalePrice} to {dto.SalePrice}");
-
-        if (cow.DateOfBirth != dto.DateOfBirth)
-            changes.Add($"Date of birth changed from {cow.DateOfBirth:MMM dd, yyyy} to {dto.DateOfBirth:MMM dd, yyyy}");
-
-        if (cow.PurchaseDate != dto.PurchaseDate)
-            changes.Add($"Purchase date changed from {cow.PurchaseDate:MMM dd, yyyy} to {dto.PurchaseDate:MMM dd, yyyy}");
-
-        if (cow.SaleDate != dto.SaleDate)
-            changes.Add($"Sale date changed from {cow.SaleDate:MMM dd, yyyy} to {dto.SaleDate:MMM dd, yyyy}");
-
-        if (cow.HeatStatus != dto.HeatStatus)
-            changes.Add($"Heat status changed from {cow.HeatStatus} to {dto.HeatStatus}");
-
-        if (cow.BreedingStatus != dto.BreedingStatus)
-            changes.Add($"Breeding status changed from {cow.BreedingStatus} to {dto.BreedingStatus}");
-
-        // Apply updates
+        await EnsureTagNumberIsUniqueAsync(dto.TagNumber, id);
+        var changes = _cowChangeLogService.BuildUpdateMessages(cow, dto);
 
         cow.TagNumber = dto.TagNumber;
         cow.OwnerName = dto.OwnerName;
@@ -98,25 +64,19 @@ public class CowService
         cow.PurchaseDate = dto.PurchaseDate;
         cow.SaleDate = dto.SaleDate;
 
-
-        _context.SaveChanges();
-        if (changes.Count == 0)
+        await _context.SaveChangesAsync();
+        foreach (var change in changes)
         {
-            _activityLogService.LogAsync(cow.Id, "Cow updated").Wait();
-        }
-        else
-        {
-            foreach (var change in changes)
-            {
-                _activityLogService.LogAsync(cow.Id, change).Wait();
-            }
+            await _activityLogService.LogAsync(cow.Id, change);
         }
 
         return cow;
     }
-    public Cow CreateCow(CreateCowDto dto)
+
+    public async Task<Cow> CreateCowAsync(CreateCowDto dto)
     {
         ValidateCreateCow(dto);
+        await EnsureTagNumberIsUniqueAsync(dto.TagNumber);
 
         var cow = new Cow
         {
@@ -135,36 +95,50 @@ public class CowService
             SaleDate = dto.SaleDate,
         };
         _context.Cows.Add(cow);
-        _context.SaveChanges();
-        _activityLogService.LogAsync(cow.Id, "Cow record created").Wait();
+        await _context.SaveChangesAsync();
+        await _activityLogService.LogAsync(cow.Id, "Cow record created");
         return cow;
     }
-    public bool DeleteCow(int id)
-    {
-        var cow = _context.Cows.FirstOrDefault(c => c.Id == id);
 
-        if (cow == null)
-            return false;
+    public async Task DeleteCowAsync(int id)
+    {
+        var cow = await FindCowAsync(id);
 
         cow.IsRemoved = true;
-        _context.SaveChanges();
-        _activityLogService.LogAsync(cow.Id, "Cow removed from herd").Wait();
+        await _context.SaveChangesAsync();
+        await _activityLogService.LogAsync(cow.Id, "Cow removed from herd");
+    }
 
-        return true;
-    }
-    public List<Cow> GetRemovedCows()
+    public async Task<List<Cow>> GetRemovedCowsAsync()
     {
-        return _context.Cows
+        return await _context.Cows
             .Where(c => c.IsRemoved)
-            .ToList();
+            .ToListAsync();
     }
-    public void RestoreCow(int id)
+
+    public async Task RestoreCowAsync(int id)
     {
-        var cow = _context.Cows.Find(id);
-        if (cow == null) return;
+        var cow = await FindCowAsync(id);
 
         cow.IsRemoved = false;
-        _context.SaveChanges();
-        _activityLogService.LogAsync(cow.Id, "Cow restored to herd").Wait();
+        await _context.SaveChangesAsync();
+        await _activityLogService.LogAsync(cow.Id, "Cow restored to herd");
+    }
+
+    private async Task<Cow> FindCowAsync(int id)
+    {
+        var cow = await _context.Cows.FindAsync(id);
+        return cow ?? throw new NotFoundException("Cow not found.");
+    }
+
+    private async Task EnsureTagNumberIsUniqueAsync(string tagNumber, int? excludeCowId = null)
+    {
+        var exists = await _context.Cows.AnyAsync(c =>
+            c.TagNumber == tagNumber && (!excludeCowId.HasValue || c.Id != excludeCowId.Value));
+
+        if (exists)
+        {
+            throw new ConflictException("Tag number already exists.");
+        }
     }
 }

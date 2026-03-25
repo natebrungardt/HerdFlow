@@ -1,8 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using HerdFlow.Api.DTOs;
 using HerdFlow.Api.Services;
-using Microsoft.EntityFrameworkCore;
-using Npgsql;
 
 namespace HerdFlow.Api.Controllers;
 
@@ -12,6 +10,7 @@ public class CowController : ControllerBase
 {
     private readonly CowService _cowService;
     private readonly ActivityLogService _activityLogService;
+
     public CowController(CowService cowService, ActivityLogService activityLogService)
     {
         _cowService = cowService;
@@ -19,105 +18,59 @@ public class CowController : ControllerBase
     }
 
     [HttpGet]
-    public IActionResult GetCows()
+    public async Task<IActionResult> GetCows()
     {
-        var cows = _cowService.GetCows();
+        var cows = await _cowService.GetCowsAsync();
 
         return Ok(cows);
     }
+
     [HttpGet("{id}")]
-    public IActionResult GetCow(int id)
+    public async Task<IActionResult> GetCow(int id)
     {
-        var cow = _cowService.GetCowById(id);
-
-        if (cow == null)
-            return NotFound();
-
+        var cow = await _cowService.GetCowByIdAsync(id);
         return Ok(cow);
     }
+
     [HttpPut("{id:int}")]
-    public IActionResult UpdateCow(int id, [FromBody] CreateCowDto dto)
+    public async Task<IActionResult> UpdateCow(int id, [FromBody] CreateCowDto dto)
     {
-        try
-        {
-            var updatedCow = _cowService.UpdateCow(id, dto);
-
-            if (updatedCow == null)
-                return NotFound();
-
-            return Ok(updatedCow);
-        }
-        catch (DbUpdateException ex)
-        {
-            if (ex.InnerException is PostgresException pgEx && pgEx.SqlState == "23505")
-            {
-                return Conflict(new
-                {
-                    status = 409,
-                    message = "Tag number already exists."
-                });
-            }
-
-            throw;
-        }
-
+        var updatedCow = await _cowService.UpdateCowAsync(id, dto);
+        return Ok(updatedCow);
     }
 
     [HttpPost]
-    public IActionResult CreateCow([FromBody] CreateCowDto dto)
+    public async Task<IActionResult> CreateCow([FromBody] CreateCowDto dto)
     {
-        try
-        {
-            var cow = _cowService.CreateCow(dto);
-            return Ok(cow);
-        }
-        catch (DbUpdateException ex)
-        {
-            if (ex.InnerException is PostgresException pgEx && pgEx.SqlState == "23505")
-            {
-                return Conflict(new
-                {
-                    status = 409,
-                    message = "Tag number already exists."
-                });
-            }
-
-            throw;
-        }
+        var cow = await _cowService.CreateCowAsync(dto);
+        return Ok(cow);
     }
+
     [HttpDelete("{id}")]
-    public IActionResult DeleteCow(int id)
+    public async Task<IActionResult> DeleteCow(int id)
     {
-        var success = _cowService.DeleteCow(id);
-
-        if (!success)
-            return NotFound();
-
+        await _cowService.DeleteCowAsync(id);
         return NoContent();
     }
 
     [HttpGet("removed")]
-    public IActionResult GetRemovedCows()
+    public async Task<IActionResult> GetRemovedCows()
     {
-        var cows = _cowService.GetRemovedCows();
+        var cows = await _cowService.GetRemovedCowsAsync();
         return Ok(cows);
     }
 
     [HttpPut("restore/{id}")]
-    public IActionResult RestoreCow(int id)
+    public async Task<IActionResult> RestoreCow(int id)
     {
-        var cow = _cowService.GetCowById(id);
-        if (cow == null)
-            return NotFound();
-
-        _cowService.RestoreCow(id);
+        await _cowService.RestoreCowAsync(id);
         return Ok();
     }
+
     [HttpGet("{id}/activities")]
     public async Task<IActionResult> GetActivities(int id)
     {
         var activities = await _activityLogService.GetByCowIdAsync(id);
         return Ok(activities);
     }
-
 }

@@ -3,15 +3,9 @@ import {
   getNotes,
   createNote,
   deleteNote,
+  type Note,
   updateNote,
 } from "../services/noteService";
-
-type Note = {
-  id: number;
-  content: string;
-  createdAt: string;
-  updatedAt?: string;
-};
 
 type Props = {
   cowId: number;
@@ -19,37 +13,60 @@ type Props = {
 
 function Notes({ cowId }: Props) {
   const [notes, setNotes] = useState<Note[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const [newNote, setNewNote] = useState("");
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editingContent, setEditingContent] = useState("");
 
   useEffect(() => {
     async function loadNotes() {
-      const data = await getNotes(cowId);
-      setNotes(data);
+      setLoading(true);
+      setError("");
+
+      try {
+        const data = await getNotes(cowId);
+        setNotes(data);
+      } catch (err) {
+        const message =
+          err instanceof Error ? err.message : "Failed to load notes";
+        setError(message);
+      } finally {
+        setLoading(false);
+      }
     }
 
-    loadNotes();
+    void loadNotes();
   }, [cowId]);
 
   async function handleAdd() {
     if (!newNote.trim()) return;
 
     try {
+      setError("");
       const created = await createNote(cowId, newNote);
       setNotes((prev) => [created, ...prev]);
       setNewNote("");
-    } catch {
-      alert("Failed to add note");
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Failed to add note";
+      setError(message);
     }
   }
 
   async function handleDelete(noteId: number) {
-    await deleteNote(cowId, noteId);
-    setNotes((prev) => prev.filter((n) => n.id !== noteId));
+    try {
+      setError("");
+      await deleteNote(cowId, noteId);
+      setNotes((prev) => prev.filter((n) => n.id !== noteId));
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to delete note";
+      setError(message);
+    }
   }
 
   function startEditing(note: Note) {
+    setError("");
     setEditingId(note.id);
     setEditingContent(note.content);
   }
@@ -58,14 +75,17 @@ function Notes({ cowId }: Props) {
     if (!editingContent.trim()) return;
 
     try {
+      setError("");
       const updated = await updateNote(cowId, noteId, editingContent);
 
       setNotes((prev) => prev.map((n) => (n.id === noteId ? updated : n)));
 
       setEditingId(null);
       setEditingContent("");
-    } catch {
-      alert("Failed to update note");
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to update note";
+      setError(message);
     }
   }
 
@@ -77,8 +97,12 @@ function Notes({ cowId }: Props) {
       </div>
 
       <div className="notesContainer">
+        {error && <div className="notesErrorBanner">{error}</div>}
+
         <div className="notesBody">
-          {notes.length === 0 ? (
+          {loading ? (
+            <span className="emptyState">Loading notes...</span>
+          ) : notes.length === 0 ? (
             <span className="emptyState">No notes yet.</span>
           ) : (
             notes.map((note) => (
@@ -117,10 +141,6 @@ function Notes({ cowId }: Props) {
                           hour: "numeric",
                           minute: "2-digit",
                         })}
-                        {note.updatedAt &&
-                          note.updatedAt !== note.createdAt && (
-                            <span> • Edited</span>
-                          )}
                       </span>
                     </>
                   )}

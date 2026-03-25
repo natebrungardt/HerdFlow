@@ -1,7 +1,6 @@
 using HerdFlow.Api.DTOs;
-using HerdFlow.Api.Models;
 using Microsoft.AspNetCore.Mvc;
-using HerdFlow.Api.Data;
+using HerdFlow.Api.Services;
 
 namespace HerdFlow.Api.Controllers;
 
@@ -9,76 +8,38 @@ namespace HerdFlow.Api.Controllers;
 [Route("api/cows/{cowId:int}/notes")]
 public class NoteController : ControllerBase
 {
-    private readonly AppDbContext _context;
+    private readonly NoteService _noteService;
 
-    public NoteController(AppDbContext context)
+    public NoteController(NoteService noteService)
     {
-        _context = context;
+        _noteService = noteService;
     }
 
-    // GET notes for a cow
     [HttpGet]
-    public IActionResult GetNotes(int cowId)
+    public async Task<IActionResult> GetNotes(int cowId)
     {
-        var notes = _context.Notes
-            .Where(n => n.CowId == cowId)
-            .OrderByDescending(n => n.CreatedAt)
-            .ToList();
-
+        var notes = await _noteService.GetNotesAsync(cowId);
         return Ok(notes);
     }
 
-    // CREATE note
     [HttpPost]
-    public IActionResult CreateNote(int cowId, [FromBody] CreateNoteDto dto)
+    public async Task<IActionResult> CreateNote(int cowId, [FromBody] CreateNoteDto dto)
     {
-        var cowExists = _context.Cows.Any(c => c.Id == cowId);
-        if (!cowExists)
-            return NotFound(new { message = "Cow not found" });
-
-        if (string.IsNullOrWhiteSpace(dto.Content))
-            return BadRequest(new { message = "Note content is required" });
-
-        var note = new Note
-        {
-            CowId = cowId,
-            Content = dto.Content
-        };
-
-        _context.Notes.Add(note);
-        _context.SaveChanges();
-
+        var note = await _noteService.CreateNoteAsync(cowId, dto);
         return Ok(note);
     }
+
     [HttpDelete("{noteId:int}")]
-    public IActionResult DeleteNote(int cowId, int noteId)
+    public async Task<IActionResult> DeleteNote(int cowId, int noteId)
     {
-        var note = _context.Notes
-            .FirstOrDefault(n => n.Id == noteId && n.CowId == cowId);
-
-        if (note == null)
-            return NotFound();
-
-        _context.Notes.Remove(note);
-        _context.SaveChanges();
-
+        await _noteService.DeleteNoteAsync(cowId, noteId);
         return NoContent();
     }
+
     [HttpPut("{noteId:int}")]
-    public IActionResult UpdateNote(int cowId, int noteId, [FromBody] CreateNoteDto dto)
+    public async Task<IActionResult> UpdateNote(int cowId, int noteId, [FromBody] CreateNoteDto dto)
     {
-        var note = _context.Notes
-            .FirstOrDefault(n => n.Id == noteId && n.CowId == cowId);
-
-        if (note == null)
-            return NotFound();
-
-        if (string.IsNullOrWhiteSpace(dto.Content))
-            return BadRequest(new { message = "Note content is required" });
-
-        note.Content = dto.Content;
-        _context.SaveChanges();
-
+        var note = await _noteService.UpdateNoteAsync(cowId, noteId, dto);
         return Ok(note);
     }
 }

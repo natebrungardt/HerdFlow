@@ -1,4 +1,4 @@
 @HerdFlow.Api_HostAddress = http://localhost:5062
 
-GET {{HerdFlow.Api_HostAddress}}/api/cow
+GET {{HerdFlow.Api_HostAddress}}/api/cows
 Accept: application/json

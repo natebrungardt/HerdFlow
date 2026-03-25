@@ -1,4 +1,5 @@
-using HerdFlow.Api.Models;
+namespace HerdFlow.Api.Models;
+
 public class ActivityLogEntry
 {
     public int Id { get; set; }

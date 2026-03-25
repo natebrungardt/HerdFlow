@@ -28,9 +28,22 @@ type ApiError = {
   message: string;
 };
 
+function createApiError(error: ApiError): Error & ApiError {
+  const apiError = new Error(error.message) as Error & ApiError;
+  apiError.status = error.status;
+  return apiError;
+}
+
 async function parseError(response: Response): Promise<ApiError> {
   try {
     const data = await response.json();
+
+    if (data.detail) {
+      return {
+        status: response.status,
+        message: data.detail,
+      };
+    }
 
     if (data.message) {
       return {
@@ -66,7 +79,7 @@ export async function getCows(): Promise<Cow[]> {
 
   if (!response.ok) {
     const error = await parseError(response);
-    throw new Error(error.message);
+    throw createApiError(error);
   }
 
   return response.json();
@@ -98,7 +111,7 @@ export async function createCow(cowData: CreateCowInput): Promise<Cow> {
 
   if (!response.ok) {
     const error = await parseError(response);
-    throw new Error(error.message);
+    throw createApiError(error);
   }
 
   return response.json();
@@ -109,7 +122,7 @@ export async function getCowById(id: number): Promise<Cow> {
 
   if (!response.ok) {
     const error = await parseError(response);
-    throw new Error(error.message);
+    throw createApiError(error);
   }
 
   return response.json();
@@ -122,7 +135,7 @@ export async function deleteCow(id: number): Promise<void> {
 
   if (!response.ok) {
     const error = await parseError(response);
-    throw new Error(error.message);
+    throw createApiError(error);
   }
 }
 export async function getRemovedCows(): Promise<Cow[]> {
@@ -130,7 +143,7 @@ export async function getRemovedCows(): Promise<Cow[]> {
 
   if (!response.ok) {
     const error = await parseError(response);
-    throw new Error(error.message);
+    throw createApiError(error);
   }
 
   return response.json();
@@ -143,7 +156,7 @@ export async function restoreCow(id: number): Promise<void> {
 
   if (!response.ok) {
     const error = await parseError(response);
-    throw new Error(error.message);
+    throw createApiError(error);
   }
 }
 
@@ -176,7 +189,7 @@ export async function updateCow(
 
   if (!response.ok) {
     const error = await parseError(response);
-    throw new Error(error.message);
+    throw createApiError(error);
   }
 
   return response.json();

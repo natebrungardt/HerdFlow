@@ -1,5 +1,8 @@
 using HerdFlow.Api.Data;
+using HerdFlow.Api.Models;
 using Microsoft.EntityFrameworkCore;
+
+namespace HerdFlow.Api.Services;
 
 public class ActivityLogService
 {
