@@ -1,0 +1,90 @@
+type WorkdayComposerCardProps = {
+  title: string;
+  date: string;
+  summary: string;
+  error: string;
+  saving: boolean;
+  onChange: (
+    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => void;
+  onSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
+  onCancel: () => void;
+};
+
+function WorkdayComposerCard({
+  title,
+  date,
+  summary,
+  error,
+  saving,
+  onChange,
+  onSubmit,
+  onCancel,
+}: WorkdayComposerCardProps) {
+  return (
+    <div className="card workdayComposerCard">
+      <div className="sectionHeader">
+        <h2 className="sectionTitle">Workday Details</h2>
+        <span className="sectionSubtle">Create a draft for the crew</span>
+      </div>
+
+      <form className="workdayComposerForm" onSubmit={onSubmit}>
+        <label className="workdayFieldLabel" htmlFor="title">
+          Workday Name
+        </label>
+        <input
+          id="title"
+          name="title"
+          className="searchInput workdayTextInput"
+          value={title}
+          onChange={onChange}
+          placeholder="Workday 1"
+          maxLength={120}
+          required
+        />
+
+        <label className="workdayFieldLabel" htmlFor="date">
+          Date
+        </label>
+        <input
+          id="date"
+          name="date"
+          type="date"
+          className="searchInput workdayTextInput"
+          value={date}
+          onChange={onChange}
+        />
+
+        <label className="workdayFieldLabel" htmlFor="summary">
+          General Notes
+        </label>
+        <textarea
+          id="summary"
+          name="summary"
+          className="workdayNotesInput"
+          value={summary}
+          onChange={onChange}
+          placeholder="General notes for the workday..."
+          rows={5}
+        />
+
+        {error ? <p className="workdayInlineError">{error}</p> : null}
+
+        <div className="workdayComposerActions">
+          <button
+            type="button"
+            className="workdaySecondaryButton"
+            onClick={onCancel}
+          >
+            Cancel
+          </button>
+          <button type="submit" className="addCowButton" disabled={saving}>
+            {saving ? "Saving..." : "Save Workday"}
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+}
+
+export default WorkdayComposerCard;

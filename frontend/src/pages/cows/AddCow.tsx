@@ -1,17 +1,17 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import CowDetailsSection from "../components/CowDetailsSection";
-import CowHeroCard from "../components/CowHeroCard";
-import CowSummaryCard from "../components/CowSummaryCard";
-import HealthStatusToggle from "../components/HealthStatusToggle";
+import CowDetailsSection from "../../components/cows/CowDetailsSection";
+import CowHeroCard from "../../components/cows/CowHeroCard";
+import CowSummaryCard from "../../components/cows/CowSummaryCard";
+import HealthStatusToggle from "../../components/cows/HealthStatusToggle";
 import {
-  breedingStatusOptions,
   heatStatusOptions,
   livestockGroupOptions,
+  pregnancyStatusOptions,
   sexOptions,
-} from "../constants/cowFormOptions";
-import { createCow } from "../services/cowService";
-import "../styles/CowDetailPage.css";
+} from "../../constants/cowFormOptions";
+import { createCow } from "../../services/cowService";
+import "../../styles/CowDetailPage.css";
 
 type FormState = {
   tagNumber: string;
@@ -20,7 +20,7 @@ type FormState = {
   sex: string;
   healthStatus: string;
   heatStatus: string;
-  breedingStatus: string;
+  pregnancyStatus: string;
   livestockGroup: string;
   dateOfBirth: string;
   purchaseDate: string;
@@ -37,7 +37,7 @@ const initialFormState: FormState = {
   sex: "",
   healthStatus: "Healthy",
   heatStatus: "",
-  breedingStatus: "",
+  pregnancyStatus: "",
   livestockGroup: "",
   dateOfBirth: "",
   purchaseDate: "",
@@ -95,7 +95,7 @@ function AddCowPage() {
         sex: formData.sex,
         healthStatus: formData.healthStatus || "Healthy",
         heatStatus: formData.heatStatus === "" ? null : formData.heatStatus,
-        breedingStatus: formData.breedingStatus || null,
+        pregnancyStatus: formData.pregnancyStatus || null,
         livestockGroup: formData.livestockGroup,
         dateOfBirth: formData.dateOfBirth || null,
         purchaseDate: formData.purchaseDate || null,
@@ -337,18 +337,21 @@ function AddCowPage() {
                 </div>
 
                 <div className="metricCard">
-                  <label className="metricLabel" htmlFor="breedingStatus">
-                    Breeding Status
+                  <label className="metricLabel" htmlFor="pregnancyStatus">
+                    Pregnancy Status
                   </label>
                   <select
-                    id="breedingStatus"
-                    name="breedingStatus"
+                    id="pregnancyStatus"
+                    name="pregnancyStatus"
                     className="metricFieldInput"
-                    value={formData.breedingStatus}
+                    value={formData.pregnancyStatus}
                     onChange={handleChange}
                   >
-                    {breedingStatusOptions.map((option) => (
-                      <option key={option.value || "empty"} value={option.value}>
+                    {pregnancyStatusOptions.map((option) => (
+                      <option
+                        key={option.value || "empty"}
+                        value={option.value}
+                      >
                         {option.label}
                       </option>
                     ))}

@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import type { Cow } from "../types/cow";
-import { herdFilterOptions } from "../constants/cowFormOptions";
+import type { Cow } from "../../types/cow";
+import { herdFilterOptions } from "../../constants/cowFormOptions";
 
 type HerdListViewProps = {
   cows: Cow[];
@@ -165,7 +165,7 @@ function HerdListView({
                       <div className="cowRowMeta">
                         {cow.livestockGroup || "Unassigned"} •{" "}
                         {cow.sex || "Unknown sex"} •{" "}
-                        {cow.breedingStatus || "No breeding status"}
+                        {cow.pregnancyStatus || "No pregnancy status"}
                       </div>
                       <div className="cowRowOwner">
                         Owner: {cow.ownerName || "Unknown owner"}

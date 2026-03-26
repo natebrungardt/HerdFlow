@@ -5,8 +5,8 @@ import {
   deleteNote,
   type Note,
   updateNote,
-} from "../services/noteService";
-import Modal from "./Modal";
+} from "../../services/noteService";
+import Modal from "../shared/Modal";
 
 type Props = {
   cowId: number;

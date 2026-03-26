@@ -9,7 +9,7 @@ function Navbar() {
       <div className="navbar-links">
         <Link to="/">Dashboard</Link>
         <Link to="/cows">Herd</Link>
-        <Link to="/workday">Workday</Link>
+        <Link to="/workdays">Workday</Link>
         <Link to="/finances">Finances</Link>
         <Link to="/removed">Removed Cows</Link>
       </div>

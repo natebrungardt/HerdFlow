@@ -18,11 +18,30 @@ public class WorkdayService
     // CREATE
     public async Task<Workday> CreateWorkday(CreateWorkdayDto dto)
     {
+        var distinctCowIds = dto.CowIds
+            .Distinct()
+            .ToList();
+
+        var cows = distinctCowIds.Count == 0
+            ? new List<Cow>()
+            : await _context.Cows
+                .Where(c => distinctCowIds.Contains(c.Id) && !c.IsRemoved)
+                .ToListAsync();
+
+        if (cows.Count != distinctCowIds.Count)
+        {
+            throw new ValidationException("One or more selected cows could not be added to the workday.");
+        }
+
         var workday = new Workday
         {
             Title = dto.Title.Trim(),
             Date = dto.Date ?? DateTime.UtcNow.Date,
-            Summary = dto.Summary
+            Summary = dto.Summary,
+            WorkdayCows = cows.Select(cow => new WorkdayCow
+            {
+                CowId = cow.Id
+            }).ToList()
         };
 
         _context.Workdays.Add(workday);

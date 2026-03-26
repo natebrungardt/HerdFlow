@@ -4,10 +4,10 @@ export const livestockGroupOptions = [
   { value: "Feeder", label: "Feeder" },
 ] as const;
 
-export const breedingStatusOptions = [
+export const pregnancyStatusOptions = [
   { value: "", label: "Select status" },
   { value: "Open", label: "Open" },
-  { value: "Bred", label: "Bred" },
+  // { value: "Bred", label: "Bred" },
   { value: "Pregnant", label: "Pregnant" },
   { value: "N/A", label: "N/A" },
 ] as const;

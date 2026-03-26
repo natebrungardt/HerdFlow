@@ -8,7 +8,7 @@ export type Cow = {
   dateOfBirth?: string | null;
   healthStatus: string;
   heatStatus: string;
-  breedingStatus: string;
+  pregnancyStatus: string;
   purchasePrice?: number | null;
   salePrice?: number | null;
   purchaseDate?: string | null;

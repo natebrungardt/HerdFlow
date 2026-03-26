@@ -1,27 +1,27 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import CowDetailsSection from "../components/CowDetailsSection";
-import CowHeroCard from "../components/CowHeroCard";
-import CowSummaryCard from "../components/CowSummaryCard";
-import HealthStatusToggle from "../components/HealthStatusToggle";
-import Modal from "../components/Modal";
-import Notes from "../components/Notes";
+import CowDetailsSection from "../../components/cows/CowDetailsSection";
+import CowHeroCard from "../../components/cows/CowHeroCard";
+import CowSummaryCard from "../../components/cows/CowSummaryCard";
+import HealthStatusToggle from "../../components/cows/HealthStatusToggle";
+import Modal from "../../components/shared/Modal";
+import Notes from "../../components/cows/Notes";
 import {
-  breedingStatusOptions,
   heatStatusOptions,
   livestockGroupOptions,
+  pregnancyStatusOptions,
   sexOptions,
-} from "../constants/cowFormOptions";
-import { getActivities } from "../services/activityService";
+} from "../../constants/cowFormOptions";
+import { getActivities } from "../../services/activityService";
 import {
   type CreateCowInput,
   archiveCow,
   getCowById,
   restoreCow,
   updateCow,
-} from "../services/cowService";
-import type { Cow } from "../types/cow";
-import "../styles/CowDetailPage.css";
+} from "../../services/cowService";
+import type { Cow } from "../../types/cow";
+import "../../styles/CowDetailPage.css";
 
 type ActivityLogEntry = {
   id: number;
@@ -44,7 +44,7 @@ type EditingFieldName =
   | EditableFieldName
   | "tagNumber"
   | "livestockGroup"
-  | "breedingStatus";
+  | "pregnancyStatus";
 
 type ApiError = Error & {
   status?: number;
@@ -90,7 +90,7 @@ function toCreateCowInput(cow: Cow): CreateCowInput {
     sex: cow.sex,
     healthStatus: cow.healthStatus,
     heatStatus: cow.heatStatus ?? null,
-    breedingStatus: cow.breedingStatus ?? null,
+    pregnancyStatus: cow.pregnancyStatus ?? null,
     dateOfBirth: cow.dateOfBirth ?? null,
     purchaseDate: cow.purchaseDate ?? null,
     saleDate: cow.saleDate ?? null,
@@ -410,7 +410,7 @@ function CowDetailPage() {
   ];
 
   const groupValue = formData.livestockGroup || "";
-  const breedingValue = formData.breedingStatus || "";
+  const pregnancyValue = formData.pregnancyStatus || "";
 
   return (
     <div className="cowDetailPage">
@@ -503,32 +503,35 @@ function CowDetailPage() {
                 </div>
 
                 <div className="metricCard">
-                  <div className="metricLabel">Breeding Status</div>
+                  <div className="metricLabel">Pregnancy Status</div>
                   <div
                     className="metricValue"
                     onDoubleClick={() => {
-                      if (editingField !== "breedingStatus") {
-                        setEditingField("breedingStatus");
+                      if (editingField !== "pregnancyStatus") {
+                        setEditingField("pregnancyStatus");
                       }
                     }}
                   >
-                    {editingField === "breedingStatus" ? (
+                    {editingField === "pregnancyStatus" ? (
                       <select
-                        name="breedingStatus"
-                        value={breedingValue}
+                        name="pregnancyStatus"
+                        value={pregnancyValue}
                         onChange={handleChange}
                         onBlur={async () => commitField()}
                         autoFocus
                         className="metricFieldInput"
                       >
-                        {breedingStatusOptions.map((option) => (
-                          <option key={option.value || "empty"} value={option.value}>
+                        {pregnancyStatusOptions.map((option) => (
+                          <option
+                            key={option.value || "empty"}
+                            value={option.value}
+                          >
                             {option.label}
                           </option>
                         ))}
                       </select>
                     ) : (
-                      <span>{formatValue(formData.breedingStatus)}</span>
+                      <span>{formatValue(formData.pregnancyStatus)}</span>
                     )}
                   </div>
                   <div className="metricAccent" />

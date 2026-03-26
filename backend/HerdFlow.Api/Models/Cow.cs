@@ -20,7 +20,7 @@ public class Cow
     [Required]
     public HealthStatusType HealthStatus { get; set; } = HealthStatusType.Healthy;
     public HeatStatusType? HeatStatus { get; set; }
-    public string? BreedingStatus { get; set; }
+    public string? PregnancyStatus { get; set; }
 
     public decimal? PurchasePrice { get; set; }
     public decimal? SalePrice { get; set; }

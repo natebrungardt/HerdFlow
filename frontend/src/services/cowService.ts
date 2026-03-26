@@ -14,7 +14,7 @@ export type CreateCowInput = {
   sex: string;
   healthStatus: string;
   heatStatus: string | null;
-  breedingStatus: string | null;
+  pregnancyStatus: string | null;
   dateOfBirth: string | null;
   purchaseDate: string | null;
   saleDate: string | null;
@@ -100,7 +100,7 @@ export async function createCow(cowData: CreateCowInput): Promise<Cow> {
       dateOfBirth: cowData.dateOfBirth,
       healthStatus: cowData.healthStatus,
       heatStatus: cowData.heatStatus,
-      breedingStatus: cowData.breedingStatus,
+      pregnancyStatus: cowData.pregnancyStatus,
       purchasePrice: cowData.purchasePrice,
       salePrice: cowData.salePrice,
       purchaseDate: cowData.purchaseDate,
@@ -189,7 +189,7 @@ export async function updateCow(
       dateOfBirth: cowData.dateOfBirth,
       healthStatus: cowData.healthStatus,
       heatStatus: cowData.heatStatus,
-      breedingStatus: cowData.breedingStatus,
+      pregnancyStatus: cowData.pregnancyStatus,
       purchasePrice: cowData.purchasePrice,
       salePrice: cowData.salePrice,
       purchaseDate: cowData.purchaseDate,

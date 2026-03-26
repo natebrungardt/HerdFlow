@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import HerdListView from "../components/HerdListView";
-import { getRemovedCows } from "../services/cowService";
-import type { Cow } from "../types/cow";
-import "../styles/AllCows.css";
+import HerdListView from "../../components/cows/HerdListView";
+import { getRemovedCows } from "../../services/cowService";
+import type { Cow } from "../../types/cow";
+import "../../styles/AllCows.css";
 
 function RemovedCows() {
   const [cows, setCows] = useState<Cow[]>([]);

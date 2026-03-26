@@ -12,4 +12,6 @@ public class CreateWorkdayDto
     public DateTime? Date { get; set; }
 
     public string? Summary { get; set; }
+
+    public List<int> CowIds { get; set; } = new();
 }
