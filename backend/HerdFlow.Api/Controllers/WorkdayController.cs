@@ -48,6 +48,22 @@ public class WorkdayController : ControllerBase
         return Ok(workday);
     }
 
+    // POST: api/workdays/{id}/cows
+    [HttpPost("{id}/cows")]
+    public async Task<ActionResult> AddCowsToWorkday(int id, [FromBody] UpdateWorkdayCowsDto dto)
+    {
+        await _service.AddCowsToWorkday(id, dto.CowIds);
+        return NoContent();
+    }
+
+    // DELETE: api/workdays/{id}/cows/{cowId}
+    [HttpDelete("{id}/cows/{cowId}")]
+    public async Task<ActionResult> RemoveCowFromWorkday(int id, int cowId)
+    {
+        await _service.RemoveCowFromWorkday(id, cowId);
+        return NoContent();
+    }
+
     // PUT: api/workdays/{id}/archive
     [HttpPut("{id}/archive")]
     public async Task<ActionResult> ArchiveWorkday(int id)

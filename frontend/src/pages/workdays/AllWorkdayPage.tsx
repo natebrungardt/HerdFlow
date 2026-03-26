@@ -38,6 +38,7 @@ function AllWorkdayPage() {
       subtitle="View scheduled workdays across your operation and quickly search upcoming plans."
       ctaLabel="+ Add Workday"
       onCtaClick={() => navigate("/workdays/new")}
+      getWorkdayHref={(workday) => `/workdays/${workday.id}`}
     />
   );
 }

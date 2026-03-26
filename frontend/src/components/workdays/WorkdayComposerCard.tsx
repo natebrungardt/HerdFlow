@@ -1,9 +1,16 @@
+import type { ReactNode } from "react";
+
 type WorkdayComposerCardProps = {
   title: string;
   date: string;
   summary: string;
   error: string;
   saving: boolean;
+  heading?: string;
+  subtle?: string;
+  submitLabel?: string;
+  cancelLabel?: string;
+  extraAction?: ReactNode;
   onChange: (
     event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => void;
@@ -17,6 +24,11 @@ function WorkdayComposerCard({
   summary,
   error,
   saving,
+  heading = "Workday Details",
+  subtle = "Create a draft for the crew",
+  submitLabel = "Save Workday",
+  cancelLabel = "Cancel",
+  extraAction,
   onChange,
   onSubmit,
   onCancel,
@@ -24,8 +36,8 @@ function WorkdayComposerCard({
   return (
     <div className="card workdayComposerCard">
       <div className="sectionHeader">
-        <h2 className="sectionTitle">Workday Details</h2>
-        <span className="sectionSubtle">Create a draft for the crew</span>
+        <h2 className="sectionTitle">{heading}</h2>
+        <span className="sectionSubtle">{subtle}</span>
       </div>
 
       <form className="workdayComposerForm" onSubmit={onSubmit}>
@@ -71,15 +83,16 @@ function WorkdayComposerCard({
         {error ? <p className="workdayInlineError">{error}</p> : null}
 
         <div className="workdayComposerActions">
+          {extraAction}
           <button
             type="button"
             className="workdaySecondaryButton"
             onClick={onCancel}
           >
-            Cancel
+            {cancelLabel}
           </button>
           <button type="submit" className="addCowButton" disabled={saving}>
-            {saving ? "Saving..." : "Save Workday"}
+            {saving ? "Saving..." : submitLabel}
           </button>
         </div>
       </form>

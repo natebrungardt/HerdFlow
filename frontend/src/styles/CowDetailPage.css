@@ -324,6 +324,19 @@
   gap: 18px;
 }
 
+.workdaySummaryGrid {
+  align-content: start;
+}
+
+.workdayDetailActionRow {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.workdayRemoveCowButton {
+  min-width: 110px;
+}
+
 .ownerRow {
   display: flex;
   align-items: center;

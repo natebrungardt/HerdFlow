@@ -80,6 +80,73 @@ public class WorkdayService
         return workday ?? throw new NotFoundException("Workday not found.");
     }
 
+    public async Task AddCowsToWorkday(int id, List<int> cowIds)
+    {
+        var workday = await _context.Workdays
+            .Include(w => w.WorkdayCows)
+            .FirstOrDefaultAsync(w => w.Id == id);
+
+        if (workday == null)
+        {
+            throw new NotFoundException("Workday not found.");
+        }
+
+        var distinctCowIds = cowIds
+            .Distinct()
+            .ToList();
+
+        if (distinctCowIds.Count == 0)
+        {
+            return;
+        }
+
+        var existingCowIds = workday.WorkdayCows
+            .Select(wc => wc.CowId)
+            .ToHashSet();
+
+        var newCowIds = distinctCowIds
+            .Where(cowId => !existingCowIds.Contains(cowId))
+            .ToList();
+
+        if (newCowIds.Count == 0)
+        {
+            return;
+        }
+
+        var cows = await _context.Cows
+            .Where(c => newCowIds.Contains(c.Id) && !c.IsRemoved)
+            .ToListAsync();
+
+        if (cows.Count != newCowIds.Count)
+        {
+            throw new ValidationException("One or more selected cows could not be added to the workday.");
+        }
+
+        foreach (var cowId in newCowIds)
+        {
+            workday.WorkdayCows.Add(new WorkdayCow
+            {
+                CowId = cowId
+            });
+        }
+
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task RemoveCowFromWorkday(int id, int cowId)
+    {
+        var workdayCow = await _context.WorkdayCows
+            .FirstOrDefaultAsync(wc => wc.WorkdayId == id && wc.CowId == cowId);
+
+        if (workdayCow == null)
+        {
+            throw new NotFoundException("Cow assignment not found for this workday.");
+        }
+
+        _context.WorkdayCows.Remove(workdayCow);
+        await _context.SaveChangesAsync();
+    }
+
     // UPDATE - Archive Workday
     public async Task ArchiveWorkday(int id)
     {
@@ -116,7 +183,6 @@ public class WorkdayService
     public async Task<Workday> UpdateWorkday(int id, UpdateWorkdayDto dto)
     {
         var workday = await FindWorkdayAsync(id);
-
 
         workday.Title = dto.Title.Trim();
         workday.Summary = dto.Summary;

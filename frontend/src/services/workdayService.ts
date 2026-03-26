@@ -20,6 +20,12 @@ export type CreateWorkdayInput = {
   cowIds: number[];
 };
 
+export type UpdateWorkdayInput = {
+  title: string;
+  date: string;
+  summary: string | null;
+};
+
 function createApiError(error: ApiError): Error & ApiError {
   const apiError = new Error(error.message) as Error & ApiError;
   apiError.status = error.status;
@@ -77,6 +83,17 @@ export async function getActiveWorkdays(): Promise<Workday[]> {
   return response.json();
 }
 
+export async function getWorkdayById(id: number): Promise<Workday> {
+  const response = await fetch(`${WORKDAY_API_BASE_URL}/${id}`);
+
+  if (!response.ok) {
+    const error = await parseError(response);
+    throw createApiError(error);
+  }
+
+  return response.json();
+}
+
 export async function createWorkday(
   workdayData: CreateWorkdayInput,
 ): Promise<Workday> {
@@ -99,4 +116,78 @@ export async function createWorkday(
   }
 
   return response.json();
+}
+
+export async function updateWorkday(
+  id: number,
+  workdayData: UpdateWorkdayInput,
+): Promise<Workday> {
+  const response = await fetch(`${WORKDAY_API_BASE_URL}/${id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(workdayData),
+  });
+
+  if (!response.ok) {
+    const error = await parseError(response);
+    throw createApiError(error);
+  }
+
+  return response.json();
+}
+
+export async function archiveWorkday(id: number): Promise<void> {
+  const response = await fetch(`${WORKDAY_API_BASE_URL}/${id}/archive`, {
+    method: "PUT",
+  });
+
+  if (!response.ok) {
+    const error = await parseError(response);
+    throw createApiError(error);
+  }
+}
+
+export async function restoreWorkday(id: number): Promise<void> {
+  const response = await fetch(`${WORKDAY_API_BASE_URL}/${id}/restore`, {
+    method: "PUT",
+  });
+
+  if (!response.ok) {
+    const error = await parseError(response);
+    throw createApiError(error);
+  }
+}
+
+export async function addCowsToWorkday(
+  id: number,
+  cowIds: number[],
+): Promise<void> {
+  const response = await fetch(`${WORKDAY_API_BASE_URL}/${id}/cows`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ cowIds }),
+  });
+
+  if (!response.ok) {
+    const error = await parseError(response);
+    throw createApiError(error);
+  }
+}
+
+export async function removeCowFromWorkday(
+  id: number,
+  cowId: number,
+): Promise<void> {
+  const response = await fetch(`${WORKDAY_API_BASE_URL}/${id}/cows/${cowId}`, {
+    method: "DELETE",
+  });
+
+  if (!response.ok) {
+    const error = await parseError(response);
+    throw createApiError(error);
+  }
 }
