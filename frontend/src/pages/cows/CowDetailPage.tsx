@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import CowDetailsSection from "../../components/cows/CowDetailsSection";
 import CowHeroCard from "../../components/cows/CowHeroCard";
+import HasCalfToggle from "../../components/cows/HasCalfToggle";
 import CowSummaryCard from "../../components/cows/CowSummaryCard";
 import HealthStatusToggle from "../../components/cows/HealthStatusToggle";
 import Modal from "../../components/shared/Modal";
@@ -62,8 +63,9 @@ const editableFields: EditableFieldName[] = [
   "salePrice",
 ];
 
-function formatValue(value: string | number | null | undefined) {
+function formatValue(value: string | number | boolean | null | undefined) {
   if (value === null || value === undefined || value === "") return "—";
+  if (typeof value === "boolean") return formatBoolean(value);
   return String(value);
 }
 
@@ -81,6 +83,10 @@ function formatCurrency(value: number | null | undefined) {
   }).format(value);
 }
 
+function formatBoolean(value: boolean | null | undefined) {
+  return value ? "Yes" : "No";
+}
+
 function toCreateCowInput(cow: Cow): CreateCowInput {
   return {
     tagNumber: cow.tagNumber,
@@ -91,6 +97,7 @@ function toCreateCowInput(cow: Cow): CreateCowInput {
     healthStatus: cow.healthStatus,
     heatStatus: cow.heatStatus ?? null,
     pregnancyStatus: cow.pregnancyStatus ?? null,
+    hasCalf: cow.hasCalf,
     dateOfBirth: cow.dateOfBirth ?? null,
     purchaseDate: cow.purchaseDate ?? null,
     saleDate: cow.saleDate ?? null,
@@ -283,6 +290,18 @@ function CowDetailPage() {
     await refreshActivities();
   }
 
+  async function updateHasCalf(value: boolean) {
+    if (!formData || !cow) return;
+
+    const next = { ...formData, hasCalf: value } as Cow;
+    setFormData(next);
+
+    const updated = await updateCow(cow.id, toCreateCowInput(next));
+    setCow(updated);
+    setFormData(updated);
+    await refreshActivities();
+  }
+
   function renderEditableField(config: {
     name: EditableFieldName;
     label: string;
@@ -403,9 +422,11 @@ function CowDetailPage() {
       displayValue: formatCurrency(formData.salePrice),
     }),
     {
-      key: "recordId",
-      label: "Record ID",
-      content: <span>#{cow.id}</span>,
+      key: "hasCalf",
+      label: "Has Calf",
+      content: (
+        <HasCalfToggle compact value={formData.hasCalf} onChange={updateHasCalf} />
+      ),
     },
   ];
 

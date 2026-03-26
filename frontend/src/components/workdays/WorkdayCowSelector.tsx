@@ -6,7 +6,20 @@ type WorkdayCowSelectorProps = {
   error: string;
   searchTerm: string;
   selectedCowIds: number[];
+  activeHealthStatuses: string[];
+  activeLivestockGroups: string[];
+  activeSexes: string[];
+  activePregnancyStatuses: string[];
+  healthStatusFilters: string[];
+  livestockGroupFilters: string[];
+  sexFilters: string[];
+  pregnancyStatusFilters: string[];
   onSearchChange: (value: string) => void;
+  onResetFilters: () => void;
+  onToggleHealthStatus: (value: string) => void;
+  onToggleLivestockGroup: (value: string) => void;
+  onToggleSex: (value: string) => void;
+  onTogglePregnancyStatus: (value: string) => void;
   onToggleCow: (cowId: number) => void;
 };
 
@@ -16,7 +29,20 @@ function WorkdayCowSelector({
   error,
   searchTerm,
   selectedCowIds,
+  activeHealthStatuses,
+  activeLivestockGroups,
+  activeSexes,
+  activePregnancyStatuses,
+  healthStatusFilters,
+  livestockGroupFilters,
+  sexFilters,
+  pregnancyStatusFilters,
   onSearchChange,
+  onResetFilters,
+  onToggleHealthStatus,
+  onToggleLivestockGroup,
+  onToggleSex,
+  onTogglePregnancyStatus,
   onToggleCow,
 }: WorkdayCowSelectorProps) {
   return (
@@ -35,6 +61,56 @@ function WorkdayCowSelector({
         value={searchTerm}
         onChange={(event) => onSearchChange(event.target.value)}
       />
+
+      <div className="filterRow workdayFilterRow">
+        <button className="filterChip" onClick={onResetFilters} type="button">
+          All Cows
+        </button>
+
+        {healthStatusFilters.map((filter) => (
+          <button
+            key={filter}
+            className={`filterChip ${activeHealthStatuses.includes(filter) ? "active" : ""}`.trim()}
+            onClick={() => onToggleHealthStatus(filter)}
+            type="button"
+          >
+            {filter}
+          </button>
+        ))}
+
+        {livestockGroupFilters.map((filter) => (
+          <button
+            key={filter}
+            className={`filterChip ${activeLivestockGroups.includes(filter) ? "active" : ""}`.trim()}
+            onClick={() => onToggleLivestockGroup(filter)}
+            type="button"
+          >
+            {filter}
+          </button>
+        ))}
+
+        {sexFilters.map((filter) => (
+          <button
+            key={filter}
+            className={`filterChip ${activeSexes.includes(filter) ? "active" : ""}`.trim()}
+            onClick={() => onToggleSex(filter)}
+            type="button"
+          >
+            {filter}
+          </button>
+        ))}
+
+        {pregnancyStatusFilters.map((filter) => (
+          <button
+            key={filter}
+            className={`filterChip ${activePregnancyStatuses.includes(filter) ? "active" : ""}`.trim()}
+            onClick={() => onTogglePregnancyStatus(filter)}
+            type="button"
+          >
+            {filter}
+          </button>
+        ))}
+      </div>
 
       {loading ? (
         <p className="emptyState">Loading cows...</p>
@@ -63,6 +139,7 @@ function WorkdayCowSelector({
                 <div className="cowRowTitle">Tag #{cow.tagNumber}</div>
                 <div className="cowRowMeta">
                   {cow.livestockGroup || "Unassigned"} •{" "}
+                  {cow.healthStatus || "Unknown health status"} •{" "}
                   {cow.sex || "Unknown sex"} •{" "}
                   {cow.pregnancyStatus || "No pregnancy status"}
                 </div>

@@ -22,6 +22,7 @@ public class CreateCowDto
 
     public HeatStatusType? HeatStatus { get; set; }
     public string? PregnancyStatus { get; set; }
+    public bool HasCalf { get; set; }
 
     public decimal? PurchasePrice { get; set; }
     public decimal? SalePrice { get; set; }

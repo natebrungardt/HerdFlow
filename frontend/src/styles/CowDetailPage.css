@@ -112,7 +112,7 @@
 
 .metricsGrid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 14px;
 }
 
@@ -160,12 +160,34 @@
   box-shadow: 0 10px 25px rgba(217, 76, 87, 0.22);
 }
 
+.metricToggleButton.isActive.isHasCalfYes {
+  background: linear-gradient(180deg, #4caf50 0%, #3d8b40 100%);
+  box-shadow: 0 10px 25px rgba(76, 175, 80, 0.22);
+}
+
+.metricToggleButton.isActive.isHasCalfNo {
+  background: linear-gradient(180deg, #6f7d95 0%, #566278 100%);
+  box-shadow: 0 10px 25px rgba(111, 125, 149, 0.22);
+}
+
 .metricLabel {
   color: #8f99b2;
   font-size: 0.78rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   margin-bottom: 8px;
+}
+
+.metricToggleRowCompact {
+  margin-top: 0;
+  justify-content: flex-start;
+}
+
+.metricToggleRowCompact .metricToggleButton {
+  min-width: 84px;
+  height: 44px;
+  font-size: 0.9rem;
+  padding: 8px 12px;
 }
 
 .metricValue {

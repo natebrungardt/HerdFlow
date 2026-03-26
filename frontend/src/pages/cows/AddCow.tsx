@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import CowDetailsSection from "../../components/cows/CowDetailsSection";
 import CowHeroCard from "../../components/cows/CowHeroCard";
+import HasCalfToggle from "../../components/cows/HasCalfToggle";
 import CowSummaryCard from "../../components/cows/CowSummaryCard";
 import HealthStatusToggle from "../../components/cows/HealthStatusToggle";
 import {
@@ -21,6 +22,7 @@ type FormState = {
   healthStatus: string;
   heatStatus: string;
   pregnancyStatus: string;
+  hasCalf: boolean;
   livestockGroup: string;
   dateOfBirth: string;
   purchaseDate: string;
@@ -38,6 +40,7 @@ const initialFormState: FormState = {
   healthStatus: "Healthy",
   heatStatus: "",
   pregnancyStatus: "",
+  hasCalf: false,
   livestockGroup: "",
   dateOfBirth: "",
   purchaseDate: "",
@@ -96,6 +99,7 @@ function AddCowPage() {
         healthStatus: formData.healthStatus || "Healthy",
         heatStatus: formData.heatStatus === "" ? null : formData.heatStatus,
         pregnancyStatus: formData.pregnancyStatus || null,
+        hasCalf: formData.hasCalf,
         livestockGroup: formData.livestockGroup,
         dateOfBirth: formData.dateOfBirth || null,
         purchaseDate: formData.purchaseDate || null,
@@ -256,6 +260,22 @@ function AddCowPage() {
           value={formData.salePrice}
           onChange={handleChange}
           placeholder="Enter sale price"
+        />
+      ),
+    },
+    {
+      key: "hasCalf",
+      label: "Has Calf",
+      content: (
+        <HasCalfToggle
+          compact
+          value={formData.hasCalf}
+          onChange={(value) =>
+            setFormData((current) => ({
+              ...current,
+              hasCalf: value,
+            }))
+          }
         />
       ),
     },

@@ -3,6 +3,11 @@ import { useNavigate } from "react-router-dom";
 import SelectedCowsSummary from "../../components/workdays/SelectedCowsSummary";
 import WorkdayComposerCard from "../../components/workdays/WorkdayComposerCard";
 import WorkdayCowSelector from "../../components/workdays/WorkdayCowSelector";
+import {
+  livestockGroupOptions,
+  pregnancyStatusOptions,
+  sexOptions,
+} from "../../constants/cowFormOptions";
 import { getCows } from "../../services/cowService";
 import {
   createWorkday,
@@ -19,10 +24,31 @@ function AddWorkdayPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [cows, setCows] = useState<Cow[]>([]);
   const [selectedCowIds, setSelectedCowIds] = useState<number[]>([]);
+  const [activeHealthStatuses, setActiveHealthStatuses] = useState<string[]>(
+    [],
+  );
+  const [activeLivestockGroups, setActiveLivestockGroups] = useState<string[]>(
+    [],
+  );
+  const [activeSexes, setActiveSexes] = useState<string[]>([]);
+  const [activePregnancyStatuses, setActivePregnancyStatuses] = useState<
+    string[]
+  >([]);
   const [loadingCows, setLoadingCows] = useState(true);
   const [cowError, setCowError] = useState("");
   const [saveError, setSaveError] = useState("");
   const [saving, setSaving] = useState(false);
+
+  const healthStatusFilters = ["Healthy", "Needs Treatment"];
+  const livestockGroupFilters = livestockGroupOptions.map(
+    (option) => option.value,
+  );
+  const sexFilters = sexOptions
+    .filter((option) => option.value !== "")
+    .map((option) => option.value);
+  const pregnancyStatusFilters = pregnancyStatusOptions
+    .filter((option) => option.value !== "" && option.value !== "N/A")
+    .map((option) => option.value);
 
   useEffect(() => {
     async function loadCows() {
@@ -45,17 +71,46 @@ function AddWorkdayPage() {
   const filteredCows = useMemo(() => {
     const normalizedSearch = searchTerm.trim().toLowerCase();
 
-    if (!normalizedSearch) {
-      return cows;
-    }
-
     return cows.filter((cow) => {
-      return (
+      const matchesSearch =
         cow.tagNumber.toLowerCase().includes(normalizedSearch) ||
-        (cow.ownerName ?? "").toLowerCase().includes(normalizedSearch)
+        (cow.ownerName ?? "").toLowerCase().includes(normalizedSearch);
+
+      const matchesHealthStatus =
+        activeHealthStatuses.length === 0 ||
+        activeHealthStatuses.some((status) =>
+          status === "Healthy"
+            ? cow.healthStatus === "Healthy"
+            : cow.healthStatus !== "Healthy",
+        );
+
+      const matchesLivestockGroup =
+        activeLivestockGroups.length === 0 ||
+        activeLivestockGroups.includes(cow.livestockGroup);
+
+      const matchesSex =
+        activeSexes.length === 0 || activeSexes.includes(cow.sex || "");
+
+      const matchesPregnancyStatus =
+        activePregnancyStatuses.length === 0 ||
+        activePregnancyStatuses.includes(cow.pregnancyStatus || "");
+
+      return (
+        matchesSearch &&
+        matchesHealthStatus &&
+        matchesLivestockGroup &&
+        matchesSex &&
+        matchesPregnancyStatus
       );
     });
-  }, [cows, searchTerm]);
+  }, [
+    cows,
+    searchTerm,
+    activeHealthStatuses,
+    activeLivestockGroups,
+    activeSexes,
+    activePregnancyStatuses,
+  ]);
 
   const selectedCows = useMemo(() => {
     return cows.filter((cow) => selectedCowIds.includes(cow.id));
@@ -78,6 +133,24 @@ function AddWorkdayPage() {
         ? current.filter((id) => id !== cowId)
         : [...current, cowId],
     );
+  }
+
+  function toggleFilter(
+    value: string,
+    setState: React.Dispatch<React.SetStateAction<string[]>>,
+  ) {
+    setState((current) =>
+      current.includes(value)
+        ? current.filter((item) => item !== value)
+        : [...current, value],
+    );
+  }
+
+  function resetFilters() {
+    setActiveHealthStatuses([]);
+    setActiveLivestockGroups([]);
+    setActiveSexes([]);
+    setActivePregnancyStatuses([]);
   }
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -145,7 +218,26 @@ function AddWorkdayPage() {
               error={cowError}
               searchTerm={searchTerm}
               selectedCowIds={selectedCowIds}
+              activeHealthStatuses={activeHealthStatuses}
+              activeLivestockGroups={activeLivestockGroups}
+              activeSexes={activeSexes}
+              activePregnancyStatuses={activePregnancyStatuses}
+              healthStatusFilters={healthStatusFilters}
+              livestockGroupFilters={livestockGroupFilters}
+              sexFilters={sexFilters}
+              pregnancyStatusFilters={pregnancyStatusFilters}
               onSearchChange={setSearchTerm}
+              onResetFilters={resetFilters}
+              onToggleHealthStatus={(value) =>
+                toggleFilter(value, setActiveHealthStatuses)
+              }
+              onToggleLivestockGroup={(value) =>
+                toggleFilter(value, setActiveLivestockGroups)
+              }
+              onToggleSex={(value) => toggleFilter(value, setActiveSexes)}
+              onTogglePregnancyStatus={(value) =>
+                toggleFilter(value, setActivePregnancyStatuses)
+              }
               onToggleCow={toggleCow}
             />
           </div>

@@ -9,6 +9,7 @@ export type Cow = {
   healthStatus: string;
   heatStatus: string;
   pregnancyStatus: string;
+  hasCalf: boolean;
   purchasePrice?: number | null;
   salePrice?: number | null;
   purchaseDate?: string | null;

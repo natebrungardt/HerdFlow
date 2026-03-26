@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 import type { Cow } from "../../types/cow";
 import { herdFilterOptions } from "../../constants/cowFormOptions";
 
+const RECENTLY_VIEWED_COW_IDS_KEY = "recentlyViewedCowIds";
+
 type HerdListViewProps = {
   cows: Cow[];
   loading: boolean;
@@ -34,9 +36,35 @@ function HerdListView({
 }: HerdListViewProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedGroup, setSelectedGroup] = useState("All");
+  const [recentlyViewedCowIds, setRecentlyViewedCowIds] = useState<number[]>(
+    () => {
+      if (typeof window === "undefined") {
+        return [];
+      }
+
+      const storedValue = window.localStorage.getItem(
+        RECENTLY_VIEWED_COW_IDS_KEY,
+      );
+
+      if (!storedValue) {
+        return [];
+      }
+
+      try {
+        const parsedValue = JSON.parse(storedValue);
+        return Array.isArray(parsedValue)
+          ? parsedValue.filter(
+              (value): value is number => typeof value === "number",
+            )
+          : [];
+      } catch {
+        return [];
+      }
+    },
+  );
 
   const filteredCows = useMemo(() => {
-    return cows.filter((cow) => {
+    const matchingCows = cows.filter((cow) => {
       const normalizedSearch = searchTerm.trim().toLowerCase();
       const normalizedGroup = (cow.livestockGroup ?? "").trim().toLowerCase();
       const normalizedSelectedGroup = selectedGroup.trim().toLowerCase();
@@ -58,7 +86,43 @@ function HerdListView({
 
       return matchesSearch && matchesGroup;
     });
-  }, [cows, searchTerm, selectedGroup]);
+
+    return [...matchingCows].sort((leftCow, rightCow) => {
+      const leftIndex = recentlyViewedCowIds.indexOf(leftCow.id);
+      const rightIndex = recentlyViewedCowIds.indexOf(rightCow.id);
+      const leftWasViewed = leftIndex !== -1;
+      const rightWasViewed = rightIndex !== -1;
+
+      if (leftWasViewed && rightWasViewed) {
+        return leftIndex - rightIndex;
+      }
+
+      if (leftWasViewed) {
+        return -1;
+      }
+
+      if (rightWasViewed) {
+        return 1;
+      }
+
+      return 0;
+    });
+  }, [cows, searchTerm, selectedGroup, recentlyViewedCowIds]);
+
+  function markCowAsRecentlyViewed(cowId: number) {
+    setRecentlyViewedCowIds((currentIds) => {
+      const nextIds = [cowId, ...currentIds.filter((id) => id !== cowId)];
+
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem(
+          RECENTLY_VIEWED_COW_IDS_KEY,
+          JSON.stringify(nextIds),
+        );
+      }
+
+      return nextIds;
+    });
+  }
 
   const stats = useMemo(
     () => [
@@ -159,11 +223,13 @@ function HerdListView({
                     key={cow.id}
                     className="cowRowCard"
                     to={getCowHref(cow)}
+                    onClick={() => markCowAsRecentlyViewed(cow.id)}
                   >
                     <div className="cowRowMain">
                       <div className="cowRowTitle">Tag #{cow.tagNumber}</div>
                       <div className="cowRowMeta">
                         {cow.livestockGroup || "Unassigned"} •{" "}
+                        {cow.healthStatus || "Unknown health status"} •{" "}
                         {cow.sex || "Unknown sex"} •{" "}
                         {cow.pregnancyStatus || "No pregnancy status"}
                       </div>

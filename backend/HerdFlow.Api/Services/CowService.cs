@@ -59,6 +59,7 @@ public class CowService
         cow.HealthStatus = dto.HealthStatus;
         cow.HeatStatus = dto.HeatStatus;
         cow.PregnancyStatus = dto.PregnancyStatus;
+        cow.HasCalf = dto.HasCalf;
         cow.PurchasePrice = dto.PurchasePrice;
         cow.SalePrice = dto.SalePrice;
         cow.PurchaseDate = dto.PurchaseDate;
@@ -89,6 +90,7 @@ public class CowService
             HealthStatus = dto.HealthStatus,
             HeatStatus = dto.HeatStatus,
             PregnancyStatus = dto.PregnancyStatus,
+            HasCalf = dto.HasCalf,
             PurchasePrice = dto.PurchasePrice,
             SalePrice = dto.SalePrice,
             PurchaseDate = dto.PurchaseDate,
