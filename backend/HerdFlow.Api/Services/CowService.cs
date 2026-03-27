@@ -3,11 +3,13 @@ using HerdFlow.Api.Models;
 using HerdFlow.Api.Data;
 using HerdFlow.Api.Exceptions;
 using Microsoft.EntityFrameworkCore;
+using System.Text.RegularExpressions;
 
 namespace HerdFlow.Api.Services;
 
 public class CowService
 {
+    private static readonly Regex TagNumberPattern = new("^[A-Za-z0-9-]+$");
     private readonly AppDbContext _context;
     private readonly ActivityLogService _activityLogService;
     private readonly CowChangeLogService _cowChangeLogService;
@@ -27,6 +29,16 @@ public class CowService
         if (dto.LivestockGroup == LivestockGroupType.None)
         {
             throw new ValidationException("Livestock group is required.");
+        }
+
+        if (string.IsNullOrWhiteSpace(dto.TagNumber))
+        {
+            throw new ValidationException("Tag number is required.");
+        }
+
+        if (!TagNumberPattern.IsMatch(dto.TagNumber.Trim()))
+        {
+            throw new ValidationException("Tag number can only include letters, numbers, and dashes.");
         }
     }
 
@@ -52,10 +64,11 @@ public class CowService
     {
         var cow = await FindCowAsync(id);
         ValidateCreateCow(dto);
-        await EnsureTagNumberIsUniqueAsync(dto.TagNumber, id);
+        var normalizedTagNumber = dto.TagNumber.Trim();
+        await EnsureTagNumberIsUniqueAsync(normalizedTagNumber, id);
         var changes = _cowChangeLogService.BuildUpdateMessages(cow, dto);
 
-        cow.TagNumber = dto.TagNumber;
+        cow.TagNumber = normalizedTagNumber;
         cow.OwnerName = dto.OwnerName;
         cow.LivestockGroup = dto.LivestockGroup;
         cow.Sex = dto.Sex;
@@ -82,11 +95,12 @@ public class CowService
     public async Task<Cow> CreateCowAsync(CreateCowDto dto)
     {
         ValidateCreateCow(dto);
-        await EnsureTagNumberIsUniqueAsync(dto.TagNumber);
+        var normalizedTagNumber = dto.TagNumber.Trim();
+        await EnsureTagNumberIsUniqueAsync(normalizedTagNumber);
 
         var cow = new Cow
         {
-            TagNumber = dto.TagNumber,
+            TagNumber = normalizedTagNumber,
             OwnerName = dto.OwnerName,
             LivestockGroup = dto.LivestockGroup,
             Sex = dto.Sex,
@@ -113,7 +127,7 @@ public class CowService
 
         cow.IsRemoved = true;
         await _context.SaveChangesAsync();
-        await _activityLogService.LogAsync(cow.Id, "Cow removed from herd");
+        await _activityLogService.LogAsync(cow.Id, "Cow archived from herd");
     }
 
     public async Task<List<Cow>> GetRemovedCowsAsync()

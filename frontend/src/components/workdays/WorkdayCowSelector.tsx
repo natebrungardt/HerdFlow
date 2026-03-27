@@ -48,7 +48,7 @@ function WorkdayCowSelector({
       <div className="sectionHeader">
         <h2 className="sectionTitle">Select Cows</h2>
         <span className="sectionSubtle">
-          {selectedCowIds.length} added to this workday
+          {selectedCowIds.length} selected for this workday
         </span>
       </div>
 

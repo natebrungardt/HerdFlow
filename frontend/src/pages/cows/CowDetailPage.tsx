@@ -63,6 +63,8 @@ const editableFields: EditableFieldName[] = [
   "salePrice",
 ];
 
+const TAG_NUMBER_PATTERN = /^[A-Za-z0-9-]+$/;
+
 function formatValue(value: string | number | boolean | null | undefined) {
   if (value === null || value === undefined || value === "") return "—";
   if (typeof value === "boolean") return formatBoolean(value);
@@ -187,7 +189,7 @@ function CowDetailPage() {
       navigate("/cows");
     } catch (err) {
       const message =
-        err instanceof Error ? err.message : "Failed to delete cow";
+        err instanceof Error ? err.message : "Failed to archive cow";
       setError(message);
     }
   }
@@ -229,7 +231,12 @@ function CowDetailPage() {
   }
 
   async function saveCowUpdates() {
-    if (!formData || !cow) return;
+    if (!formData || !cow) return false;
+
+    if (!TAG_NUMBER_PATTERN.test(formData.tagNumber.trim())) {
+      setError("Tag number can only include letters, numbers, and dashes.");
+      return false;
+    }
 
     const prev = cow;
 
@@ -238,6 +245,7 @@ function CowDetailPage() {
       setCow(updated);
       setFormData(updated);
       await refreshActivities();
+      return true;
     } catch (err) {
       let message = "Failed to update cow";
       const apiErr = err as ApiError;
@@ -249,12 +257,16 @@ function CowDetailPage() {
 
       setError(message);
       setFormData(prev);
+      return false;
     }
   }
 
   async function commitField(nextField: EditingFieldName | null = null) {
-    setEditingField(nextField);
-    await saveCowUpdates();
+    const didSave = await saveCowUpdates();
+
+    if (didSave) {
+      setEditingField(nextField);
+    }
   }
 
   async function handleEditableKeyDown(
@@ -438,6 +450,33 @@ function CowDetailPage() {
       {error && <div className="pageErrorBanner">{error}</div>}
 
       <div className="cowDetailShell">
+        <div className="allCowsHeader">
+          <div className="titleBlock">
+            <h1 className="pageTitle">Cow Details</h1>
+            <p className="pageSubtitle">
+              Detailed record for herd tracking, ownership, and lifecycle data.
+            </p>
+          </div>
+
+          {cow.isRemoved ? (
+            <button
+              type="button"
+              className="restoreButton"
+              onClick={() => setShowRestoreModal(true)}
+            >
+              Restore Cow
+            </button>
+          ) : (
+            <button
+              type="button"
+              className="deleteButton deleteButtonCompact"
+              onClick={() => setShowDeleteModal(true)}
+            >
+              Archive Cow
+            </button>
+          )}
+        </div>
+
         <div className="cowDashboardGrid">
           <div className="leftColumn">
             <CowHeroCard
@@ -470,23 +509,17 @@ function CowDetailPage() {
                   )}
                 </h1>
               }
-              subtitle="Detailed record for herd tracking, ownership, and lifecycle data."
+              subtitle="Return to the herd list or keep editing this record."
               action={
-                cow.isRemoved ? (
+                <div className="heroActions">
                   <button
-                    className="restoreButton"
-                    onClick={() => setShowRestoreModal(true)}
+                    type="button"
+                    className="addCowButton addCowButtonSuccess"
+                    onClick={() => navigate("/cows")}
                   >
-                    Restore Cow
+                    Back to Herd
                   </button>
-                ) : (
-                  <button
-                    className="deleteButton"
-                    onClick={() => setShowDeleteModal(true)}
-                  >
-                    Remove Cow
-                  </button>
-                )
+                </div>
               }
             >
               <div className="metricsGrid">
@@ -571,7 +604,7 @@ function CowDetailPage() {
             />
           </div>
 
-          <div className="rightColumn">
+          <div className="rightColumn cowDetailRightColumnOffset">
             <CowSummaryCard
               ownerName={cow.ownerName}
               subtitle="At a glance"
@@ -616,9 +649,9 @@ function CowDetailPage() {
 
       <Modal
         isOpen={showDeleteModal}
-        title="Remove Cow"
-        message={`Are you sure you want to remove cow #${cow.tagNumber}? This will move it to the removed cows archive.`}
-        confirmText="Remove Cow"
+        title="Archive Cow"
+        message={`Are you sure you want to archive cow #${cow.tagNumber}? This will move it to the archived cows list.`}
+        confirmText="Archive Cow"
         onCancel={() => setShowDeleteModal(false)}
         onConfirm={() => {
           handleDelete();

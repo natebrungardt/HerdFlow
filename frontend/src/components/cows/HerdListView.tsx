@@ -20,6 +20,20 @@ function formatHealthStatus(status: string | null | undefined) {
   return (status ?? "Unknown").replace(/([A-Z])/g, " $1").trim();
 }
 
+function getNormalizedTagNumber(tagNumber: string) {
+  const digits = tagNumber.replace(/\D/g, "");
+
+  if (!digits) {
+    return null;
+  }
+
+  return Number(digits);
+}
+
+function normalizeSearchValue(value: string) {
+  return value.trim().toLowerCase().replace(/[^a-z0-9\s]/g, "");
+}
+
 function HerdListView({
   cows,
   loading,
@@ -37,13 +51,15 @@ function HerdListView({
 
   const filteredCows = useMemo(() => {
     const matchingCows = cows.filter((cow) => {
-      const normalizedSearch = searchTerm.trim().toLowerCase();
+      const normalizedSearch = normalizeSearchValue(searchTerm);
       const normalizedGroup = (cow.livestockGroup ?? "").trim().toLowerCase();
       const normalizedSelectedGroup = selectedGroup.trim().toLowerCase();
+      const normalizedTagNumber = normalizeSearchValue(cow.tagNumber);
+      const normalizedOwnerName = normalizeSearchValue(cow.ownerName ?? "");
 
       const matchesSearch =
-        cow.tagNumber.toLowerCase().includes(normalizedSearch) ||
-        (cow.ownerName ?? "").toLowerCase().includes(normalizedSearch);
+        normalizedTagNumber.includes(normalizedSearch) ||
+        normalizedOwnerName.includes(normalizedSearch);
 
       let matchesGroup = false;
 
@@ -59,7 +75,31 @@ function HerdListView({
       return matchesSearch && matchesGroup;
     });
 
-    return [...matchingCows].sort((leftCow, rightCow) => rightCow.id - leftCow.id);
+    return [...matchingCows].sort((leftCow, rightCow) => {
+      const leftTagNumber = getNormalizedTagNumber(leftCow.tagNumber);
+      const rightTagNumber = getNormalizedTagNumber(rightCow.tagNumber);
+
+      if (leftTagNumber === null && rightTagNumber !== null) {
+        return 1;
+      }
+
+      if (leftTagNumber !== null && rightTagNumber === null) {
+        return -1;
+      }
+
+      if (
+        leftTagNumber !== null &&
+        rightTagNumber !== null &&
+        leftTagNumber !== rightTagNumber
+      ) {
+        return leftTagNumber - rightTagNumber;
+      }
+
+      return leftCow.tagNumber.localeCompare(rightCow.tagNumber, undefined, {
+        numeric: true,
+        sensitivity: "base",
+      });
+    });
   }, [cows, searchTerm, selectedGroup]);
 
   const stats = useMemo(

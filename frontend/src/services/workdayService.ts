@@ -83,6 +83,17 @@ export async function getActiveWorkdays(): Promise<Workday[]> {
   return response.json();
 }
 
+export async function getArchivedWorkdays(): Promise<Workday[]> {
+  const response = await fetch(`${WORKDAY_API_BASE_URL}/archived`);
+
+  if (!response.ok) {
+    const error = await parseError(response);
+    throw createApiError(error);
+  }
+
+  return response.json();
+}
+
 export async function getWorkdayById(id: number): Promise<Workday> {
   const response = await fetch(`${WORKDAY_API_BASE_URL}/${id}`);
 

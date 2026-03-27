@@ -8,7 +8,7 @@ export async function getActivities(cowId: number) {
   const res = await fetch(`${API_BASE_URL}/${cowId}/activities`);
 
   if (!res.ok) {
-    throw new Error("Failed to fetch activities");
+    throw new Error("Failed to load activities");
   }
 
   return res.json();

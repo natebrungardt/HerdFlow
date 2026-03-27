@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { ChangeEvent, FormEvent, KeyboardEvent, ReactNode } from "react";
 
 type WorkdayComposerCardProps = {
   title: string;
@@ -6,15 +6,19 @@ type WorkdayComposerCardProps = {
   summary: string;
   error: string;
   saving: boolean;
+  saveStatus?: string | null;
   heading?: string;
   subtle?: string;
   submitLabel?: string;
   cancelLabel?: string;
+  cancelButtonClassName?: string;
   extraAction?: ReactNode;
-  onChange: (
-    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  onChange: (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
+  onCommit?: () => void | Promise<void>;
+  onKeyDown?: (
+    event: KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => void;
-  onSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
+  onSubmit?: (event: FormEvent<HTMLFormElement>) => void | Promise<void>;
   onCancel: () => void;
 };
 
@@ -24,20 +28,33 @@ function WorkdayComposerCard({
   summary,
   error,
   saving,
+  saveStatus,
   heading = "Workday Details",
   subtle = "Create a draft for the crew",
   submitLabel = "Save Workday",
   cancelLabel = "Cancel",
+  cancelButtonClassName = "workdaySecondaryButton",
   extraAction,
   onChange,
+  onCommit,
+  onKeyDown,
   onSubmit,
   onCancel,
 }: WorkdayComposerCardProps) {
   return (
     <div className="card workdayComposerCard">
       <div className="sectionHeader">
-        <h2 className="sectionTitle">{heading}</h2>
-        <span className="sectionSubtle">{subtle}</span>
+        <div>
+          <h2 className="sectionTitle">{heading}</h2>
+          <span className="sectionSubtle">{subtle}</span>
+        </div>
+        {saveStatus ? (
+          <span
+            className={`workdaySaveStatus ${saving ? "saving" : "saved"}`.trim()}
+          >
+            {saveStatus}
+          </span>
+        ) : null}
       </div>
 
       <form className="workdayComposerForm" onSubmit={onSubmit}>
@@ -50,6 +67,8 @@ function WorkdayComposerCard({
           className="searchInput workdayTextInput"
           value={title}
           onChange={onChange}
+          onBlur={onCommit}
+          onKeyDown={onKeyDown}
           placeholder="Workday 1"
           maxLength={120}
           required
@@ -65,6 +84,8 @@ function WorkdayComposerCard({
           className="searchInput workdayTextInput"
           value={date}
           onChange={onChange}
+          onBlur={onCommit}
+          onKeyDown={onKeyDown}
         />
 
         <label className="workdayFieldLabel" htmlFor="summary">
@@ -76,6 +97,8 @@ function WorkdayComposerCard({
           className="workdayNotesInput"
           value={summary}
           onChange={onChange}
+          onBlur={onCommit}
+          onKeyDown={onKeyDown}
           placeholder="General notes for the workday..."
           rows={5}
         />
@@ -86,14 +109,18 @@ function WorkdayComposerCard({
           {extraAction}
           <button
             type="button"
-            className="workdaySecondaryButton"
+            className={cancelButtonClassName}
             onClick={onCancel}
           >
             {cancelLabel}
           </button>
-          <button type="submit" className="addCowButton" disabled={saving}>
-            {saving ? "Saving..." : submitLabel}
-          </button>
+          {onSubmit ? (
+            <button type="submit" className="addCowButton" disabled={saving}>
+              {saving ? "Saving..." : submitLabel}
+            </button>
+          ) : saving ? (
+            <span className="sectionSubtle">Saving...</span>
+          ) : null}
         </div>
       </form>
     </div>

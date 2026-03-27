@@ -3,23 +3,32 @@ import type { Cow } from "../../types/cow";
 type SelectedCowsSummaryProps = {
   selectedCows: Cow[];
   onRemove: (cowId: number) => void;
+  title?: string;
+  emptyMessage?: string;
+  countLabel?: string;
 };
 
 function SelectedCowsSummary({
   selectedCows,
   onRemove,
+  title = "Added to Workday",
+  emptyMessage = "Select cows from the list below to add them to this workday.",
+  countLabel = "selected",
 }: SelectedCowsSummaryProps) {
   return (
     <div className="card workdaySelectedSummaryCard">
       <div className="sectionHeader">
-        <h2 className="sectionTitle">Added to Workday</h2>
-        <span className="sectionSubtle">{selectedCows.length} selected</span>
+        <div>
+          <h2 className="sectionTitle">{title}</h2>
+          <span className="sectionSubtle">Click a tag to remove it.</span>
+        </div>
+        <span className="sectionSubtle">
+          {selectedCows.length} {countLabel}
+        </span>
       </div>
 
       {selectedCows.length === 0 ? (
-        <p className="emptyState">
-          Select cows from the list below to add them to this workday.
-        </p>
+        <p className="emptyState">{emptyMessage}</p>
       ) : (
         <div className="workdaySelectionPills">
           {selectedCows.map((cow) => (

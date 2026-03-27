@@ -20,6 +20,7 @@ import {
 } from "../../services/workdayService";
 import type { Cow } from "../../types/cow";
 import type { Workday } from "../../types/workday";
+import { usePendingWorkdaySelection } from "../../context/PendingWorkdaySelectionContext";
 import "../../styles/AllCows.css";
 import "../../styles/CowDetailPage.css";
 import WorkdayComposerCard from "../../components/workdays/WorkdayComposerCard";
@@ -30,9 +31,22 @@ function formatDateInput(dateValue: string) {
   return date.toISOString().split("T")[0];
 }
 
+function normalizeWorkdayDetails(details: {
+  title: string;
+  date: string;
+  summary: string;
+}) {
+  return {
+    title: details.title.trim(),
+    date: details.date,
+    summary: details.summary.trim(),
+  };
+}
+
 function WorkdayPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { setHasPendingSelections } = usePendingWorkdaySelection();
   const [workday, setWorkday] = useState<Workday | null>(null);
   const [title, setTitle] = useState("");
   const [date, setDate] = useState("");
@@ -54,7 +68,14 @@ function WorkdayPage() {
   const [cowLoading, setCowLoading] = useState(true);
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
+  const [saveStatus, setSaveStatus] = useState("Saved");
   const [addingCows, setAddingCows] = useState(false);
+  const [pendingAssignedCowRemoval, setPendingAssignedCowRemoval] =
+    useState<Cow | null>(null);
+  const [pendingCowRemoval, setPendingCowRemoval] = useState<Cow | null>(null);
+  const [pendingPageAction, setPendingPageAction] = useState<
+    "archive" | "back" | null
+  >(null);
   const [showArchiveModal, setShowArchiveModal] = useState(false);
   const [showRestoreModal, setShowRestoreModal] = useState(false);
 
@@ -84,6 +105,7 @@ function WorkdayPage() {
         setTitle(workdayData.title);
         setDate(formatDateInput(workdayData.date));
         setSummary(workdayData.summary ?? "");
+        setSaveStatus("Saved");
         setAllCows(cowsData);
       } catch (err) {
         const message =
@@ -99,7 +121,10 @@ function WorkdayPage() {
   }, [id]);
 
   const assignedCowIds = useMemo(
-    () => new Set((workday?.workdayCows ?? []).map((assignment) => assignment.cowId)),
+    () =>
+      new Set(
+        (workday?.workdayCows ?? []).map((assignment) => assignment.cowId),
+      ),
     [workday],
   );
 
@@ -180,6 +205,26 @@ function WorkdayPage() {
     );
   }
 
+  function promptSelectedCowRemoval(cowId: number) {
+    const cowToRemove = selectedCows.find((cow) => cow.id === cowId) ?? null;
+    setPendingCowRemoval(cowToRemove);
+  }
+
+  function promptAssignedCowRemoval(cowId: number) {
+    const cowToRemove = assignedCows.find((cow) => cow.id === cowId) ?? null;
+    setPendingAssignedCowRemoval(cowToRemove);
+  }
+
+  const hasPendingSelectedCows = selectedCowIds.length > 0;
+
+  useEffect(() => {
+    setHasPendingSelections(hasPendingSelectedCows);
+
+    return () => {
+      setHasPendingSelections(false);
+    };
+  }, [hasPendingSelectedCows, setHasPendingSelections]);
+
   async function refreshWorkday() {
     if (!id) return;
     const data = await getWorkdayById(Number(id));
@@ -187,19 +232,41 @@ function WorkdayPage() {
     setTitle(data.title);
     setDate(formatDateInput(data.date));
     setSummary(data.summary ?? "");
+    setSaveStatus("Saved");
   }
 
   async function handleSaveDetails() {
     if (!workday) return;
 
+    const normalizedCurrent = normalizeWorkdayDetails({
+      title,
+      date,
+      summary,
+    });
+    const normalizedSaved = normalizeWorkdayDetails({
+      title: workday.title,
+      date: formatDateInput(workday.date),
+      summary: workday.summary ?? "",
+    });
+
+    if (
+      normalizedCurrent.title === normalizedSaved.title &&
+      normalizedCurrent.date === normalizedSaved.date &&
+      normalizedCurrent.summary === normalizedSaved.summary
+    ) {
+      setSaveStatus("Saved");
+      return;
+    }
+
+    setSaveStatus("Saving...");
     setSaving(true);
     setError("");
 
     try {
       const updated = await updateWorkday(workday.id, {
-        title,
-        date,
-        summary: summary.trim() ? summary : null,
+        title: normalizedCurrent.title,
+        date: normalizedCurrent.date,
+        summary: normalizedCurrent.summary ? normalizedCurrent.summary : null,
       });
       setWorkday((current) => ({
         ...updated,
@@ -208,13 +275,26 @@ function WorkdayPage() {
       setTitle(updated.title);
       setDate(formatDateInput(updated.date));
       setSummary(updated.summary ?? "");
+      setSaveStatus("Saved");
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Failed to update workday";
       setError(message);
+      setSaveStatus("Unsaved changes");
     } finally {
       setSaving(false);
     }
+  }
+
+  function handleWorkdayFieldKeyDown(
+    event: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) {
+    if (event.key !== "Enter" || event.shiftKey) {
+      return;
+    }
+
+    event.preventDefault();
+    event.currentTarget.blur();
   }
 
   async function handleAddSelectedCows() {
@@ -246,7 +326,9 @@ function WorkdayPage() {
       await refreshWorkday();
     } catch (err) {
       const message =
-        err instanceof Error ? err.message : "Failed to remove cow from workday";
+        err instanceof Error
+          ? err.message
+          : "Failed to remove cow from workday";
       setError(message);
     }
   }
@@ -269,7 +351,7 @@ function WorkdayPage() {
 
     try {
       await restoreWorkday(workday.id);
-      await refreshWorkday();
+      navigate("/workdays");
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Failed to restore workday";
@@ -277,12 +359,42 @@ function WorkdayPage() {
     }
   }
 
+  function handleBackClick() {
+    if (hasPendingSelectedCows) {
+      setPendingPageAction("back");
+      return;
+    }
+
+    navigate("/workdays");
+  }
+
+  function handleArchiveClick() {
+    if (hasPendingSelectedCows) {
+      setPendingPageAction("archive");
+      return;
+    }
+
+    setShowArchiveModal(true);
+  }
+
   if (loading) {
-    return <div className="allCowsPage"><div className="allCowsShell"><p className="emptyState">Loading workday...</p></div></div>;
+    return (
+      <div className="allCowsPage">
+        <div className="allCowsShell">
+          <p className="emptyState">Loading workday...</p>
+        </div>
+      </div>
+    );
   }
 
   if (!workday) {
-    return <div className="allCowsPage"><div className="allCowsShell"><p className="emptyState">{error || "Workday not found."}</p></div></div>;
+    return (
+      <div className="allCowsPage">
+        <div className="allCowsShell">
+          <p className="emptyState">{error || "Workday not found."}</p>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -299,6 +411,24 @@ function WorkdayPage() {
                 this workday from one place.
               </p>
             </div>
+
+            {workday.isArchived ? (
+              <button
+                type="button"
+                className="restoreButton"
+                onClick={() => setShowRestoreModal(true)}
+              >
+                Restore Workday
+              </button>
+            ) : (
+              <button
+                type="button"
+                className="deleteButton deleteButtonCompact"
+                onClick={handleArchiveClick}
+              >
+                Archive Workday
+              </button>
+            )}
           </div>
 
           <div className="workdayCreateLayout">
@@ -309,46 +439,27 @@ function WorkdayPage() {
                 summary={summary}
                 error={error}
                 saving={saving}
+                saveStatus={saveStatus}
                 heading="Workday Details"
-                subtle="Edit this workday and save updates"
-                submitLabel="Save Changes"
+                subtle="Edits save automatically when you press Enter or click away"
                 cancelLabel="Back to Workdays"
-                extraAction={
-                  workday.isArchived ? (
-                    <button
-                      type="button"
-                      className="restoreButton"
-                      onClick={() => setShowRestoreModal(true)}
-                    >
-                      Restore Workday
-                    </button>
-                  ) : (
-                    <button
-                      type="button"
-                      className="deleteButton"
-                      onClick={() => setShowArchiveModal(true)}
-                    >
-                      Archive Workday
-                    </button>
-                  )
-                }
+                cancelButtonClassName="addCowButton"
                 onChange={(event) => {
                   const { name, value } = event.target;
                   setError("");
+                  setSaveStatus("Unsaved changes");
                   if (name === "title") setTitle(value);
                   if (name === "date") setDate(value);
                   if (name === "summary") setSummary(value);
                 }}
-                onSubmit={async (event) => {
-                  event.preventDefault();
-                  await handleSaveDetails();
-                }}
-                onCancel={() => navigate("/workdays")}
+                onCommit={handleSaveDetails}
+                onKeyDown={handleWorkdayFieldKeyDown}
+                onCancel={handleBackClick}
               />
 
               <SelectedCowsSummary
                 selectedCows={assignedCows}
-                onRemove={handleRemoveCow}
+                onRemove={promptAssignedCowRemoval}
               />
             </div>
 
@@ -361,7 +472,9 @@ function WorkdayPage() {
               <div className="workdayCreateLayout">
                 <SelectedCowsSummary
                   selectedCows={selectedCows}
-                  onRemove={toggleCow}
+                  onRemove={promptSelectedCowRemoval}
+                  title="Selected Cows"
+                  emptyMessage="Select cows from the list below to add them to this workday."
                 />
 
                 <div className="workdayDetailActionRow">
@@ -429,6 +542,53 @@ function WorkdayPage() {
         onConfirm={async () => {
           setShowRestoreModal(false);
           await handleRestore();
+        }}
+      />
+
+      <Modal
+        isOpen={pendingPageAction !== null}
+        title="Pending Cows to Add"
+        message="You have cows pending to be added to this workday. Add them before leaving, or continue without adding them."
+        confirmText="Continue"
+        onCancel={() => setPendingPageAction(null)}
+        onConfirm={() => {
+          if (!pendingPageAction) return;
+
+          const nextAction = pendingPageAction;
+          setPendingPageAction(null);
+
+          if (nextAction === "back") {
+            navigate("/workdays");
+            return;
+          }
+
+          setShowArchiveModal(true);
+        }}
+      />
+
+      <Modal
+        isOpen={pendingCowRemoval !== null}
+        title="Remove Selected Cow"
+        message={`Are you sure you want to remove cow #${pendingCowRemoval?.tagNumber ?? ""} from this workday selection?`}
+        confirmText="Remove Cow"
+        onCancel={() => setPendingCowRemoval(null)}
+        onConfirm={() => {
+          if (!pendingCowRemoval) return;
+          toggleCow(pendingCowRemoval.id);
+          setPendingCowRemoval(null);
+        }}
+      />
+
+      <Modal
+        isOpen={pendingAssignedCowRemoval !== null}
+        title="Remove Assigned Cow"
+        message={`Are you sure you want to remove cow #${pendingAssignedCowRemoval?.tagNumber ?? ""} from this workday?`}
+        confirmText="Remove Cow"
+        onCancel={() => setPendingAssignedCowRemoval(null)}
+        onConfirm={async () => {
+          if (!pendingAssignedCowRemoval) return;
+          await handleRemoveCow(pendingAssignedCowRemoval.id);
+          setPendingAssignedCowRemoval(null);
         }}
       />
     </div>

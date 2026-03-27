@@ -32,6 +32,8 @@ type FormState = {
   notes: string;
 };
 
+const TAG_NUMBER_PATTERN = /^[A-Za-z0-9-]+$/;
+
 const initialFormState: FormState = {
   tagNumber: "",
   ownerName: "",
@@ -89,6 +91,12 @@ function AddCowPage() {
     event.preventDefault();
     setError("");
     setSaving(true);
+
+    if (!TAG_NUMBER_PATTERN.test(formData.tagNumber.trim())) {
+      setError("Tag number can only include letters, numbers, and dashes.");
+      setSaving(false);
+      return;
+    }
 
     try {
       await createCow({

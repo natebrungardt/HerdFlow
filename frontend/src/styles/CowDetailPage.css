@@ -110,6 +110,11 @@
   transform: translateY(0);
 }
 
+.deleteButtonCompact {
+  min-width: 130px;
+  padding: 10px 14px;
+}
+
 .metricsGrid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -701,6 +706,10 @@
 
 .rightColumn {
   height: 100%;
+}
+
+.cowDetailRightColumnOffset {
+  padding-top: 18px;
 }
 
 .cowDashboardGrid {

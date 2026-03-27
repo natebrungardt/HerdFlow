@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import Modal from "../../components/shared/Modal";
 import SelectedCowsSummary from "../../components/workdays/SelectedCowsSummary";
 import WorkdayComposerCard from "../../components/workdays/WorkdayComposerCard";
 import WorkdayCowSelector from "../../components/workdays/WorkdayCowSelector";
@@ -38,6 +39,7 @@ function AddWorkdayPage() {
   const [cowError, setCowError] = useState("");
   const [saveError, setSaveError] = useState("");
   const [saving, setSaving] = useState(false);
+  const [pendingCowRemoval, setPendingCowRemoval] = useState<Cow | null>(null);
 
   const healthStatusFilters = ["Healthy", "Needs Treatment"];
   const livestockGroupFilters = livestockGroupOptions.map(
@@ -135,6 +137,11 @@ function AddWorkdayPage() {
     );
   }
 
+  function promptSelectedCowRemoval(cowId: number) {
+    const cowToRemove = selectedCows.find((cow) => cow.id === cowId) ?? null;
+    setPendingCowRemoval(cowToRemove);
+  }
+
   function toggleFilter(
     value: string,
     setState: React.Dispatch<React.SetStateAction<string[]>>,
@@ -180,8 +187,8 @@ function AddWorkdayPage() {
             <div className="titleBlock">
               <h1 className="pageTitle">Add Workday</h1>
               <p className="pageSubtitle">
-                Build a workday plan, add general notes, and select the cows
-                that belong on this crew list.
+                Build a workday plan, add general notes, and choose the cows
+                for this crew list.
               </p>
             </div>
           </div>
@@ -194,6 +201,8 @@ function AddWorkdayPage() {
                 summary={summary}
                 error={saveError}
                 saving={saving}
+                heading="Workday Details"
+                subtle="Create the workday first, then review the selected cows before saving."
                 onChange={handleFieldChange}
                 onSubmit={handleSubmit}
                 onCancel={() => navigate("/workdays")}
@@ -201,7 +210,9 @@ function AddWorkdayPage() {
 
               <SelectedCowsSummary
                 selectedCows={selectedCows}
-                onRemove={toggleCow}
+                onRemove={promptSelectedCowRemoval}
+                title="Selected Cows"
+                emptyMessage="Select cows from the list below to include them in this workday."
               />
             </div>
 
@@ -235,6 +246,19 @@ function AddWorkdayPage() {
           </div>
         </div>
       </div>
+
+      <Modal
+        isOpen={pendingCowRemoval !== null}
+        title="Remove Selected Cow"
+        message={`Are you sure you want to remove cow #${pendingCowRemoval?.tagNumber ?? ""} from this workday selection?`}
+        confirmText="Remove Cow"
+        onCancel={() => setPendingCowRemoval(null)}
+        onConfirm={() => {
+          if (!pendingCowRemoval) return;
+          toggleCow(pendingCowRemoval.id);
+          setPendingCowRemoval(null);
+        }}
+      />
     </div>
   );
 }
