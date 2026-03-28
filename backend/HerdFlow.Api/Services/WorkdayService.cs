@@ -36,7 +36,7 @@ public class WorkdayService
         var workday = new Workday
         {
             Title = dto.Title.Trim(),
-            Date = dto.Date ?? DateTime.UtcNow.Date,
+            Date = NormalizeWorkdayDate(dto.Date),
             Summary = dto.Summary,
             WorkdayCows = cows.Select(cow => new WorkdayCow
             {
@@ -186,10 +186,19 @@ public class WorkdayService
 
         workday.Title = dto.Title.Trim();
         workday.Summary = dto.Summary;
-        workday.Date = dto.Date;
+        workday.Date = NormalizeWorkdayDate(dto.Date);
 
         await _context.SaveChangesAsync();
 
         return workday;
+    }
+
+    private static DateTime NormalizeWorkdayDate(DateTime? value)
+    {
+        var workdayDate = (value ?? DateTime.UtcNow).Date;
+
+        return workdayDate.Kind == DateTimeKind.Utc
+            ? workdayDate
+            : DateTime.SpecifyKind(workdayDate, DateTimeKind.Utc);
     }
 }
