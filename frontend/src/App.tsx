@@ -54,7 +54,6 @@ function App() {
             <Route path="/workdays/:id" element={<WorkdayPage />} />
             <Route path="/workdays/removed" element={<RemovedWorkdays />} />
             <Route path="/finances" element={<Finances />} />
-            <Route path="/auth" element={<AuthPage />} />
           </Routes>
         </PendingWorkdaySelectionProvider>
       </BrowserRouter>
