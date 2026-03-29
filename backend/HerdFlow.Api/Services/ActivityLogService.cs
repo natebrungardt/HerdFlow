@@ -18,7 +18,8 @@ public class ActivityLogService
         var entry = new ActivityLogEntry
         {
             CowId = cowId,
-            Description = description
+            Description = description,
+            UserId = "temp-user-id",
         };
 
         _context.ActivityLogEntries.Add(entry);
