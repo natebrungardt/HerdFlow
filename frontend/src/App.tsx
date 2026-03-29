@@ -17,7 +17,12 @@ import { useContext } from "react";
 import { AuthContext } from "./context/AuthContext";
 
 function App() {
-  const { user } = useContext(AuthContext);
+  const { user, loading } = useContext(AuthContext);
+
+  // Prevent flashing before auth resolves
+  if (loading) {
+    return <div style={{ padding: "2rem" }}>Loading...</div>;
+  }
 
   // If NOT logged in → only show auth page
   if (!user) {
