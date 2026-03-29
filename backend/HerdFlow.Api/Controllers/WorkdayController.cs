@@ -2,10 +2,12 @@ using Microsoft.AspNetCore.Mvc;
 using HerdFlow.Api.Services;
 using HerdFlow.Api.DTOs;
 using HerdFlow.Api.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace HerdFlow.Api.Controllers;
 
 [ApiController]
+[Authorize]
 [Route("api/workdays")]
 public class WorkdayController : ControllerBase
 {

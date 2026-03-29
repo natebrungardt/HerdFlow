@@ -1,10 +1,12 @@
 using HerdFlow.Api.DTOs;
 using Microsoft.AspNetCore.Mvc;
 using HerdFlow.Api.Services;
+using Microsoft.AspNetCore.Authorization;
 
 namespace HerdFlow.Api.Controllers;
 
 [ApiController]
+[Authorize]
 [Route("api/cows/{cowId:guid}/notes")]
 public class NoteController : ControllerBase
 {

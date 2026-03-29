@@ -1,10 +1,12 @@
 using Microsoft.AspNetCore.Mvc;
 using HerdFlow.Api.DTOs;
 using HerdFlow.Api.Services;
+using Microsoft.AspNetCore.Authorization;
 
 namespace HerdFlow.Api.Controllers;
 
 [ApiController]
+[Authorize]
 [Route("api/cows")]
 public class CowController : ControllerBase
 {

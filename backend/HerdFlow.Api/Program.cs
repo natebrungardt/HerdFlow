@@ -1,7 +1,9 @@
 using HerdFlow.Api.Data;
 using HerdFlow.Api.Middleware;
-using Microsoft.EntityFrameworkCore;
 using HerdFlow.Api.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,6 +28,12 @@ builder.Services.AddScoped<NoteService>();
 builder.Services.AddScoped<WorkdayService>();
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+var supabaseUrl = builder.Configuration["Supabase:Url"];
+
+if (string.IsNullOrWhiteSpace(supabaseUrl))
+{
+    throw new InvalidOperationException("Supabase:Url is not configured.");
+}
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(connectionString, o =>
@@ -33,13 +41,31 @@ builder.Services.AddDbContext<AppDbContext>(options =>
         o.EnableRetryOnFailure();
     }));
 
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.Authority = $"{supabaseUrl.TrimEnd('/')}/auth/v1";
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidIssuer = $"{supabaseUrl.TrimEnd('/')}/auth/v1",
+            ValidateAudience = true,
+            ValidAudience = "authenticated",
+            ValidateLifetime = true,
+        };
+    });
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend",
         policy =>
         {
+            var allowedOrigins = builder.Configuration
+                .GetSection("Cors:AllowedOrigins")
+                .Get<string[]>();
+
             policy
-                .AllowAnyOrigin()
+                .WithOrigins(allowedOrigins ?? ["http://localhost:5173"])
                 .AllowAnyHeader()
                 .AllowAnyMethod();
         });
@@ -53,6 +79,8 @@ app.UseRouting();
 app.UseCors("AllowFrontend");
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
+app.UseAuthentication();
+app.UseAuthorization();
 
 // Swagger (only in development)
 if (app.Environment.IsDevelopment())

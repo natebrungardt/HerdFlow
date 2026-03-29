@@ -1,5 +1,22 @@
 # React + TypeScript + Vite
 
+## Environment setup
+
+Create `frontend/.env` from `frontend/.env.example` and fill in your project values:
+
+```env
+VITE_API_URL=http://localhost:5150/api
+VITE_SUPABASE_URL=https://your-project-ref.supabase.co
+VITE_SUPABASE_ANON_KEY=your-supabase-anon-key
+```
+
+For Supabase Auth to work end to end in this app:
+
+1. In Supabase, enable the auth provider you want to use, such as Email.
+2. Add `http://localhost:5173` to your Supabase URL configuration for local development.
+3. Use the project URL and anon key from Supabase Project Settings > API.
+4. Make sure the backend `Supabase:Url` value matches the same Supabase project so JWT validation succeeds.
+
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
 Currently, two official plugins are available:

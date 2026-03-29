@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { usePendingWorkdaySelection } from "../../context/usePendingWorkdaySelection";
 import { useTheme } from "../../context/useTheme";
 import Modal from "./Modal";
-import { supabase } from "../lib/supabase";
+import { supabase } from "../../lib/supabase";
 import { AuthContext } from "../../context/AuthContext";
 
 function Navbar() {
