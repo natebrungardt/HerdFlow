@@ -12,8 +12,27 @@ import RemovedWorkdays from "./pages/workdays/RemovedWorkdays";
 import Finances from "./pages/Finances";
 import { PendingWorkdaySelectionProvider } from "./context/PendingWorkdaySelectionContext";
 import { ThemeProvider } from "./context/ThemeContext";
+import AuthPage from "./pages/AuthPage";
+import { useContext } from "react";
+import { AuthContext } from "./context/AuthContext";
 
 function App() {
+  const { user } = useContext(AuthContext);
+
+  // If NOT logged in → only show auth page
+  if (!user) {
+    return (
+      <ThemeProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path="*" element={<AuthPage />} />
+          </Routes>
+        </BrowserRouter>
+      </ThemeProvider>
+    );
+  }
+
+  // If logged in → show full app
   return (
     <ThemeProvider>
       <BrowserRouter>
@@ -30,6 +49,7 @@ function App() {
             <Route path="/workdays/:id" element={<WorkdayPage />} />
             <Route path="/workdays/removed" element={<RemovedWorkdays />} />
             <Route path="/finances" element={<Finances />} />
+            <Route path="/auth" element={<AuthPage />} />
           </Routes>
         </PendingWorkdaySelectionProvider>
       </BrowserRouter>

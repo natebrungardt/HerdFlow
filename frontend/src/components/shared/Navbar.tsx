@@ -1,8 +1,10 @@
-import { useState, type MouseEvent } from "react";
+import { useState, type MouseEvent, useContext } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { usePendingWorkdaySelection } from "../../context/usePendingWorkdaySelection";
 import { useTheme } from "../../context/useTheme";
 import Modal from "./Modal";
+import { supabase } from "../lib/supabase";
+import { AuthContext } from "../../context/AuthContext";
 
 function Navbar() {
   const navigate = useNavigate();
@@ -10,6 +12,13 @@ function Navbar() {
   const { hasPendingSelections } = usePendingWorkdaySelection();
   const { theme, toggleTheme } = useTheme();
   const [pendingPath, setPendingPath] = useState<string | null>(null);
+
+  const { user } = useContext(AuthContext);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    window.location.href = "/auth";
+  };
 
   function isActivePath(targetPath: string) {
     if (targetPath === "/") {
@@ -112,6 +121,10 @@ function Navbar() {
           >
             Finances
           </Link>
+          <span style={{ marginLeft: "1rem" }}>{user?.email}</span>
+          <button onClick={handleLogout} style={{ marginLeft: "0.5rem" }}>
+            Logout
+          </button>
         </div>
       </div>
       <Modal
