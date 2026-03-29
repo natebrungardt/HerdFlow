@@ -36,10 +36,7 @@ builder.Services.AddCors(options =>
         policy =>
         {
             policy
-                .WithOrigins(
-                    "https://herdflow.vercel.app",
-                    "http://localhost:5173"
-                )
+                .AllowAnyOrigin()
                 .AllowAnyHeader()
                 .AllowAnyMethod();
         });
