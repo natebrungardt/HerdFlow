@@ -289,6 +289,10 @@ img {
   color: var(--color-text);
 }
 
+.navbar-links a.active {
+  color: var(--color-text);
+}
+
 /* Shared layout containers */
 :is(.cowDetailPage, .allCowsPage) {
   width: 100%;

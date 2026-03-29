@@ -11,6 +11,31 @@ function Navbar() {
   const { theme, toggleTheme } = useTheme();
   const [pendingPath, setPendingPath] = useState<string | null>(null);
 
+  function isActivePath(targetPath: string) {
+    if (targetPath === "/") {
+      return location.pathname === "/";
+    }
+
+    if (targetPath === "/cows") {
+      return (
+        location.pathname === "/cows" ||
+        location.pathname === "/add-cow" ||
+        location.pathname.startsWith("/cows/")
+      );
+    }
+
+    if (targetPath === "/workdays") {
+      return (
+        location.pathname === "/workdays" ||
+        location.pathname === "/workdays/new" ||
+        (/^\/workdays\/[^/]+$/.test(location.pathname) &&
+          location.pathname !== "/workdays/removed")
+      );
+    }
+
+    return location.pathname === targetPath;
+  }
+
   function handleNavbarNavigation(targetPath: string) {
     return (event: MouseEvent<HTMLAnchorElement>) => {
       if (
@@ -45,25 +70,46 @@ function Navbar() {
           <button className="themeToggleButton" onClick={toggleTheme}>
             {theme === "dark" ? "Light Mode" : "Dark Mode"}
           </button>
-          <Link to="/" onClick={handleNavbarNavigation("/")}>
+          <Link
+            className={isActivePath("/") ? "active" : undefined}
+            to="/"
+            onClick={handleNavbarNavigation("/")}
+          >
             Dashboard
           </Link>
-          <Link to="/cows" onClick={handleNavbarNavigation("/cows")}>
+          <Link
+            className={isActivePath("/cows") ? "active" : undefined}
+            to="/cows"
+            onClick={handleNavbarNavigation("/cows")}
+          >
             Herd
           </Link>
-          <Link to="/workdays" onClick={handleNavbarNavigation("/workdays")}>
+          <Link
+            className={isActivePath("/workdays") ? "active" : undefined}
+            to="/workdays"
+            onClick={handleNavbarNavigation("/workdays")}
+          >
             Workdays
           </Link>
-          <Link to="/removed" onClick={handleNavbarNavigation("/removed")}>
+          <Link
+            className={isActivePath("/removed") ? "active" : undefined}
+            to="/removed"
+            onClick={handleNavbarNavigation("/removed")}
+          >
             Archived Cows
           </Link>
           <Link
+            className={isActivePath("/workdays/removed") ? "active" : undefined}
             to="/workdays/removed"
             onClick={handleNavbarNavigation("/workdays/removed")}
           >
             Archived Workdays
           </Link>
-          <Link to="/finances" onClick={handleNavbarNavigation("/finances")}>
+          <Link
+            className={isActivePath("/finances") ? "active" : undefined}
+            to="/finances"
+            onClick={handleNavbarNavigation("/finances")}
+          >
             Finances
           </Link>
         </div>
