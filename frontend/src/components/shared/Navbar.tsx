@@ -1,7 +1,7 @@
 import { useState, type MouseEvent } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { usePendingWorkdaySelection } from "../../context/PendingWorkdaySelectionContext";
-import { useTheme } from "../../context/ThemeContext";
+import { usePendingWorkdaySelection } from "../../context/usePendingWorkdaySelection";
+import { useTheme } from "../../context/useTheme";
 import Modal from "./Modal";
 
 function Navbar() {

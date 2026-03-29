@@ -1,5 +1,5 @@
-import { useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import type { Cow } from "../../types/cow";
 
 type HerdListViewProps = {
@@ -24,6 +24,27 @@ type HerdStatFilter =
   | "Market";
 
 type HerdStatLabel = "Total Cows" | HerdStatFilter;
+
+const HERD_FILTER_VALUES: HerdStatFilter[] = [
+  "All",
+  "Healthy",
+  "Needs Treatment",
+  "Breeding",
+  "Feeder",
+  "Market",
+];
+
+function getFilterFromSearchParams(searchParams: URLSearchParams): HerdStatFilter {
+  const filter = searchParams.get("filter");
+
+  if (!filter) {
+    return "All";
+  }
+
+  return HERD_FILTER_VALUES.includes(filter as HerdStatFilter)
+    ? (filter as HerdStatFilter)
+    : "All";
+}
 
 function formatHealthStatus(status: string | null | undefined) {
   return (status ?? "Unknown").replace(/([A-Z])/g, " $1").trim();
@@ -55,8 +76,29 @@ function HerdListView({
   emptyMessage = "No cows found.",
   sectionTitle = "Herd Records",
 }: HerdListViewProps) {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedFilter, setSelectedFilter] = useState<HerdStatFilter>("All");
+  const [selectedFilter, setSelectedFilter] = useState<HerdStatFilter>(() =>
+    getFilterFromSearchParams(searchParams),
+  );
+
+  useEffect(() => {
+    setSelectedFilter(getFilterFromSearchParams(searchParams));
+  }, [searchParams]);
+
+  function updateSelectedFilter(nextFilter: HerdStatFilter) {
+    setSelectedFilter(nextFilter);
+
+    const nextSearchParams = new URLSearchParams(searchParams);
+
+    if (nextFilter === "All") {
+      nextSearchParams.delete("filter");
+    } else {
+      nextSearchParams.set("filter", nextFilter);
+    }
+
+    setSearchParams(nextSearchParams, { replace: true });
+  }
 
   const filteredCows = useMemo(() => {
     const matchingCows = cows.filter((cow) => {
@@ -173,7 +215,7 @@ function HerdListView({
                     : ""
                 }`.trim()}
                 onClick={() =>
-                  setSelectedFilter(
+                  updateSelectedFilter(
                     stat.label === "Total Cows" ? "All" : stat.label,
                   )
                 }

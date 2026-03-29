@@ -214,6 +214,30 @@
     box-shadow 0.18s ease;
 }
 
+.statsLinkCard {
+  display: block;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    transform 0.18s ease,
+    border-color 0.18s ease,
+    background 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.statsLinkCard:hover {
+  transform: translateY(-2px);
+  border-color: var(--row-hover-border);
+  box-shadow: var(--row-hover-shadow);
+}
+
+.statsLinkCard:focus-visible {
+  outline: none;
+  transform: translateY(-2px);
+  border-color: var(--row-focus-border);
+  box-shadow: var(--row-focus-shadow);
+}
+
 .statsFilterButton:hover {
   transform: translateY(-2px);
   border-color: var(--row-hover-border);

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { usePendingWorkdaySelection } from "../../context/usePendingWorkdaySelection";
 import Modal from "../../components/shared/Modal";
 import SelectedCowsSummary from "../../components/workdays/SelectedCowsSummary";
 import WorkdayComposerCard from "../../components/workdays/WorkdayComposerCard";
@@ -19,6 +20,7 @@ import "../../styles/AllCows.css";
 
 function AddWorkdayPage() {
   const navigate = useNavigate();
+  const { setHasPendingSelections } = usePendingWorkdaySelection();
   const [title, setTitle] = useState("");
   const [date, setDate] = useState("");
   const [summary, setSummary] = useState("");
@@ -40,6 +42,7 @@ function AddWorkdayPage() {
   const [saveError, setSaveError] = useState("");
   const [saving, setSaving] = useState(false);
   const [pendingCowRemoval, setPendingCowRemoval] = useState<Cow | null>(null);
+  const [showLeaveModal, setShowLeaveModal] = useState(false);
 
   const healthStatusFilters = ["Healthy", "Needs Treatment"];
   const livestockGroupFilters = livestockGroupOptions.map(
@@ -118,6 +121,16 @@ function AddWorkdayPage() {
     return cows.filter((cow) => selectedCowIds.includes(cow.id));
   }, [cows, selectedCowIds]);
 
+  const hasPendingSelectedCows = selectedCowIds.length > 0;
+
+  useEffect(() => {
+    setHasPendingSelections(hasPendingSelectedCows);
+
+    return () => {
+      setHasPendingSelections(false);
+    };
+  }, [hasPendingSelectedCows, setHasPendingSelections]);
+
   function handleFieldChange(
     event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) {
@@ -179,6 +192,15 @@ function AddWorkdayPage() {
     setSaving(false);
   }
 
+  function handleCancelClick() {
+    if (hasPendingSelectedCows) {
+      setShowLeaveModal(true);
+      return;
+    }
+
+    navigate("/workdays");
+  }
+
   return (
     <div className="allCowsPage">
       <div className="allCowsShell">
@@ -205,7 +227,7 @@ function AddWorkdayPage() {
                 subtle="Create the workday first, then review the selected cows before saving."
                 onChange={handleFieldChange}
                 onSubmit={handleSubmit}
-                onCancel={() => navigate("/workdays")}
+                onCancel={handleCancelClick}
               />
 
               <SelectedCowsSummary
@@ -246,6 +268,18 @@ function AddWorkdayPage() {
           </div>
         </div>
       </div>
+
+      <Modal
+        isOpen={showLeaveModal}
+        title="Pending Cows to Add"
+        message="You have cows pending to be added to this workday. Add them before leaving, or continue without adding them."
+        confirmText="Leave Page"
+        onCancel={() => setShowLeaveModal(false)}
+        onConfirm={() => {
+          setShowLeaveModal(false);
+          navigate("/workdays");
+        }}
+      />
 
       <Modal
         isOpen={pendingCowRemoval !== null}

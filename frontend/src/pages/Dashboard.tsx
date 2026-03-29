@@ -66,18 +66,24 @@ function Dashboard() {
 
   const dashboardStats = useMemo(
     () => [
-      { label: "Active Herd", value: cows.length },
+      { label: "Active Herd", value: cows.length, to: "/cows" },
       {
         label: "Needs Treatment",
         value: cows.filter((cow) => cow.healthStatus !== "Healthy").length,
+        to: "/cows?filter=Needs%20Treatment",
       },
       {
         label: "Breeding",
         value: cows.filter((cow) => cow.livestockGroup === "Breeding").length,
+        to: "/cows?filter=Breeding",
       },
-      { label: "Active Workdays", value: workdays.length },
-      { label: "Archived Cows", value: archivedCows.length },
-      { label: "Archived Workdays", value: archivedWorkdays.length },
+      { label: "Active Workdays", value: workdays.length, to: "/workdays" },
+      { label: "Archived Cows", value: archivedCows.length, to: "/removed" },
+      {
+        label: "Archived Workdays",
+        value: archivedWorkdays.length,
+        to: "/workdays/removed",
+      },
     ],
     [archivedCows.length, archivedWorkdays.length, cows, workdays.length],
   );
@@ -135,10 +141,14 @@ function Dashboard() {
             <>
               <div className="statsGrid">
                 {dashboardStats.map((stat) => (
-                  <div key={stat.label} className="statsCard">
+                  <Link
+                    key={stat.label}
+                    className="statsCard statsLinkCard"
+                    to={stat.to}
+                  >
                     <div className="statLabel">{stat.label}</div>
                     <div className="statValue">{stat.value}</div>
-                  </div>
+                  </Link>
                 ))}
               </div>
 

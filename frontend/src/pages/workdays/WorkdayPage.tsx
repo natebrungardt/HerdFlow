@@ -20,7 +20,7 @@ import {
 } from "../../services/workdayService";
 import type { Cow } from "../../types/cow";
 import type { Workday } from "../../types/workday";
-import { usePendingWorkdaySelection } from "../../context/PendingWorkdaySelectionContext";
+import { usePendingWorkdaySelection } from "../../context/usePendingWorkdaySelection";
 import "../../styles/AllCows.css";
 import "../../styles/CowDetailPage.css";
 import WorkdayComposerCard from "../../components/workdays/WorkdayComposerCard";
