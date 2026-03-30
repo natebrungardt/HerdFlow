@@ -76,12 +76,17 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowFrontend",
         policy =>
         {
+            var allowedOrigins = builder.Configuration
+                .GetSection("Cors:AllowedOrigins")
+                .Get<string[]>();
+
+            if (allowedOrigins is null || allowedOrigins.Length == 0)
+            {
+                throw new InvalidOperationException("Cors:AllowedOrigins must contain at least one origin.");
+            }
+
             policy
-                .WithOrigins(
-                    "https://herdflow.app",
-                    "https://www.herdflow.app",
-                    "https://herdflow.vercel.app"
-                )
+                .WithOrigins(allowedOrigins)
                 .AllowAnyHeader()
                 .AllowAnyMethod();
         });
