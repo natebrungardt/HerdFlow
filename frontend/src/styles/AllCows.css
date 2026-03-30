@@ -622,10 +622,91 @@
   .cowRowActions {
     justify-content: flex-start;
   }
+
+  .allCowsHeader {
+    margin-bottom: 18px;
+  }
+
+  .pageTitle {
+    font-size: 1.65rem;
+  }
+
+  .toolbarCard,
+  .statsCard,
+  .cowListCard {
+    padding: 16px;
+  }
+
+  .cowRowCard {
+    padding: 16px;
+    gap: 12px;
+  }
+
+  .statusPill {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .filterChip {
+    padding: 9px 14px;
+    font-size: 0.86rem;
+  }
+
+  .workdaySelectionPill {
+    width: 100%;
+  }
 }
 
 @media (max-width: 520px) {
   .statsGrid {
     grid-template-columns: 1fr;
+  }
+
+  .pageTitle {
+    font-size: 1.45rem;
+  }
+
+  .pageSubtitle {
+    font-size: 0.9rem;
+  }
+
+  .searchInput {
+    height: 44px;
+    font-size: 0.92rem;
+  }
+
+  .sectionHeader {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .cowRowTitle {
+    font-size: 1rem;
+  }
+
+  .cowRowMeta,
+  .cowRowOwner {
+    font-size: 0.84rem;
+  }
+
+  .workdaySelectionPills {
+    gap: 8px;
+  }
+
+  .workdayComposerCard,
+  .workdaySelectedSummaryCard {
+    padding: 16px;
+  }
+
+  .workdaySaveStatus {
+    width: 100%;
+  }
+
+  .workdayDetailActionRow {
+    justify-content: stretch;
+  }
+
+  .workdayDetailActionRow .addCowButton {
+    width: 100%;
   }
 }

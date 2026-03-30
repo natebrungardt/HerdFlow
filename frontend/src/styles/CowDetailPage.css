@@ -494,6 +494,81 @@
   .infoGrid {
     grid-template-columns: 1fr;
   }
+
+  .heroCard,
+  .dashboardCard {
+    padding: 16px;
+  }
+
+  .cowTitle {
+    font-size: 1.55rem;
+  }
+
+  .heroActions {
+    width: 100%;
+    justify-content: stretch;
+  }
+
+  .heroActions > * {
+    width: 100%;
+  }
+
+  .dataCardHeader {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .ownerRow,
+  .kpiRow {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .kpiValue {
+    text-align: left;
+  }
+
+  .workdayDetailActionRow {
+    justify-content: stretch;
+  }
+
+  .workdayRemoveCowButton {
+    width: 100%;
+  }
+}
+
+@media (max-width: 520px) {
+  .cowTitle {
+    font-size: 1.35rem;
+  }
+
+  .cowSubtitle,
+  .activityText {
+    font-size: 0.9rem;
+  }
+
+  .metricCard,
+  .infoTile {
+    padding: 14px;
+  }
+
+  .metricToggleButton {
+    min-width: 0;
+    font-size: 0.88rem;
+  }
+
+  .metricToggleRow {
+    flex-direction: column;
+  }
+
+  .metricToggleRow .metricToggleButton {
+    width: 100%;
+  }
+
+  .ownerAvatar {
+    width: 38px;
+    height: 38px;
+  }
 }
 .restoreButton {
   background: linear-gradient(180deg, #3ecf8e 0%, #2ea86f 100%);
