@@ -16,6 +16,11 @@ RUN dotnet publish HerdFlow.Api.csproj -c Release -o /app/out
 # Use ASP.NET runtime for final image
 FROM mcr.microsoft.com/dotnet/aspnet:10.0
 WORKDIR /app
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends libgssapi-krb5-2 \
+    && rm -rf /var/lib/apt/lists/*
+
 COPY --from=build /app/out .
 
 EXPOSE 8080
