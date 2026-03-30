@@ -34,7 +34,7 @@ public class ActivityLogService
         }
         catch (DbUpdateException ex) when (WasDuplicatePrimaryKeyInsert(ex))
         {
-            var existingEntry = await _context.ActivityLogEntries.FirstOrDefaultAsync(a => a.Id == entry.Id);
+            var existingEntry = await _context.ActivityLogEntries.FirstOrDefaultAsync(a => a.Id == entry.Id && a.UserId == entry.UserId);
 
             if (existingEntry is not null)
             {
@@ -47,8 +47,9 @@ public class ActivityLogService
 
     public async Task<List<ActivityLogEntry>> GetByCowIdAsync(Guid cowId)
     {
+        var userId = GetCurrentUserId();
         return await _context.ActivityLogEntries
-            .Where(a => a.CowId == cowId)
+            .Where(a => a.CowId == cowId && a.UserId == userId)
             .OrderByDescending(a => a.CreatedAt)
             .ToListAsync();
     }

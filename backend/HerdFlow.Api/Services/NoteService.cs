@@ -22,8 +22,11 @@ public class NoteService
 
     public async Task<List<Note>> GetNotesAsync(Guid cowId)
     {
+        var userId = GetCurrentUserId();
+        await EnsureCowExistsAsync(cowId);
+
         return await _context.Notes
-            .Where(n => n.CowId == cowId)
+            .Where(n => n.CowId == cowId && n.UserId == userId)
             .OrderByDescending(n => n.CreatedAt)
             .ToListAsync();
     }
@@ -50,7 +53,7 @@ public class NoteService
         }
         catch (DbUpdateException ex) when (WasDuplicatePrimaryKeyInsert(ex))
         {
-            var existingNote = await _context.Notes.FirstOrDefaultAsync(n => n.Id == note.Id);
+            var existingNote = await _context.Notes.FirstOrDefaultAsync(n => n.Id == note.Id && n.UserId == note.UserId);
 
             if (existingNote is not null)
             {
@@ -85,7 +88,8 @@ public class NoteService
 
     private async Task EnsureCowExistsAsync(Guid cowId)
     {
-        var exists = await _context.Cows.AnyAsync(c => c.Id == cowId);
+        var userId = GetCurrentUserId();
+        var exists = await _context.Cows.AnyAsync(c => c.Id == cowId && c.UserId == userId);
 
         if (!exists)
         {
@@ -95,8 +99,9 @@ public class NoteService
 
     private async Task<Note> FindNoteAsync(Guid cowId, Guid noteId)
     {
+        var userId = GetCurrentUserId();
         var note = await _context.Notes
-            .FirstOrDefaultAsync(n => n.Id == noteId && n.CowId == cowId);
+            .FirstOrDefaultAsync(n => n.Id == noteId && n.CowId == cowId && n.UserId == userId);
 
         return note ?? throw new NotFoundException("Note not found.");
     }

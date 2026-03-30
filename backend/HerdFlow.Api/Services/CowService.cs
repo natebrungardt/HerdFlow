@@ -56,14 +56,16 @@ public class CowService
 
     public async Task<List<Cow>> GetCowsAsync()
     {
+        var userId = GetCurrentUserId();
         return await _context.Cows
-            .Where(c => !c.IsRemoved)
+            .Where(c => c.UserId == userId && !c.IsRemoved)
             .ToListAsync();
     }
 
     public async Task<Cow> GetCowByIdAsync(Guid id)
     {
-        var cow = await _context.Cows.FirstOrDefaultAsync(c => c.Id == id);
+        var userId = GetCurrentUserId();
+        var cow = await _context.Cows.FirstOrDefaultAsync(c => c.Id == id && c.UserId == userId);
         return cow ?? throw new NotFoundException("Cow not found.");
     }
 
@@ -131,7 +133,7 @@ public class CowService
         }
         catch (DbUpdateException ex) when (WasDuplicatePrimaryKeyInsert(ex))
         {
-            var existingCow = await _context.Cows.FirstOrDefaultAsync(c => c.Id == cow.Id);
+            var existingCow = await _context.Cows.FirstOrDefaultAsync(c => c.Id == cow.Id && c.UserId == userId);
 
             if (existingCow is not null)
             {
@@ -156,8 +158,9 @@ public class CowService
 
     public async Task<List<Cow>> GetRemovedCowsAsync()
     {
+        var userId = GetCurrentUserId();
         return await _context.Cows
-            .Where(c => c.IsRemoved)
+            .Where(c => c.UserId == userId && c.IsRemoved)
             .ToListAsync();
     }
 
@@ -172,7 +175,8 @@ public class CowService
 
     private async Task<Cow> FindCowAsync(Guid id)
     {
-        var cow = await _context.Cows.FindAsync(id);
+        var userId = GetCurrentUserId();
+        var cow = await _context.Cows.FirstOrDefaultAsync(c => c.Id == id && c.UserId == userId);
         return cow ?? throw new NotFoundException("Cow not found.");
     }
 

@@ -23,6 +23,7 @@ public class WorkdayService
     // CREATE
     public async Task<Workday> CreateWorkday(CreateWorkdayDto dto)
     {
+        var userId = GetCurrentUserId();
         var distinctCowIds = dto.CowIds
             .Distinct()
             .ToList();
@@ -30,7 +31,7 @@ public class WorkdayService
         var cows = distinctCowIds.Count == 0
             ? new List<Cow>()
             : await _context.Cows
-                .Where(c => distinctCowIds.Contains(c.Id) && !c.IsRemoved)
+                .Where(c => c.UserId == userId && distinctCowIds.Contains(c.Id) && !c.IsRemoved)
                 .ToListAsync();
 
         if (cows.Count != distinctCowIds.Count)
@@ -40,7 +41,7 @@ public class WorkdayService
 
         var workday = new Workday
         {
-            UserId = GetCurrentUserId(),
+            UserId = userId,
             Title = dto.Title.Trim(),
             Date = NormalizeWorkdayDate(dto.Date),
             Summary = dto.Summary,
@@ -61,7 +62,7 @@ public class WorkdayService
                 .Include(w => w.WorkdayCows)
                     .ThenInclude(wc => wc.Cow)
                 .Include(w => w.WorkdayNotes)
-                .FirstOrDefaultAsync(w => w.Id == workday.Id);
+                .FirstOrDefaultAsync(w => w.Id == workday.Id && w.UserId == userId);
 
             if (existingWorkday is not null)
             {
@@ -77,8 +78,9 @@ public class WorkdayService
     // READ - Active Workdays
     public async Task<List<Workday>> GetActiveWorkdays()
     {
+        var userId = GetCurrentUserId();
         return await _context.Workdays
-            .Where(w => !w.IsArchived)
+            .Where(w => w.UserId == userId && !w.IsArchived)
             .OrderByDescending(w => w.CreatedAt)
             .ToListAsync();
     }
@@ -86,8 +88,9 @@ public class WorkdayService
     // READ - Archived Workdays
     public async Task<List<Workday>> GetArchivedWorkdays()
     {
+        var userId = GetCurrentUserId();
         return await _context.Workdays
-            .Where(w => w.IsArchived)
+            .Where(w => w.UserId == userId && w.IsArchived)
             .OrderByDescending(w => w.CreatedAt)
             .ToListAsync();
     }
@@ -95,20 +98,22 @@ public class WorkdayService
     // READ - By Id (with cows + notes)
     public async Task<Workday> GetWorkdayById(Guid id)
     {
+        var userId = GetCurrentUserId();
         var workday = await _context.Workdays
             .Include(w => w.WorkdayCows)
                 .ThenInclude(wc => wc.Cow)
             .Include(w => w.WorkdayNotes)
-            .FirstOrDefaultAsync(w => w.Id == id);
+            .FirstOrDefaultAsync(w => w.Id == id && w.UserId == userId);
 
         return workday ?? throw new NotFoundException("Workday not found.");
     }
 
     public async Task AddCowsToWorkday(Guid id, List<Guid> cowIds)
     {
+        var userId = GetCurrentUserId();
         var workday = await _context.Workdays
             .Include(w => w.WorkdayCows)
-            .FirstOrDefaultAsync(w => w.Id == id);
+            .FirstOrDefaultAsync(w => w.Id == id && w.UserId == userId);
 
         if (workday == null)
         {
@@ -138,7 +143,7 @@ public class WorkdayService
         }
 
         var cows = await _context.Cows
-            .Where(c => newCowIds.Contains(c.Id) && !c.IsRemoved)
+            .Where(c => c.UserId == userId && newCowIds.Contains(c.Id) && !c.IsRemoved)
             .ToListAsync();
 
         if (cows.Count != newCowIds.Count)
@@ -162,7 +167,7 @@ public class WorkdayService
         {
             var refreshedWorkday = await _context.Workdays
                 .Include(w => w.WorkdayCows)
-                .FirstOrDefaultAsync(w => w.Id == id);
+                .FirstOrDefaultAsync(w => w.Id == id && w.UserId == userId);
 
             if (refreshedWorkday is not null &&
                 distinctCowIds.All(cowId => refreshedWorkday.WorkdayCows.Any(wc => wc.CowId == cowId)))
@@ -176,12 +181,17 @@ public class WorkdayService
 
     public async Task RemoveCowFromWorkday(Guid id, Guid cowId)
     {
+        var userId = GetCurrentUserId();
         var workdayCow = await _context.WorkdayCows
-            .FirstOrDefaultAsync(wc => wc.WorkdayId == id && wc.CowId == cowId);
+            .Include(wc => wc.Workday)
+            .FirstOrDefaultAsync(wc =>
+                wc.WorkdayId == id &&
+                wc.CowId == cowId &&
+                wc.Workday.UserId == userId);
 
         if (workdayCow == null)
         {
-            var workdayExists = await _context.Workdays.AnyAsync(w => w.Id == id);
+            var workdayExists = await _context.Workdays.AnyAsync(w => w.Id == id && w.UserId == userId);
 
             if (!workdayExists)
             {
@@ -224,7 +234,8 @@ public class WorkdayService
 
     private async Task<Workday> FindWorkdayAsync(Guid id)
     {
-        var workday = await _context.Workdays.FindAsync(id);
+        var userId = GetCurrentUserId();
+        var workday = await _context.Workdays.FirstOrDefaultAsync(w => w.Id == id && w.UserId == userId);
         return workday ?? throw new NotFoundException("Workday not found.");
     }
 
