@@ -8,6 +8,7 @@ Create `frontend/.env` from `frontend/.env.example` and fill in your project val
 VITE_API_URL=http://localhost:5150/api
 VITE_SUPABASE_URL=https://your-project-ref.supabase.co
 VITE_SUPABASE_ANON_KEY=your-supabase-anon-key
+VITE_DEV_AUTH_BYPASS=false
 ```
 
 For Supabase Auth to work end to end in this app:
@@ -16,6 +17,8 @@ For Supabase Auth to work end to end in this app:
 2. Add `http://localhost:5173` to your Supabase URL configuration for local development.
 3. Use the project URL and anon key from Supabase Project Settings > API.
 4. Make sure the backend `Supabase:Url` value matches the same Supabase project so JWT validation succeeds.
+
+For local-only development, you can bypass the login wall by setting `VITE_DEV_AUTH_BYPASS=true` and enabling `Auth:BypassEnabled` in `backend/HerdFlow.Api/appsettings.Development.json`.
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 

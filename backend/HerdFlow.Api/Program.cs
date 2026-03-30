@@ -1,6 +1,8 @@
 using HerdFlow.Api.Data;
+using HerdFlow.Api.Development;
 using HerdFlow.Api.Middleware;
 using HerdFlow.Api.Services;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -31,6 +33,7 @@ builder.Services.AddScoped<WorkdayService>();
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 var supabaseUrl = builder.Configuration["Supabase:Url"];
+var authBypassEnabled = builder.Configuration.GetValue<bool>("Auth:BypassEnabled");
 
 if (string.IsNullOrWhiteSpace(supabaseUrl))
 {
@@ -43,19 +46,30 @@ builder.Services.AddDbContext<AppDbContext>(options =>
         o.EnableRetryOnFailure();
     }));
 
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
-    {
-        options.Authority = $"{supabaseUrl.TrimEnd('/')}/auth/v1";
-        options.TokenValidationParameters = new TokenValidationParameters
+if (builder.Environment.IsDevelopment() && authBypassEnabled)
+{
+    builder.Services.AddAuthentication(DevAuthHandler.SchemeName)
+        .AddScheme<AuthenticationSchemeOptions, DevAuthHandler>(
+            DevAuthHandler.SchemeName,
+            _ => { }
+        );
+}
+else
+{
+    builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+        .AddJwtBearer(options =>
         {
-            ValidateIssuer = true,
-            ValidIssuer = $"{supabaseUrl.TrimEnd('/')}/auth/v1",
-            ValidateAudience = true,
-            ValidAudience = "authenticated",
-            ValidateLifetime = true,
-        };
-    });
+            options.Authority = $"{supabaseUrl.TrimEnd('/')}/auth/v1";
+            options.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidIssuer = $"{supabaseUrl.TrimEnd('/')}/auth/v1",
+                ValidateAudience = true,
+                ValidAudience = "authenticated",
+                ValidateLifetime = true,
+            };
+        });
+}
 
 builder.Services.AddCors(options =>
 {

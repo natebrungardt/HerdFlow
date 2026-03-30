@@ -19,8 +19,29 @@ type AuthProviderProps = {
 export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const devAuthBypassEnabled =
+    import.meta.env.DEV &&
+    import.meta.env.VITE_DEV_AUTH_BYPASS === "true";
 
   useEffect(() => {
+    if (devAuthBypassEnabled) {
+      setUser({
+        id: "dev-user",
+        email: "dev@localhost",
+        app_metadata: {
+          provider: "development",
+          providers: ["development"],
+        },
+        user_metadata: {
+          full_name: "Development User",
+        },
+        aud: "authenticated",
+        created_at: new Date().toISOString(),
+      } as User);
+      setLoading(false);
+      return;
+    }
+
     let isMounted = true;
 
     const loadSession = async () => {
@@ -53,7 +74,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       isMounted = false;
       subscription.unsubscribe();
     };
-  }, []);
+  }, [devAuthBypassEnabled]);
 
   return (
     <AuthContext.Provider value={{ user, loading }}>
