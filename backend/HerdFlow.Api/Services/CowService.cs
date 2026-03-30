@@ -4,6 +4,7 @@ using HerdFlow.Api.Data;
 using HerdFlow.Api.Exceptions;
 using HerdFlow.Api.Models.Enums;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 using System.Text.RegularExpressions;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
@@ -124,7 +125,22 @@ public class CowService
             SaleDate = dto.SaleDate,
         };
         _context.Cows.Add(cow);
-        await _context.SaveChangesAsync();
+        try
+        {
+            await _context.SaveChangesAsync();
+        }
+        catch (DbUpdateException ex) when (WasDuplicatePrimaryKeyInsert(ex))
+        {
+            var existingCow = await _context.Cows.FirstOrDefaultAsync(c => c.Id == cow.Id);
+
+            if (existingCow is not null)
+            {
+                return existingCow;
+            }
+
+            throw;
+        }
+
         await _activityLogService.LogAsync(cow.Id, "Cow record created");
         return cow;
     }
@@ -199,5 +215,12 @@ public class CowService
         }
 
         return userId;
+    }
+
+    private static bool WasDuplicatePrimaryKeyInsert(DbUpdateException exception)
+    {
+        return exception.InnerException is PostgresException postgresException
+            && postgresException.SqlState == PostgresErrorCodes.UniqueViolation
+            && postgresException.ConstraintName == "PK_Cows";
     }
 }
