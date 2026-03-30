@@ -76,12 +76,12 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowFrontend",
         policy =>
         {
-            var allowedOrigins = builder.Configuration
-                .GetSection("Cors:AllowedOrigins")
-                .Get<string[]>();
-
             policy
-                .WithOrigins(allowedOrigins ?? ["http://localhost:5173"])
+                .WithOrigins(
+                    "https://herdflow.app",
+                    "https://www.herdflow.app",
+                    "https://herdflow.vercel.app"
+                )
                 .AllowAnyHeader()
                 .AllowAnyMethod();
         });
