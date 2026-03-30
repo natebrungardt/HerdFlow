@@ -215,6 +215,20 @@
   font: inherit;
 }
 
+select.metricFieldInput,
+select.inlineFieldInput,
+select.cardInput {
+  background: var(--color-surface);
+  color: var(--text-primary);
+}
+
+select.metricFieldInput option,
+select.inlineFieldInput option,
+select.cardInput option {
+  background: var(--color-surface);
+  color: var(--text-primary);
+}
+
 .metricAccent {
   width: 54px;
   height: 4px;
