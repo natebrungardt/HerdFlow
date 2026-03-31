@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using HerdFlow.Api.Services;
 using HerdFlow.Api.DTOs;
 using HerdFlow.Api.Models;
+using HerdFlow.Api.Exceptions;
 using Microsoft.AspNetCore.Authorization;
 
 namespace HerdFlow.Api.Controllers;
@@ -54,6 +55,11 @@ public class WorkdayController : ControllerBase
     [HttpPost("{id:guid}/cows")]
     public async Task<ActionResult> AddCowsToWorkday(Guid id, [FromBody] UpdateWorkdayCowsDto dto)
     {
+        if (dto == null || dto.CowIds == null)
+        {
+            throw new ValidationException("cowIds is required.");
+        }
+
         await _service.AddCowsToWorkday(id, dto.CowIds);
         return NoContent();
     }

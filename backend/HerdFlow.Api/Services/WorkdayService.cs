@@ -110,6 +110,11 @@ public class WorkdayService
 
     public async Task AddCowsToWorkday(Guid id, List<Guid> cowIds)
     {
+        if (cowIds == null)
+        {
+            throw new ValidationException("cowIds is required.");
+        }
+
         var userId = GetCurrentUserId();
         var workday = await _context.Workdays
             .Include(w => w.WorkdayCows)
@@ -129,7 +134,7 @@ public class WorkdayService
             return;
         }
 
-        var existingCowIds = workday.WorkdayCows
+        var existingCowIds = (workday.WorkdayCows ?? new List<WorkdayCow>())
             .Select(wc => wc.CowId)
             .ToHashSet();
 
@@ -151,10 +156,14 @@ public class WorkdayService
             throw new ValidationException("One or more selected cows could not be added to the workday.");
         }
 
+        var workdayCows = workday.WorkdayCows ??= new List<WorkdayCow>();
+
         foreach (var cowId in newCowIds)
         {
-            workday.WorkdayCows.Add(new WorkdayCow
+            workdayCows.Add(new WorkdayCow
             {
+                WorkdayId = workday.Id,
+                Workday = workday,
                 CowId = cowId
             });
         }
@@ -163,16 +172,19 @@ public class WorkdayService
         {
             await _context.SaveChangesAsync();
         }
-        catch (DbUpdateException ex) when (WasDuplicateWorkdayCowInsert(ex))
+        catch (DbUpdateException ex)
         {
-            var refreshedWorkday = await _context.Workdays
-                .Include(w => w.WorkdayCows)
-                .FirstOrDefaultAsync(w => w.Id == id && w.UserId == userId);
-
-            if (refreshedWorkday is not null &&
-                distinctCowIds.All(cowId => refreshedWorkday.WorkdayCows.Any(wc => wc.CowId == cowId)))
+            if (WasDuplicateWorkdayCowInsert(ex))
             {
-                return;
+                var refreshedWorkday = await _context.Workdays
+                    .Include(w => w.WorkdayCows)
+                    .FirstOrDefaultAsync(w => w.Id == id && w.UserId == userId);
+
+                if (refreshedWorkday is not null &&
+                    distinctCowIds.All(cowId => refreshedWorkday.WorkdayCows.Any(wc => wc.CowId == cowId)))
+                {
+                    return;
+                }
             }
 
             throw;
