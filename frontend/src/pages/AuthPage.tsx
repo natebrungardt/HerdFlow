@@ -62,7 +62,9 @@ export default function AuthPage() {
     }
 
     if (!isPhoneLike) {
-      setMessage("Phone number can only include digits, spaces, dashes, and parentheses.");
+      setMessage(
+        "Phone number can only include digits, spaces, dashes, and parentheses.",
+      );
       setMessageType("error");
       setIsSubmitting(false);
       return;
@@ -87,7 +89,9 @@ export default function AuthPage() {
       return;
     }
 
-    setMessage("Account created. Check your email to confirm your account before signing in.");
+    setMessage(
+      "Account created. Check your email to confirm your account before signing in.",
+    );
     setMessageType("success");
     setPassword("");
     setIsSubmitting(false);
@@ -160,7 +164,9 @@ export default function AuthPage() {
       return;
     }
 
-    setMessage("Password reset email sent. Check your inbox for the reset link.");
+    setMessage(
+      "Password reset email sent. Check your inbox for the reset link.",
+    );
     setMessageType("success");
     setIsSubmitting(false);
   };
@@ -182,8 +188,8 @@ export default function AuthPage() {
             </div>
           </div>
           <p className="authLead">
-            Track cattle, workdays, notes, and daily ranch decisions from one
-            place that feels built for the way you actually work.
+            Track cattle, workdays, notes, and daily ranch decisions — replacing
+            your handwritten cattle notebook, calendar, or napkin.
           </p>
           <div className="authHighlightStrip">
             <div className="authHighlightPill">
@@ -244,7 +250,9 @@ export default function AuthPage() {
               >
                 <button
                   className={
-                    mode === "login" ? "authModeButton active" : "authModeButton"
+                    mode === "login"
+                      ? "authModeButton active"
+                      : "authModeButton"
                   }
                   onClick={() => {
                     setMode("login");
@@ -257,7 +265,9 @@ export default function AuthPage() {
                 </button>
                 <button
                   className={
-                    mode === "signup" ? "authModeButton active" : "authModeButton"
+                    mode === "signup"
+                      ? "authModeButton active"
+                      : "authModeButton"
                   }
                   onClick={() => {
                     setMode("signup");
