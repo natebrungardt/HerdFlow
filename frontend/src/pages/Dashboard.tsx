@@ -67,9 +67,9 @@ function Dashboard() {
   const dashboardStats = useMemo(
     () => [
       {
-        label: "Calf Counter",
-        value: cows.filter((cow) => cow.hasCalf).length,
-        to: "/cows",
+        label: "Needs Treatment",
+        value: cows.filter((cow) => cow.healthStatus !== "Healthy").length,
+        to: "/cows?filter=Needs%20Treatment",
       },
       { label: "Active Herd", value: cows.length, to: "/cows" },
       {
@@ -81,11 +81,6 @@ function Dashboard() {
         label: "Breeding",
         value: cows.filter((cow) => cow.livestockGroup === "Breeding").length,
         to: "/cows?filter=Breeding",
-      },
-      {
-        label: "Needs Treatment",
-        value: cows.filter((cow) => cow.healthStatus !== "Healthy").length,
-        to: "/cows?filter=Needs%20Treatment",
       },
       { label: "Active Workdays", value: workdays.length, to: "/workdays" },
       { label: "Archived Cows", value: archivedCows.length, to: "/removed" },
