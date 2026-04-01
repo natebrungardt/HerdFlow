@@ -1,4 +1,11 @@
-import { useEffect, useMemo, useRef, useState, type MouseEvent, useContext } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type MouseEvent,
+  useContext,
+} from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { usePendingWorkdaySelection } from "../../context/usePendingWorkdaySelection";
 import { useTheme } from "../../context/useTheme";
@@ -135,7 +142,7 @@ function Navbar() {
             to="/"
             onClick={handleNavbarNavigation("/")}
           >
-            Dashboard
+            Herd Summary
           </Link>
           <Link
             className={isActivePath("/cows") ? "active" : undefined}
@@ -195,7 +202,9 @@ function Navbar() {
                   <div className="navbarAccountMenuHeader">
                     <span className="navbarAccountMenuName">{accountName}</span>
                     {user.email ? (
-                      <span className="navbarAccountMenuEmail">{user.email}</span>
+                      <span className="navbarAccountMenuEmail">
+                        {user.email}
+                      </span>
                     ) : null}
                   </div>
                   <button

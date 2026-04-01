@@ -66,11 +66,16 @@ function Dashboard() {
 
   const dashboardStats = useMemo(
     () => [
-      { label: "Active Herd", value: cows.length, to: "/cows" },
       {
         label: "Needs Treatment",
         value: cows.filter((cow) => cow.healthStatus !== "Healthy").length,
         to: "/cows?filter=Needs%20Treatment",
+      },
+      { label: "Active Herd", value: cows.length, to: "/cows" },
+      {
+        label: "Calf Counter",
+        value: cows.filter((cow) => cow.hasCalf).length,
+        to: "/cows",
       },
       {
         label: "Breeding",
@@ -79,23 +84,17 @@ function Dashboard() {
       },
       { label: "Active Workdays", value: workdays.length, to: "/workdays" },
       { label: "Archived Cows", value: archivedCows.length, to: "/removed" },
-      {
-        label: "Archived Workdays",
-        value: archivedWorkdays.length,
-        to: "/workdays/removed",
-      },
     ],
-    [archivedCows.length, archivedWorkdays.length, cows, workdays.length],
+    [archivedCows.length, cows, workdays.length],
   );
 
   const upcomingWorkdays = useMemo(() => {
-    return [...workdays]
-      .sort((leftWorkday, rightWorkday) => {
-        return (
-          new Date(leftWorkday.date).getTime() -
-          new Date(rightWorkday.date).getTime()
-        );
-      });
+    return [...workdays].sort((leftWorkday, rightWorkday) => {
+      return (
+        new Date(leftWorkday.date).getTime() -
+        new Date(rightWorkday.date).getTime()
+      );
+    });
   }, [workdays]);
 
   const attentionCows = useMemo(() => {
@@ -126,7 +125,7 @@ function Dashboard() {
         <div className="allCowsContent">
           <div className="allCowsHeader">
             <div className="titleBlock">
-              <h1 className="pageTitle">Dashboard</h1>
+              <h1 className="pageTitle">Herd Summary</h1>
               <p className="pageSubtitle">
                 Get a quick view of herd health, workday activity, and the
                 records that need attention.

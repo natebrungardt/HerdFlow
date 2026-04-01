@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import type { Cow } from "../../types/cow";
 
 type SelectedCowsSummaryProps = {
@@ -32,17 +33,24 @@ function SelectedCowsSummary({
       ) : (
         <div className="workdaySelectionPills">
           {selectedCows.map((cow) => (
-            <button
-              key={cow.id}
-              type="button"
-              className="workdaySelectionPill"
-              onClick={() => onRemove(cow.id)}
-            >
-              <span>Tag #{cow.tagNumber}</span>
-              <span className="workdaySelectionPillMeta">
-                {cow.healthStatus || "Unknown health status"}
-              </span>
-            </button>
+            <div key={cow.id} className="workdaySelectionPill">
+              <Link className="workdaySelectionPillLink" to={`/cows/${cow.id}`}>
+                <span>Tag #{cow.tagNumber}</span>
+                <span className="workdaySelectionPillMeta">
+                  {cow.healthStatus || "Unknown health status"}
+                </span>
+              </Link>
+
+              <button
+                type="button"
+                className="workdaySelectionRemoveButton"
+                onClick={() => onRemove(cow.id)}
+                aria-label={`Remove cow #${cow.tagNumber}`}
+                title={`Remove cow #${cow.tagNumber}`}
+              >
+                X
+              </button>
+            </div>
           ))}
         </div>
       )}

@@ -437,7 +437,11 @@ function CowDetailPage() {
       key: "hasCalf",
       label: "Has Calf",
       content: (
-        <HasCalfToggle compact value={formData.hasCalf} onChange={updateHasCalf} />
+        <HasCalfToggle
+          compact
+          value={formData.hasCalf}
+          onChange={updateHasCalf}
+        />
       ),
     },
   ];
@@ -472,7 +476,7 @@ function CowDetailPage() {
               className="deleteButton deleteButtonCompact"
               onClick={() => setShowDeleteModal(true)}
             >
-              Archive Cow
+              Remove Cow
             </button>
           )}
         </div>

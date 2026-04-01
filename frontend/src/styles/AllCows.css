@@ -400,6 +400,12 @@
   padding: 18px;
 }
 
+.workdaySelectedSummaryCard {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  min-height: 100%;
+}
+
 .workdaySaveStatus {
   display: inline-flex;
   align-items: center;
@@ -440,7 +446,8 @@
 .workdayNotesInput {
   width: 100%;
   min-height: 140px;
-  resize: vertical;
+  height: 140px;
+  resize: none;
   border-radius: 14px;
   border: 1px solid var(--input-border);
   background: var(--surface-subtle);
@@ -490,16 +497,18 @@
 }
 
 .workdaySelectionPills {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
   gap: 10px;
+  max-height: 480px;
+  overflow-y: auto;
+  padding-right: 6px;
 }
 
 .workdaySelectionPill {
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 2px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
   min-width: 0;
   padding: 12px 14px;
   border-radius: 14px;
@@ -508,9 +517,48 @@
   color: var(--text-primary);
 }
 
+.workdaySelectionPillLink {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+  flex: 1;
+}
+
+.workdaySelectionPillLink:hover {
+  color: var(--text-primary);
+}
+
 .workdaySelectionPillMeta {
   color: var(--text-placeholder);
   font-size: 0.8rem;
+}
+
+.workdaySelectionRemoveButton {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  border: 1px solid var(--card-border);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-muted-strong);
+  font-size: 0.85rem;
+  font-weight: 800;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    background-color 0.18s ease,
+    border-color 0.18s ease,
+    color 0.18s ease,
+    transform 0.18s ease;
+}
+
+.workdaySelectionRemoveButton:hover {
+  background: var(--danger-bg-subtle);
+  border-color: var(--danger-border-subtle);
+  color: #ffd2d7;
+  transform: translateY(-1px);
 }
 
 .workdaySelectableRow {
@@ -533,6 +581,14 @@
 @media (max-width: 960px) {
   .workdayCreateTopGrid {
     grid-template-columns: 1fr;
+  }
+
+  .workdaySelectedSummaryCard {
+    min-height: 0;
+  }
+
+  .workdaySelectionPills {
+    max-height: 360px;
   }
 
   .workdayComposerActions {
