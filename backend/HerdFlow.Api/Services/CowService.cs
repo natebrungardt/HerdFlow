@@ -8,6 +8,8 @@ using Npgsql;
 using System.Text.RegularExpressions;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
+using System.Globalization;
+using System.Text;
 
 namespace HerdFlow.Api.Services;
 
@@ -164,6 +166,63 @@ public class CowService
             .ToListAsync();
     }
 
+    public async Task<string> ExportCowsCsvAsync()
+    {
+        var userId = GetCurrentUserId();
+        var cows = await _context.Cows
+            .AsNoTracking()
+            .Include(c => c.Notes
+                .Where(n => n.UserId == userId)
+                .OrderBy(n => n.CreatedAt))
+            .Where(c => c.UserId == userId && !c.IsRemoved)
+            .OrderBy(c => c.TagNumber)
+            .ToListAsync();
+
+        var builder = new StringBuilder();
+        builder.AppendLine(string.Join(",",
+            EscapeCsv("Tag Number"),
+            EscapeCsv("Owner Name"),
+            EscapeCsv("Livestock Group"),
+            EscapeCsv("Sex"),
+            EscapeCsv("Breed"),
+            EscapeCsv("Date of Birth"),
+            EscapeCsv("Health Status"),
+            EscapeCsv("Heat Status"),
+            EscapeCsv("Pregnancy Status"),
+            EscapeCsv("Has Calf"),
+            EscapeCsv("Purchase Price"),
+            EscapeCsv("Sale Price"),
+            EscapeCsv("Purchase Date"),
+            EscapeCsv("Sale Date"),
+            EscapeCsv("Notes")));
+
+        foreach (var cow in cows)
+        {
+            var notes = string.Join(" | ", cow.Notes
+                .OrderBy(n => n.CreatedAt)
+                .Select(n => $"{n.CreatedAt:yyyy-MM-dd}: {n.Content.Trim()}"));
+
+            builder.AppendLine(string.Join(",",
+                EscapeCsv(cow.TagNumber),
+                EscapeCsv(cow.OwnerName),
+                EscapeCsv(cow.LivestockGroup.ToString()),
+                EscapeCsv(cow.Sex),
+                EscapeCsv(cow.Breed),
+                EscapeCsv(FormatDate(cow.DateOfBirth)),
+                EscapeCsv(cow.HealthStatus.ToString()),
+                EscapeCsv(cow.HeatStatus?.ToString()),
+                EscapeCsv(cow.PregnancyStatus),
+                EscapeCsv(cow.HasCalf ? "Yes" : "No"),
+                EscapeCsv(FormatDecimal(cow.PurchasePrice)),
+                EscapeCsv(FormatDecimal(cow.SalePrice)),
+                EscapeCsv(FormatDate(cow.PurchaseDate)),
+                EscapeCsv(FormatDate(cow.SaleDate)),
+                EscapeCsv(notes)));
+        }
+
+        return builder.ToString();
+    }
+
     public async Task RestoreCowAsync(Guid id)
     {
         var cow = await FindCowAsync(id);
@@ -226,5 +285,22 @@ public class CowService
         return exception.InnerException is PostgresException postgresException
             && postgresException.SqlState == PostgresErrorCodes.UniqueViolation
             && postgresException.ConstraintName == "PK_Cows";
+    }
+
+    private static string FormatDate(DateOnly? date)
+    {
+        return date?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) ?? string.Empty;
+    }
+
+    private static string FormatDecimal(decimal? value)
+    {
+        return value?.ToString("0.##", CultureInfo.InvariantCulture) ?? string.Empty;
+    }
+
+    private static string EscapeCsv(string? value)
+    {
+        var sanitizedValue = value ?? string.Empty;
+        var escapedValue = sanitizedValue.Replace("\"", "\"\"");
+        return $"\"{escapedValue}\"";
     }
 }

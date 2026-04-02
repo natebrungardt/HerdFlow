@@ -24,6 +24,37 @@ export async function getCows(): Promise<Cow[]> {
   return response.json();
 }
 
+function getFilenameFromDisposition(header: string | null): string {
+  if (!header) {
+    return "herd-export.csv";
+  }
+
+  const utf8Match = header.match(/filename\*=UTF-8''([^;]+)/i);
+  if (utf8Match) {
+    return decodeURIComponent(utf8Match[1]);
+  }
+
+  const basicMatch = header.match(/filename="?([^"]+)"?/i);
+  return basicMatch?.[1] ?? "herd-export.csv";
+}
+
+export async function exportCowsCsv(): Promise<void> {
+  const response = await apiFetch("/cows/export");
+  const fileName = getFilenameFromDisposition(
+    response.headers.get("Content-Disposition"),
+  );
+  const blob = await response.blob();
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+
+  link.href = url;
+  link.download = fileName;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
 export async function createCow(cowData: CreateCowInput): Promise<Cow> {
   const response = await apiFetch("/cows", {
     method: "POST",

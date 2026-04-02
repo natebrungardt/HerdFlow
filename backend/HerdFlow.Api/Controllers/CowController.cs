@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using HerdFlow.Api.DTOs;
 using HerdFlow.Api.Services;
 using Microsoft.AspNetCore.Authorization;
+using System.Text;
 
 namespace HerdFlow.Api.Controllers;
 
@@ -25,6 +26,14 @@ public class CowController : ControllerBase
         var cows = await _cowService.GetCowsAsync();
 
         return Ok(cows);
+    }
+
+    [HttpGet("export")]
+    public async Task<IActionResult> ExportCows()
+    {
+        var csv = await _cowService.ExportCowsCsvAsync();
+        var fileName = $"herd-export-{DateOnly.FromDateTime(DateTime.UtcNow):yyyy-MM-dd}.csv";
+        return File(Encoding.UTF8.GetBytes(csv), "text/csv; charset=utf-8", fileName);
     }
 
     [HttpGet("{id:guid}")]

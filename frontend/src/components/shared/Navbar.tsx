@@ -12,6 +12,7 @@ import { useTheme } from "../../context/useTheme";
 import Modal from "./Modal";
 import { supabase } from "../../lib/supabase";
 import { AuthContext } from "../../context/AuthContext";
+import { exportCowsCsv } from "../../services/cowService";
 
 function Navbar() {
   const navigate = useNavigate();
@@ -20,6 +21,8 @@ function Navbar() {
   const { theme, toggleTheme } = useTheme();
   const [pendingPath, setPendingPath] = useState<string | null>(null);
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+  const [exportError, setExportError] = useState("");
   const accountMenuRef = useRef<HTMLDivElement | null>(null);
 
   const { user } = useContext(AuthContext);
@@ -56,6 +59,7 @@ function Navbar() {
         !accountMenuRef.current.contains(event.target as Node)
       ) {
         setIsAccountMenuOpen(false);
+        setExportError("");
       }
     }
 
@@ -79,6 +83,28 @@ function Navbar() {
   const handleToggleTheme = () => {
     toggleTheme();
     setIsAccountMenuOpen(false);
+    setExportError("");
+  };
+
+  const handleExportData = async () => {
+    setExportError("");
+    setIsExporting(true);
+
+    try {
+      await exportCowsCsv();
+      setIsAccountMenuOpen(false);
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to export herd data";
+      setExportError(message);
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const handleToggleAccountMenu = () => {
+    setExportError("");
+    setIsAccountMenuOpen((open) => !open);
   };
 
   function isActivePath(targetPath: string) {
@@ -183,7 +209,7 @@ function Navbar() {
             <div className="navbarAccount" ref={accountMenuRef}>
               <button
                 className="navbarAccountButton"
-                onClick={() => setIsAccountMenuOpen((open) => !open)}
+                onClick={handleToggleAccountMenu}
                 type="button"
               >
                 <span className="navbarAvatar">{accountInitial}</span>
@@ -207,20 +233,23 @@ function Navbar() {
                       </span>
                     ) : null}
                   </div>
-                  <button
+                  {exportError ? (
+                    <div className="notesErrorBanner">{exportError}</div>
+                  ) : null}
+                  {/* <button
                     className="navbarMenuItem"
                     onClick={() => setIsAccountMenuOpen(false)}
                     type="button"
                   >
                     Profile
-                  </button>
-                  <button
+                  </button> */}
+                  {/* <button
                     className="navbarMenuItem"
                     onClick={() => setIsAccountMenuOpen(false)}
                     type="button"
                   >
                     Farm Settings
-                  </button>
+                  </button> */}
                   <button
                     className="navbarMenuItem"
                     onClick={handleToggleTheme}
@@ -230,10 +259,11 @@ function Navbar() {
                   </button>
                   <button
                     className="navbarMenuItem"
-                    onClick={() => setIsAccountMenuOpen(false)}
+                    disabled={isExporting}
+                    onClick={handleExportData}
                     type="button"
                   >
-                    Export Data
+                    {isExporting ? "Exporting..." : "Export Data"}
                   </button>
                   <button
                     className="navbarMenuItem"
