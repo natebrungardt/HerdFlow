@@ -60,3 +60,4 @@ appsettings.Development.json
 appsettings.*.json
 node_modules/
 dist/
+apps/web/.vite/
