@@ -1,5 +1,6 @@
-import { createContext, useEffect, useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import type { User } from "@supabase/supabase-js";
+import { AuthContext } from "./AuthContext";
 import { supabase } from "../lib/supabase";
 
 const PASSWORD_RECOVERY_STORAGE_KEY = "herdflow-password-recovery";
@@ -39,50 +40,41 @@ function setStoredRecoveryFlag(isActive: boolean) {
   window.sessionStorage.removeItem(PASSWORD_RECOVERY_STORAGE_KEY);
 }
 
-type AuthContextValue = {
-  user: User | null;
-  loading: boolean;
-  isPasswordRecovery: boolean;
-  setPasswordRecovery: (isActive: boolean) => void;
-};
-
-export const AuthContext = createContext<AuthContextValue>({
-  user: null,
-  loading: true,
-  isPasswordRecovery: false,
-  setPasswordRecovery: () => {},
-});
+function createDevUser(): User {
+  return {
+    id: "dev-user",
+    email: "dev@localhost",
+    app_metadata: {
+      provider: "development",
+      providers: ["development"],
+    },
+    user_metadata: {
+      full_name: "Development User",
+    },
+    aud: "authenticated",
+    created_at: new Date().toISOString(),
+  } as User;
+}
 
 type AuthProviderProps = {
   children: ReactNode;
 };
 
 export function AuthProvider({ children }: AuthProviderProps) {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [isPasswordRecovery, setIsPasswordRecovery] = useState(
-    () => hasRecoveryParams() || getStoredRecoveryFlag(),
-  );
   const devAuthBypassEnabled =
     import.meta.env.DEV &&
     import.meta.env.VITE_DEV_AUTH_BYPASS === "true";
 
+  const [user, setUser] = useState<User | null>(() =>
+    devAuthBypassEnabled ? createDevUser() : null,
+  );
+  const [loading, setLoading] = useState(() => !devAuthBypassEnabled);
+  const [isPasswordRecovery, setIsPasswordRecovery] = useState(
+    () => hasRecoveryParams() || getStoredRecoveryFlag(),
+  );
+
   useEffect(() => {
     if (devAuthBypassEnabled) {
-      setUser({
-        id: "dev-user",
-        email: "dev@localhost",
-        app_metadata: {
-          provider: "development",
-          providers: ["development"],
-        },
-        user_metadata: {
-          full_name: "Development User",
-        },
-        aud: "authenticated",
-        created_at: new Date().toISOString(),
-      } as User);
-      setLoading(false);
       return;
     }
 
