@@ -95,14 +95,14 @@ export default function ResetPasswordPage() {
     setPasswordRecovery(false);
     setIsSubmitting(false);
     window.setTimeout(() => {
-      navigate("/");
+      navigate("/auth?mode=login");
     }, 1200);
   };
 
   const handleBackToAuth = async () => {
     await supabase.auth.signOut();
     setPasswordRecovery(false);
-    navigate("/");
+    navigate("/auth?mode=login");
   };
 
   return (

@@ -16,6 +16,7 @@ import AuthPage from "./pages/AuthPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 import { useContext } from "react";
 import { AuthContext } from "./context/AuthContext";
+import LandingPage from "./pages/LandingPage";
 
 function App() {
   const { user, loading, isPasswordRecovery } = useContext(AuthContext);
@@ -28,9 +29,11 @@ function App() {
   // If NOT logged in → only show auth page
   if (!user) {
     return (
-      <ThemeProvider>
+      <ThemeProvider forcedTheme="light">
         <BrowserRouter>
           <Routes>
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/auth" element={<AuthPage />} />
             <Route path="/reset-password" element={<ResetPasswordPage />} />
             <Route
               path="*"
@@ -38,7 +41,7 @@ function App() {
                 isPasswordRecovery ? (
                   <Navigate to="/reset-password" replace />
                 ) : (
-                  <AuthPage />
+                  <Navigate to="/" replace />
                 )
               }
             />
@@ -50,7 +53,7 @@ function App() {
 
   if (isPasswordRecovery) {
     return (
-      <ThemeProvider>
+      <ThemeProvider forcedTheme="light">
         <BrowserRouter>
           <Routes>
             <Route path="/reset-password" element={<ResetPasswordPage />} />

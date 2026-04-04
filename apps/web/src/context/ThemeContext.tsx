@@ -13,6 +13,11 @@ type ThemeContextValue = {
   toggleTheme: () => void;
 };
 
+type ThemeProviderProps = {
+  children: ReactNode;
+  forcedTheme?: Theme;
+};
+
 const STORAGE_KEY = "herdflow-theme";
 
 const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
@@ -29,14 +34,28 @@ function getInitialTheme(): Theme {
     : "dark";
 }
 
-export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setTheme] = useState<Theme>(getInitialTheme);
+export function ThemeProvider({
+  children,
+  forcedTheme,
+}: ThemeProviderProps) {
+  const [theme, setTheme] = useState<Theme>(forcedTheme ?? getInitialTheme);
+
+  useEffect(() => {
+    if (!forcedTheme) {
+      return;
+    }
+
+    setTheme(forcedTheme);
+  }, [forcedTheme]);
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
     document.documentElement.style.colorScheme = theme;
-    window.localStorage.setItem(STORAGE_KEY, theme);
-  }, [theme]);
+
+    if (!forcedTheme) {
+      window.localStorage.setItem(STORAGE_KEY, theme);
+    }
+  }, [forcedTheme, theme]);
 
   const value = useMemo(
     () => ({
