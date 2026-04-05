@@ -41,11 +41,12 @@ export function ThemeProvider({
   const [theme, setTheme] = useState<Theme>(forcedTheme ?? getInitialTheme);
 
   useEffect(() => {
-    if (!forcedTheme) {
+    if (forcedTheme) {
+      setTheme(forcedTheme);
       return;
     }
 
-    setTheme(forcedTheme);
+    setTheme(getInitialTheme());
   }, [forcedTheme]);
 
   useEffect(() => {
