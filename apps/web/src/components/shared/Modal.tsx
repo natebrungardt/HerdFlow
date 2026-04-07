@@ -8,6 +8,7 @@ type ModalProps = {
   onCancel: () => void;
   confirmText?: string;
   hideCancel?: boolean;
+  confirmVariant?: "danger" | "success" | "neutral";
 };
 
 export default function Modal({
@@ -18,15 +19,12 @@ export default function Modal({
   onCancel,
   confirmText,
   hideCancel = false,
+  confirmVariant,
 }: ModalProps) {
   if (!isOpen) return null;
 
   const confirmButtonClassName =
-    confirmText === "Restore Cow"
-      ? "success"
-      : hideCancel
-        ? "neutral"
-        : "danger";
+    confirmVariant ?? (hideCancel ? "neutral" : "danger");
 
   return (
     <div className="modalOverlay" onClick={onCancel}>

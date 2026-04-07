@@ -17,6 +17,7 @@ import { getActivities } from "../../services/activityService";
 import {
   type CreateCowInput,
   archiveCow,
+  createCow,
   getCowById,
   restoreCow,
   updateCow,
@@ -49,6 +50,11 @@ type EditingFieldName =
 
 type ApiError = Error & {
   status?: number;
+};
+
+type AddCalfModalState = {
+  isOpen: boolean;
+  motherCowId: string | null;
 };
 
 const editableFields: EditableFieldName[] = [
@@ -89,6 +95,10 @@ function formatBoolean(value: boolean | null | undefined) {
   return value ? "Yes" : "No";
 }
 
+function formatDateForApi(date: Date) {
+  return date.toISOString().split("T")[0];
+}
+
 function toCreateCowInput(cow: Cow): CreateCowInput {
   return {
     tagNumber: cow.tagNumber,
@@ -125,6 +135,11 @@ function CowDetailPage() {
   const [activitiesError, setActivitiesError] = useState("");
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showRestoreModal, setShowRestoreModal] = useState(false);
+  const [addCalfModal, setAddCalfModal] = useState<AddCalfModalState>({
+    isOpen: false,
+    motherCowId: null,
+  });
+  const [creatingCalf, setCreatingCalf] = useState(false);
 
   useEffect(() => {
     async function loadCow() {
@@ -309,11 +324,90 @@ function CowDetailPage() {
 
     const next = { ...formData, hasCalf: value } as Cow;
     setFormData(next);
+    setError("");
 
-    const updated = await updateCow(cow.id, toCreateCowInput(next));
-    setCow(updated);
-    setFormData(updated);
-    await refreshActivities();
+    try {
+      const updated = await updateCow(cow.id, toCreateCowInput(next));
+      setCow(updated);
+      setFormData(updated);
+      await refreshActivities();
+
+      if (!cow.hasCalf && value) {
+        setAddCalfModal({
+          isOpen: true,
+          motherCowId: cow.id,
+        });
+      }
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to update cow";
+      setError(message);
+      setFormData(cow);
+    }
+  }
+
+  async function createCalfForCow(mother: Cow) {
+    const currentYear = new Date().getFullYear();
+    const baseTagNumber = `${mother.tagNumber}-${currentYear}`;
+    const dateOfBirth = formatDateForApi(new Date());
+
+    for (let suffix = 0; suffix < 100; suffix += 1) {
+      const tagNumber =
+        suffix === 0 ? baseTagNumber : `${baseTagNumber}-${suffix}`;
+
+      try {
+        await createCow({
+          tagNumber,
+          livestockGroup: "Calf",
+          ownerName: mother.ownerName,
+          sex: "",
+          breed: mother.breed ?? "",
+          dateOfBirth,
+          hasCalf: false,
+          healthStatus: "Healthy",
+          heatStatus: null,
+          pregnancyStatus: "N/A",
+          purchaseDate: null,
+          saleDate: null,
+          purchasePrice: null,
+          salePrice: null,
+          notes: null,
+        });
+        return;
+      } catch (err) {
+        const apiErr = err as ApiError;
+
+        if (apiErr?.status === 409) {
+          continue;
+        }
+
+        throw err;
+      }
+    }
+
+    throw new Error("Failed to generate a unique calf tag number.");
+  }
+
+  async function handleConfirmAddCalf() {
+    if (!cow || addCalfModal.motherCowId !== cow.id) {
+      setAddCalfModal({ isOpen: false, motherCowId: null });
+      return;
+    }
+
+    setCreatingCalf(true);
+    setError("");
+
+    try {
+      await createCalfForCow(cow);
+      setAddCalfModal({ isOpen: false, motherCowId: null });
+      navigate("/cows");
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to add calf to herd";
+      setError(message);
+    } finally {
+      setCreatingCalf(false);
+    }
   }
 
   function renderEditableField(config: {
@@ -670,10 +764,27 @@ function CowDetailPage() {
         title="Restore Cow"
         message={`Are you sure you want to restore cow #${cow.tagNumber}? This will move it back to your active herd.`}
         confirmText="Restore Cow"
+        confirmVariant="success"
         onCancel={() => setShowRestoreModal(false)}
         onConfirm={async () => {
           await handleRestore();
           setShowRestoreModal(false);
+        }}
+      />
+
+      <Modal
+        isOpen={addCalfModal.isOpen}
+        title="Add Calf to Herd"
+        message="Do you want to add this calf to your herd?"
+        confirmText={creatingCalf ? "Adding..." : "Add Calf"}
+        confirmVariant="success"
+        onCancel={() => {
+          if (creatingCalf) return;
+          setAddCalfModal({ isOpen: false, motherCowId: null });
+        }}
+        onConfirm={() => {
+          if (creatingCalf) return;
+          void handleConfirmAddCalf();
         }}
       />
     </div>
