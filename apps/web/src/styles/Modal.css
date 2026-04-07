@@ -84,3 +84,19 @@
   transform: translateY(0);
   box-shadow: 0 2px 8px rgba(79, 159, 111, 0.4);
 }
+
+.modalActions .neutral {
+  background: var(--surface-strong);
+  color: var(--text-primary);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+}
+
+.modalActions .neutral:hover {
+  transform: translateY(-1px);
+  background: var(--surface-subtle-hover);
+}
+
+.modalActions .neutral:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.14);
+}

@@ -5,6 +5,7 @@ import CowHeroCard from "../../components/cows/CowHeroCard";
 import HasCalfToggle from "../../components/cows/HasCalfToggle";
 import CowSummaryCard from "../../components/cows/CowSummaryCard";
 import HealthStatusToggle from "../../components/cows/HealthStatusToggle";
+import Modal from "../../components/shared/Modal";
 import {
   heatStatusOptions,
   livestockGroupOptions,
@@ -77,6 +78,20 @@ function AddCowPage() {
   const [formData, setFormData] = useState<FormState>(initialFormState);
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
+  const [showHasCalfSaveFirstModal, setShowHasCalfSaveFirstModal] =
+    useState(false);
+
+  function handleHasCalfChange(value: boolean) {
+    if (value) {
+      setShowHasCalfSaveFirstModal(true);
+      return;
+    }
+
+    setFormData((current) => ({
+      ...current,
+      hasCalf: false,
+    }));
+  }
 
   function handleChange(
     event: React.ChangeEvent<
@@ -327,12 +342,7 @@ function AddCowPage() {
         <HasCalfToggle
           compact
           value={formData.hasCalf}
-          onChange={(value) =>
-            setFormData((current) => ({
-              ...current,
-              hasCalf: value,
-            }))
-          }
+          onChange={handleHasCalfChange}
         />
       ),
     },
@@ -512,6 +522,16 @@ function AddCowPage() {
           </div>
         </form>
       </div>
+
+      <Modal
+        isOpen={showHasCalfSaveFirstModal}
+        title="Save Cow First"
+        message="Save the cow first, then you can mark ‘Has Calf’ as yes."
+        confirmText="OK"
+        hideCancel
+        onCancel={() => setShowHasCalfSaveFirstModal(false)}
+        onConfirm={() => setShowHasCalfSaveFirstModal(false)}
+      />
     </div>
   );
 }
