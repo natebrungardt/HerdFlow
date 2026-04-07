@@ -23,7 +23,7 @@
 }
 
 .eyebrow {
-  font-size: 0.78rem;
+  font-size: 0.83rem;
   text-transform: uppercase;
   letter-spacing: 0.14em;
   color: var(--text-muted-soft);
@@ -51,7 +51,7 @@
 
 .cowTitle {
   margin: 0;
-  font-size: 2rem;
+  font-size: 2.12rem;
   line-height: 1.1;
   font-weight: 700;
   color: var(--text-primary);
@@ -60,7 +60,7 @@
 .cowSubtitle {
   margin: 8px 0 0;
   color: var(--text-placeholder);
-  font-size: 0.96rem;
+  font-size: 1.03rem;
 }
 
 .heroTitleInput {
@@ -79,7 +79,7 @@
   padding: 10px 14px;
   border-radius: 8px;
   margin-bottom: 12px;
-  font-size: 0.9rem;
+  font-size: 0.96rem;
   border: 1px solid rgba(255, 0, 0, 0.2);
 }
 
@@ -91,7 +91,7 @@
   background: linear-gradient(180deg, #c74652 0%, #9f2e39 100%);
   color: #ffffff;
   font-weight: 700;
-  font-size: 0.95rem;
+  font-size: 1rem;
   cursor: pointer;
   box-shadow: 0 10px 25px rgba(217, 76, 87, 0.22);
   transition:
@@ -147,7 +147,7 @@
   background: var(--surface-strong);
   color: #ffffff;
   font-weight: 700;
-  font-size: 0.95rem;
+  font-size: 1rem;
   cursor: pointer;
   transition:
     transform 0.18s ease,
@@ -177,7 +177,7 @@
 
 .metricLabel {
   color: var(--text-muted-strong);
-  font-size: 0.78rem;
+  font-size: 0.83rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   margin-bottom: 8px;
@@ -191,13 +191,13 @@
 .metricToggleRowCompact .metricToggleButton {
   min-width: 84px;
   height: 44px;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   padding: 8px 12px;
 }
 
 .metricValue {
   color: var(--text-primary);
-  font-size: 1.05rem;
+  font-size: 1.12rem;
   font-weight: 700;
   line-height: 1.25;
   margin-bottom: 10px;
@@ -248,13 +248,13 @@ select.cardInput option {
 .cardTitle {
   margin: 0;
   color: var(--text-primary);
-  font-size: 1.08rem;
+  font-size: 1.16rem;
   font-weight: 700;
 }
 
 .cardSubtle {
   color: var(--text-muted-soft);
-  font-size: 0.84rem;
+  font-size: 0.9rem;
 }
 
 .infoGrid {
@@ -282,7 +282,7 @@ select.cardInput option {
 
 .infoLabel {
   color: var(--text-muted-soft);
-  font-size: 0.76rem;
+  font-size: 0.82rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   margin-bottom: 8px;
@@ -290,7 +290,7 @@ select.cardInput option {
 
 .infoValue {
   color: var(--text-primary);
-  font-size: 0.98rem;
+  font-size: 1.04rem;
   font-weight: 600;
   line-height: 1.35;
   word-break: break-word;
@@ -314,6 +314,7 @@ select.metricFieldInput {
   -webkit-appearance: none;
   -moz-appearance: none;
   padding: 0.72rem 2.6rem 0.72rem 0.95rem;
+  font-size: 1rem;
   border: 1px solid var(--input-border);
   border-radius: 12px;
   background-color: var(--surface-subtle);
@@ -421,7 +422,7 @@ select.metricFieldInput:focus {
 
 .ownerName {
   color: var(--text-primary);
-  font-size: 0.98rem;
+  font-size: 1.04rem;
   font-weight: 700;
   margin-bottom: 4px;
   word-break: break-word;
@@ -429,7 +430,7 @@ select.metricFieldInput:focus {
 
 .ownerRole {
   color: var(--text-muted-strong);
-  font-size: 0.84rem;
+  font-size: 0.9rem;
 }
 
 .kpiStack {
@@ -447,12 +448,12 @@ select.metricFieldInput:focus {
 
 .kpiLabel {
   color: var(--text-muted-strong);
-  font-size: 0.88rem;
+  font-size: 0.94rem;
 }
 
 .kpiValue {
   color: var(--text-primary);
-  font-size: 0.94rem;
+  font-size: 1rem;
   font-weight: 700;
   text-align: right;
 }
@@ -499,13 +500,13 @@ select.metricFieldInput:focus {
 
 .activityText {
   color: var(--text-secondary);
-  font-size: 0.94rem;
+  font-size: 1rem;
   line-height: 1.45;
 }
 
 .activityMeta {
   color: var(--text-muted-soft);
-  font-size: 0.8rem;
+  font-size: 0.86rem;
   margin-top: 4px;
 }
 
@@ -554,7 +555,7 @@ select.metricFieldInput:focus {
   }
 
   .cowTitle {
-    font-size: 1.55rem;
+    font-size: 1.64rem;
   }
 
   .heroActions {
@@ -592,12 +593,12 @@ select.metricFieldInput:focus {
 
 @media (max-width: 520px) {
   .cowTitle {
-    font-size: 1.35rem;
+    font-size: 1.42rem;
   }
 
   .cowSubtitle,
   .activityText {
-    font-size: 0.9rem;
+    font-size: 0.96rem;
   }
 
   .metricCard,
@@ -607,7 +608,7 @@ select.metricFieldInput:focus {
 
   .metricToggleButton {
     min-width: 0;
-    font-size: 0.88rem;
+    font-size: 0.93rem;
   }
 
   .metricToggleRow {
