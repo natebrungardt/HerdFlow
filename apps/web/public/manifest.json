@@ -3,8 +3,8 @@
   "short_name": "HerdFlow",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0b1f14",
-  "theme_color": "#0b1f14",
+  "background_color": "#2F5D3A",
+  "theme_color": "#2F5D3A",
   "icons": [
     {
       "src": "/icon-192.png",
