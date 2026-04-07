@@ -20,6 +20,20 @@ public class CowServiceTests
     }
 
     [Fact]
+    public async Task CreateCowAsync_sets_created_at_timestamp()
+    {
+        await using var testContext = new ServiceTestContext();
+        var service = testContext.CreateCowService();
+
+        var beforeCreate = DateTime.UtcNow;
+        var cow = await service.CreateCowAsync(TestData.CreateCowDto(tagNumber: "A-101"));
+        var afterCreate = DateTime.UtcNow;
+
+        cow.CreatedAt.Should().BeOnOrAfter(beforeCreate.AddSeconds(-1));
+        cow.CreatedAt.Should().BeOnOrBefore(afterCreate.AddSeconds(1));
+    }
+
+    [Fact]
     public async Task CreateCowAsync_rejects_invalid_tag_number()
     {
         await using var testContext = new ServiceTestContext();

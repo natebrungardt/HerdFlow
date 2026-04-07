@@ -29,6 +29,24 @@ public class CowApiIntegrationTests
     }
 
     [Fact]
+    public async Task GetCows_returns_created_at_for_cows()
+    {
+        await using var factory = new HerdFlowApiFactory();
+        var createdAt = new DateTime(2026, 4, 6, 12, 0, 0, DateTimeKind.Utc);
+        await factory.SeedAsync(dbContext =>
+        {
+            dbContext.Cows.Add(TestData.Cow("user-a", "A-100", createdAt: createdAt));
+            return Task.CompletedTask;
+        });
+        using var client = factory.CreateClientForUser("user-a");
+
+        var cows = await client.GetFromJsonAsync<List<Cow>>("/api/cows", ApiJson.Options);
+
+        cows.Should().ContainSingle();
+        cows![0].CreatedAt.Should().Be(createdAt);
+    }
+
+    [Fact]
     public async Task CreateCow_returns_created_cow_payload()
     {
         await using var factory = new HerdFlowApiFactory();
@@ -52,6 +70,7 @@ public class CowApiIntegrationTests
         cow.Should().NotBeNull();
         cow!.TagNumber.Should().Be("A-100");
         cow.UserId.Should().Be("user-a");
+        cow.CreatedAt.Should().NotBe(default);
     }
 
     [Fact]

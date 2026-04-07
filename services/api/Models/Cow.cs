@@ -44,6 +44,8 @@ public class Cow
     public DateOnly? PurchaseDate { get; set; }
     public DateOnly? SaleDate { get; set; }
 
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
     public bool IsRemoved { get; set; } = false;
     public DateTime? RemovedAt { get; set; }
 

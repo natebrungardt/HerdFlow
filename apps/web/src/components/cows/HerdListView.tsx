@@ -70,6 +70,39 @@ function normalizeSearchValue(value: string) {
 
 function defaultSortCows(cows: Cow[]) {
   return [...cows].sort((leftCow, rightCow) => {
+    const leftCreatedAt = leftCow.createdAt
+      ? new Date(leftCow.createdAt).getTime()
+      : null;
+    const rightCreatedAt = rightCow.createdAt
+      ? new Date(rightCow.createdAt).getTime()
+      : null;
+
+    if (
+      leftCreatedAt !== null &&
+      rightCreatedAt !== null &&
+      !Number.isNaN(leftCreatedAt) &&
+      !Number.isNaN(rightCreatedAt) &&
+      leftCreatedAt !== rightCreatedAt
+    ) {
+      return rightCreatedAt - leftCreatedAt;
+    }
+
+    if (
+      leftCreatedAt !== null &&
+      !Number.isNaN(leftCreatedAt) &&
+      (rightCreatedAt === null || Number.isNaN(rightCreatedAt))
+    ) {
+      return -1;
+    }
+
+    if (
+      rightCreatedAt !== null &&
+      !Number.isNaN(rightCreatedAt) &&
+      (leftCreatedAt === null || Number.isNaN(leftCreatedAt))
+    ) {
+      return 1;
+    }
+
     const leftTagNumber = getNormalizedTagNumber(leftCow.tagNumber);
     const rightTagNumber = getNormalizedTagNumber(rightCow.tagNumber);
 

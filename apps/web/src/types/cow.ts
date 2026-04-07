@@ -14,6 +14,7 @@ export type Cow = {
   salePrice?: number | null;
   purchaseDate?: string | null;
   saleDate?: string | null;
+  createdAt: string;
   removedAt?: string | null;
   notes?: string | null;
   isRemoved: boolean;
