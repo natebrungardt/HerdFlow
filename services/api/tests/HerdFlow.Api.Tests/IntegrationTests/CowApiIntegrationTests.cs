@@ -55,6 +55,31 @@ public class CowApiIntegrationTests
     }
 
     [Fact]
+    public async Task CreateCow_accepts_calf_livestock_group()
+    {
+        await using var factory = new HerdFlowApiFactory();
+        using var client = factory.CreateClientForUser("user-a");
+
+        var response = await client.PostAsJsonAsync("/api/cows", new
+        {
+            tagNumber = "A-101",
+            ownerName = "Dev Ranch",
+            livestockGroup = "Calf",
+            breed = "Angus",
+            sex = "Female",
+            healthStatus = "Healthy",
+            heatStatus = "WatchHeat",
+            pregnancyStatus = "Open",
+            hasCalf = false
+        });
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var cow = await response.Content.ReadFromJsonAsync<Cow>(ApiJson.Options);
+        cow.Should().NotBeNull();
+        cow!.LivestockGroup.ToString().Should().Be("Calf");
+    }
+
+    [Fact]
     public async Task CreateCow_returns_problem_details_for_duplicate_tag()
     {
         await using var factory = new HerdFlowApiFactory();

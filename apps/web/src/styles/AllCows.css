@@ -146,6 +146,10 @@
   margin-bottom: 14px;
 }
 
+.herdStatsGrid {
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+
 .dashboardQuickActions {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -663,6 +667,10 @@
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
+  .herdStatsGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
   .dashboardQuickActions {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -690,6 +698,10 @@
   }
 
   .statsGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .herdStatsGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -738,6 +750,10 @@
 
 @media (max-width: 520px) {
   .statsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .herdStatsGrid {
     grid-template-columns: 1fr;
   }
 
@@ -974,6 +990,10 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .herdStatsGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .dashboardQuickActions,
   .dashboardSplitGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1019,6 +1039,10 @@
 
   .statsGrid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .herdStatsGrid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
   .dashboardQuickActions {
@@ -1074,6 +1098,10 @@
 @media (min-width: 1280px) {
   .statsGrid {
     grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+
+  .herdStatsGrid {
+    grid-template-columns: repeat(7, minmax(0, 1fr));
   }
 
   .dashboardQuickActions {

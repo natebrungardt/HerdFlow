@@ -108,14 +108,14 @@ function Dashboard() {
       },
       { label: "Active Herd", value: cows.length, to: "/cows" },
       {
-        label: "Calf Counter",
-        value: cows.filter((cow) => cow.hasCalf).length,
-        to: "/cows",
-      },
-      {
         label: "Breeding",
         value: cows.filter((cow) => cow.livestockGroup === "Breeding").length,
         to: "/cows?filter=Breeding",
+      },
+      {
+        label: "Calves",
+        value: cows.filter((cow) => cow.livestockGroup === "Calf").length,
+        to: "/cows?filter=Calf",
       },
       {
         className: "nextWorkdayCard",

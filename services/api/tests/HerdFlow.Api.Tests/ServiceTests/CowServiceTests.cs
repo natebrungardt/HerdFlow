@@ -46,6 +46,20 @@ public class CowServiceTests
     }
 
     [Fact]
+    public async Task CreateCowAsync_accepts_calf_livestock_group()
+    {
+        await using var testContext = new ServiceTestContext();
+        var service = testContext.CreateCowService();
+        var dto = TestData.CreateCowDto(
+            tagNumber: "A-101",
+            livestockGroup: HerdFlow.Api.Models.Enums.LivestockGroupType.Calf);
+
+        var cow = await service.CreateCowAsync(dto);
+
+        cow.LivestockGroup.Should().Be(HerdFlow.Api.Models.Enums.LivestockGroupType.Calf);
+    }
+
+    [Fact]
     public async Task CreateCowAsync_prevents_duplicate_tag_numbers_for_same_user()
     {
         await using var testContext = new ServiceTestContext();

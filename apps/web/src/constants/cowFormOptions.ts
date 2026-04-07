@@ -2,6 +2,7 @@ export const livestockGroupOptions = [
   { value: "Breeding", label: "Breeding" },
   { value: "Market", label: "Market" },
   { value: "Feeder", label: "Feeder" },
+  { value: "Calf", label: "Calf" },
 ] as const;
 
 export const pregnancyStatusOptions = [
@@ -30,5 +31,6 @@ export const herdFilterOptions = [
   "Breeding",
   "Feeder",
   "Market",
+  "Calf",
   "Needs Treatment",
 ] as const;

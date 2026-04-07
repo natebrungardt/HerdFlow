@@ -23,7 +23,8 @@ type HerdStatFilter =
   | "Needs Treatment"
   | "Breeding"
   | "Feeder"
-  | "Market";
+  | "Market"
+  | "Calf";
 
 type HerdStatLabel = "Total Cows" | HerdStatFilter;
 
@@ -34,6 +35,7 @@ const HERD_FILTER_VALUES: HerdStatFilter[] = [
   "Breeding",
   "Feeder",
   "Market",
+  "Calf",
 ];
 
 function getFilterFromSearchParams(searchParams: URLSearchParams): HerdStatFilter {
@@ -180,6 +182,10 @@ function HerdListView({
         label: "Market" as HerdStatLabel,
         value: cows.filter((cow) => cow.livestockGroup === "Market").length,
       },
+      {
+        label: "Calf" as HerdStatLabel,
+        value: cows.filter((cow) => cow.livestockGroup === "Calf").length,
+      },
     ],
     [cows],
   );
@@ -211,7 +217,7 @@ function HerdListView({
             />
           </div>
 
-          <div className="statsGrid">
+          <div className="statsGrid herdStatsGrid">
             {stats.map((stat) => (
               <button
                 key={stat.label}
