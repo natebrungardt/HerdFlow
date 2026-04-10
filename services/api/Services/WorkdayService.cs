@@ -80,7 +80,7 @@ public class WorkdayService
     {
         var userId = GetCurrentUserId();
         return await _context.Workdays
-            .Where(w => w.UserId == userId && !w.IsArchived)
+            .Where(w => w.UserId == userId && !w.IsRemoved)
             .OrderByDescending(w => w.CreatedAt)
             .ToListAsync();
     }
@@ -90,8 +90,9 @@ public class WorkdayService
     {
         var userId = GetCurrentUserId();
         return await _context.Workdays
-            .Where(w => w.UserId == userId && w.IsArchived)
-            .OrderByDescending(w => w.CreatedAt)
+            .Where(w => w.UserId == userId && w.IsRemoved)
+            .OrderByDescending(w => w.RemovedAt.HasValue)
+            .ThenByDescending(w => w.RemovedAt)
             .ToListAsync();
     }
 
@@ -237,7 +238,8 @@ public class WorkdayService
     {
         var workday = await FindWorkdayAsync(id);
 
-        workday.IsArchived = true;
+        workday.IsRemoved = true;
+        workday.RemovedAt = DateTime.UtcNow;
         await _context.SaveChangesAsync();
     }
 
@@ -246,7 +248,8 @@ public class WorkdayService
     {
         var workday = await FindWorkdayAsync(id);
 
-        workday.IsArchived = false;
+        workday.IsRemoved = false;
+        workday.RemovedAt = null;
         await _context.SaveChangesAsync();
     }
 

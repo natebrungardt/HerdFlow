@@ -13,6 +13,8 @@ type WorkdayListViewProps = {
   getWorkdayHref?: (workday: Workday) => string;
   emptyMessage?: string;
   sectionTitle?: string;
+  getWorkdaySupplementaryMeta?: (workday: Workday) => string | null;
+  showScheduledDateLabel?: boolean;
 };
 
 function formatWorkdayDate(dateValue: string) {
@@ -40,6 +42,8 @@ function WorkdayListView({
   getWorkdayHref,
   emptyMessage = "No workdays found.",
   sectionTitle = "Workday Records",
+  getWorkdaySupplementaryMeta,
+  showScheduledDateLabel = true,
 }: WorkdayListViewProps) {
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -102,6 +106,7 @@ function WorkdayListView({
             ) : (
               filteredWorkdays.map((workday) => {
                 const href = getWorkdayHref?.(workday);
+                const supplementaryMeta = getWorkdaySupplementaryMeta?.(workday);
                 const content = (
                   <>
                     <div className="cowRowMain">
@@ -109,13 +114,22 @@ function WorkdayListView({
                       <div className="cowRowMeta">
                         {workday.summary?.trim() || "No summary yet."}
                       </div>
-                      <div className="cowRowOwner">
-                        Scheduled for {formatWorkdayDate(workday.date)}
-                      </div>
+                      {showScheduledDateLabel ? (
+                        <div className="cowRowOwner">
+                          Scheduled for {formatWorkdayDate(workday.date)}
+                        </div>
+                      ) : null}
+                      {supplementaryMeta ? (
+                        <div className="cowRowSupplementaryMeta">
+                          {supplementaryMeta}
+                        </div>
+                      ) : null}
                     </div>
 
                     <div className="cowRowActions">
-                      <div className="statusPill">{formatWorkdayDate(workday.date)}</div>
+                      <div className="statusPill">
+                        {formatWorkdayDate(workday.date)}
+                      </div>
                     </div>
                   </>
                 );

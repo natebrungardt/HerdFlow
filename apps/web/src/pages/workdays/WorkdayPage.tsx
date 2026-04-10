@@ -520,7 +520,7 @@ function WorkdayPage() {
               </p>
             </div>
 
-            {workday.isArchived ? (
+            {workday.isRemoved ? (
               <button
                 type="button"
                 className="restoreButton"

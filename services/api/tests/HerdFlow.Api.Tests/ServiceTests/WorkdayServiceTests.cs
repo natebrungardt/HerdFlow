@@ -226,4 +226,73 @@ public class WorkdayServiceTests
         await action.Should().ThrowAsync<NotFoundException>()
             .WithMessage("Workday cow assignment not found.");
     }
+
+    [Fact]
+    public async Task Archive_and_restore_workday_updates_removed_state_and_timestamp()
+    {
+        await using var testContext = new ServiceTestContext();
+        var workday = new Workday
+        {
+            UserId = "test-user",
+            Title = "Morning Checks"
+        };
+
+        testContext.DbContext.Workdays.Add(workday);
+        await testContext.DbContext.SaveChangesAsync();
+
+        var service = testContext.CreateWorkdayService();
+
+        await service.ArchiveWorkday(workday.Id);
+        var removedWorkdays = await service.GetArchivedWorkdays();
+        removedWorkdays.Should().ContainSingle(w => w.Id == workday.Id);
+        removedWorkdays[0].RemovedAt.Should().NotBeNull();
+
+        await service.RestoreWorkday(workday.Id);
+        (await service.GetArchivedWorkdays()).Should().BeEmpty();
+
+        var restoredWorkday = await service.GetWorkdayById(workday.Id);
+        restoredWorkday.IsRemoved.Should().BeFalse();
+        restoredWorkday.RemovedAt.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task GetArchivedWorkdays_returns_most_recently_removed_first()
+    {
+        await using var testContext = new ServiceTestContext();
+        var olderRemovedWorkday = new Workday
+        {
+            UserId = "test-user",
+            Title = "Older Removed Workday",
+            IsRemoved = true,
+            RemovedAt = new DateTime(2026, 4, 5, 13, 0, 0, DateTimeKind.Utc)
+        };
+        var newerRemovedWorkday = new Workday
+        {
+            UserId = "test-user",
+            Title = "Newer Removed Workday",
+            IsRemoved = true,
+            RemovedAt = new DateTime(2026, 4, 6, 13, 0, 0, DateTimeKind.Utc)
+        };
+        var legacyRemovedWorkday = new Workday
+        {
+            UserId = "test-user",
+            Title = "Legacy Removed Workday",
+            IsRemoved = true
+        };
+
+        testContext.DbContext.Workdays.AddRange(
+            olderRemovedWorkday,
+            newerRemovedWorkday,
+            legacyRemovedWorkday);
+        await testContext.DbContext.SaveChangesAsync();
+
+        var service = testContext.CreateWorkdayService();
+
+        var removedWorkdays = await service.GetArchivedWorkdays();
+
+        removedWorkdays.Select(workday => workday.Id).Should().ContainInOrder(
+            newerRemovedWorkday.Id,
+            olderRemovedWorkday.Id,
+            legacyRemovedWorkday.Id);
+    }
 }

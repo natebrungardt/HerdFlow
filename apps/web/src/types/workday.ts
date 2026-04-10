@@ -14,6 +14,7 @@ export type Workday = {
   date: string;
   summary?: string | null;
   createdAt: string;
-  isArchived: boolean;
+  removedAt?: string | null;
+  isRemoved: boolean;
   workdayCows?: WorkdayCowAssignment[];
 };

@@ -17,7 +17,8 @@ public class Workday
     public string? Summary { get; set; }
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-    public bool IsArchived { get; set; } = false;
+    public bool IsRemoved { get; set; } = false;
+    public DateTime? RemovedAt { get; set; }
     // Relationships
     public List<WorkdayCow> WorkdayCows { get; set; } = new();
     public List<WorkdayNote> WorkdayNotes { get; set; } = new();

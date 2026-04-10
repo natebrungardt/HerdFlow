@@ -4,6 +4,24 @@ import { getArchivedWorkdays } from "../../services/workdayService";
 import type { Workday } from "../../types/workday";
 import "../../styles/AllCows.css";
 
+function formatRemovedDate(dateValue: string | null | undefined) {
+  if (!dateValue) {
+    return null;
+  }
+
+  const date = new Date(dateValue);
+
+  if (Number.isNaN(date.getTime())) {
+    return null;
+  }
+
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  }).format(date);
+}
+
 function RemovedWorkdays() {
   const [workdays, setWorkdays] = useState<Workday[]>([]);
   const [loading, setLoading] = useState(true);
@@ -36,6 +54,11 @@ function RemovedWorkdays() {
       subtitle="Review archived workdays and jump back into individual records."
       getWorkdayHref={(workday) => `/workdays/${workday.id}`}
       emptyMessage="No archived workdays found."
+      showScheduledDateLabel={false}
+      getWorkdaySupplementaryMeta={(workday) => {
+        const formattedDate = formatRemovedDate(workday.removedAt);
+        return formattedDate ? `Date Removed: ${formattedDate}` : null;
+      }}
     />
   );
 }
