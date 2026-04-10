@@ -649,6 +649,7 @@ function WorkdayPage() {
         title="Restore Workday"
         message={`Are you sure you want to restore ${workday.title}?`}
         confirmText="Restore Workday"
+        confirmVariant="success"
         onCancel={() => setShowRestoreModal(false)}
         onConfirm={async () => {
           setShowRestoreModal(false);
