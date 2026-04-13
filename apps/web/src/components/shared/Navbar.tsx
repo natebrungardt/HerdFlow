@@ -80,6 +80,10 @@ function Navbar() {
     navigate("/reset-password");
   };
 
+  const handleOpenFeedback = () => {
+    setIsAccountMenuOpen(false);
+  };
+
   const handleToggleTheme = () => {
     toggleTheme();
     setIsAccountMenuOpen(false);
@@ -271,6 +275,13 @@ function Navbar() {
                     type="button"
                   >
                     Change Password
+                  </button>
+                  <button
+                    className="navbarMenuItem"
+                    onClick={handleOpenFeedback}
+                    type="button"
+                  >
+                    Feedback
                   </button>
                   <button
                     className="navbarMenuItem navbarMenuItemDanger"
