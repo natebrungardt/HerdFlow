@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace HerdFlow.Api.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialGuidSchema : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -19,19 +19,21 @@ namespace HerdFlow.Api.Migrations
                     UserId = table.Column<string>(type: "text", nullable: false),
                     TagNumber = table.Column<string>(type: "text", nullable: false),
                     OwnerName = table.Column<string>(type: "text", nullable: false),
-                    LivestockGroup = table.Column<int>(type: "integer", nullable: false),
+                    LivestockGroup = table.Column<string>(type: "text", nullable: false),
                     Sex = table.Column<string>(type: "text", nullable: true),
                     Breed = table.Column<string>(type: "text", nullable: true),
                     DateOfBirth = table.Column<DateOnly>(type: "date", nullable: true),
                     HealthStatus = table.Column<string>(type: "text", nullable: false),
-                    HeatStatus = table.Column<int>(type: "integer", nullable: true),
+                    HeatStatus = table.Column<string>(type: "text", nullable: true),
                     PregnancyStatus = table.Column<string>(type: "text", nullable: true),
                     HasCalf = table.Column<bool>(type: "boolean", nullable: false),
                     PurchasePrice = table.Column<decimal>(type: "numeric", nullable: true),
                     SalePrice = table.Column<decimal>(type: "numeric", nullable: true),
                     PurchaseDate = table.Column<DateOnly>(type: "date", nullable: true),
                     SaleDate = table.Column<DateOnly>(type: "date", nullable: true),
-                    IsRemoved = table.Column<bool>(type: "boolean", nullable: false)
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    IsRemoved = table.Column<bool>(type: "boolean", nullable: false),
+                    RemovedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -48,7 +50,8 @@ namespace HerdFlow.Api.Migrations
                     Date = table.Column<DateOnly>(type: "date", nullable: false),
                     Summary = table.Column<string>(type: "text", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    IsArchived = table.Column<bool>(type: "boolean", nullable: false)
+                    IsRemoved = table.Column<bool>(type: "boolean", nullable: false),
+                    RemovedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -60,6 +63,7 @@ namespace HerdFlow.Api.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    UserId = table.Column<string>(type: "text", nullable: false),
                     CowId = table.Column<Guid>(type: "uuid", nullable: false),
                     Description = table.Column<string>(type: "text", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
@@ -176,6 +180,11 @@ namespace HerdFlow.Api.Migrations
                 name: "IX_WorkdayNotes_WorkdayId",
                 table: "WorkdayNotes",
                 column: "WorkdayId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Workdays_UserId",
+                table: "Workdays",
+                column: "UserId");
         }
 
         /// <inheritdoc />

@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace HerdFlow.Api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260329035604_InitialGuidSchema")]
-    partial class InitialGuidSchema
+    [Migration("20260413171440_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -41,6 +41,10 @@ namespace HerdFlow.Api.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.HasKey("Id");
 
                     b.HasIndex("CowId");
@@ -57,6 +61,9 @@ namespace HerdFlow.Api.Migrations
                     b.Property<string>("Breed")
                         .HasColumnType("text");
 
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<DateOnly?>("DateOfBirth")
                         .HasColumnType("date");
 
@@ -67,14 +74,15 @@ namespace HerdFlow.Api.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int?>("HeatStatus")
-                        .HasColumnType("integer");
+                    b.Property<string>("HeatStatus")
+                        .HasColumnType("text");
 
                     b.Property<bool>("IsRemoved")
                         .HasColumnType("boolean");
 
-                    b.Property<int>("LivestockGroup")
-                        .HasColumnType("integer");
+                    b.Property<string>("LivestockGroup")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<string>("OwnerName")
                         .IsRequired()
@@ -88,6 +96,9 @@ namespace HerdFlow.Api.Migrations
 
                     b.Property<decimal?>("PurchasePrice")
                         .HasColumnType("numeric");
+
+                    b.Property<DateTime?>("RemovedAt")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<DateOnly?>("SaleDate")
                         .HasColumnType("date");
@@ -157,8 +168,11 @@ namespace HerdFlow.Api.Migrations
                     b.Property<DateOnly>("Date")
                         .HasColumnType("date");
 
-                    b.Property<bool>("IsArchived")
+                    b.Property<bool>("IsRemoved")
                         .HasColumnType("boolean");
+
+                    b.Property<DateTime?>("RemovedAt")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Summary")
                         .HasColumnType("text");
@@ -173,6 +187,8 @@ namespace HerdFlow.Api.Migrations
                         .HasColumnType("text");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("Workdays");
                 });
@@ -246,11 +262,13 @@ namespace HerdFlow.Api.Migrations
 
             modelBuilder.Entity("HerdFlow.Api.Models.Note", b =>
                 {
-                    b.HasOne("HerdFlow.Api.Models.Cow", null)
+                    b.HasOne("HerdFlow.Api.Models.Cow", "Cow")
                         .WithMany("Notes")
                         .HasForeignKey("CowId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Cow");
                 });
 
             modelBuilder.Entity("HerdFlow.Api.Models.WorkdayCow", b =>

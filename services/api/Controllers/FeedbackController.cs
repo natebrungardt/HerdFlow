@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using SendGrid;
 using SendGrid.Helpers.Mail;
 
+
 namespace HerdFlow.Api.Controllers
 {
     [ApiController]
@@ -12,29 +13,38 @@ namespace HerdFlow.Api.Controllers
         public async Task<IActionResult> SendFeedback([FromBody] FeedbackDto dto)
         {
             var apiKey = Environment.GetEnvironmentVariable("SENDGRID_API_KEY");
-
             if (string.IsNullOrEmpty(apiKey))
                 return StatusCode(500, "SendGrid API key not found");
 
             var client = new SendGridClient(apiKey);
 
-            var from = new EmailAddress("natebrungardt15@gmail.com", "HerdFlow");
+            var from = new EmailAddress("no-reply@herdflow.app", "HerdFlow");
             var to = new EmailAddress("natebrungardt15@gmail.com");
 
-            var subject = $"[{dto.AppName ?? "HerdFlow"}] New Feedback";
+            var subject = $"[{dto.AppName}] New Feedback";
+
+            var companyLine = string.IsNullOrWhiteSpace(dto.Company) ? "" : $"Company: {dto.Company}\n";
 
             var content = $@"
 Name: {dto.Name}
 Email: {dto.Email}
-Company: {dto.Company}
-
-Message:
+{companyLine}Message:
 {dto.Message}
 ";
 
             var msg = MailHelper.CreateSingleEmail(from, to, subject, content, content);
+            msg.SetReplyTo(new EmailAddress(dto.Email, dto.Name));
+            var response = await client.SendEmailAsync(msg);
 
-            await client.SendEmailAsync(msg);
+            Console.WriteLine($"Status Code: {response.StatusCode}");
+
+            var body = await response.Body.ReadAsStringAsync();
+            Console.WriteLine($"Response Body: {body}");
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return StatusCode((int)response.StatusCode, "Failed to send email");
+            }
 
             return Ok();
         }
@@ -42,10 +52,19 @@ Message:
 
     public class FeedbackDto
     {
-        public string AppName { get; set; }
-        public string Name { get; set; }
-        public string Email { get; set; }
-        public string Company { get; set; }
-        public string Message { get; set; }
+        [System.ComponentModel.DataAnnotations.Required]
+        public string AppName { get; set; } = null!;
+
+        [System.ComponentModel.DataAnnotations.Required]
+        public string Name { get; set; } = null!;
+
+        [System.ComponentModel.DataAnnotations.Required]
+        [System.ComponentModel.DataAnnotations.EmailAddress]
+        public string Email { get; set; } = null!;
+
+        public string? Company { get; set; }
+
+        [System.ComponentModel.DataAnnotations.Required]
+        public string Message { get; set; } = null!;
     }
 }
