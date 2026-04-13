@@ -61,3 +61,4 @@ appsettings.*.json
 node_modules/
 dist/
 apps/web/.vite/
+Properties/launchSettings.json
