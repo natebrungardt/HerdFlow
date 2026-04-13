@@ -1,0 +1,183 @@
+.feedbackModalCard {
+  width: min(620px, calc(100% - 32px));
+  max-width: 100%;
+  padding: 32px;
+  border-radius: 22px;
+  box-shadow:
+    0 20px 45px rgba(18, 36, 68, 0.16),
+    0 2px 8px rgba(18, 36, 68, 0.08);
+}
+
+.feedbackModalHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 28px;
+}
+
+.feedbackModalHeader h3 {
+  margin: 0;
+  font-size: 1.55rem;
+}
+
+.feedbackModalIntro {
+  margin: 8px 0 0;
+  color: var(--text-secondary);
+  max-width: 44ch;
+}
+
+.feedbackModalClose {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 1.5rem;
+  line-height: 1;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
+}
+
+.feedbackModalClose:hover {
+  background: var(--surface-strong);
+  color: var(--text-primary);
+}
+
+.feedbackModalForm {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.feedbackModalGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.feedbackField {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.feedbackField > span:first-child {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.feedbackField input,
+.feedbackField textarea {
+  width: 100%;
+  border: 1px solid color-mix(in srgb, var(--input-border) 85%, #d9e5f2);
+  border-radius: 16px;
+  padding: 15px 16px;
+  background: color-mix(in srgb, var(--surface-strong) 72%, white);
+  color: var(--text-primary);
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
+}
+
+.feedbackField textarea {
+  resize: vertical;
+  min-height: 170px;
+}
+
+.feedbackField input:focus,
+.feedbackField textarea:focus {
+  outline: none;
+  border-color: var(--input-focus);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--input-focus) 22%, transparent);
+}
+
+.feedbackFieldError,
+.feedbackSubmitError {
+  color: #d96c78;
+  font-size: 0.92rem;
+}
+
+.feedbackField input::placeholder,
+.feedbackField textarea::placeholder {
+  color: color-mix(in srgb, var(--text-secondary) 68%, transparent);
+}
+
+.feedbackSubmitError {
+  padding: 12px 14px;
+  border: 1px solid rgba(217, 108, 120, 0.28);
+  border-radius: 12px;
+  background: rgba(217, 108, 120, 0.08);
+}
+
+.feedbackSubmitSuccess {
+  padding: 14px 16px;
+  border: 1px solid rgba(76, 194, 146, 0.34);
+  border-radius: 14px;
+  background: rgba(76, 194, 146, 0.12);
+  color: #1e8b62;
+  font-size: 0.98rem;
+}
+
+.feedbackModalActions {
+  margin-top: 4px;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.feedbackSubmitButton {
+  min-width: 168px;
+  padding: 13px 22px;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #67d58c 0%, #45b86d 100%);
+  color: #ffffff;
+  font-weight: 700;
+  box-shadow: 0 10px 24px rgba(69, 184, 109, 0.28);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.feedbackSubmitButton:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 28px rgba(69, 184, 109, 0.34);
+}
+
+.feedbackSubmitButton:disabled,
+.feedbackModalActions .cancelButton:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+@media (max-width: 640px) {
+  .feedbackModalCard {
+    padding: 24px;
+  }
+
+  .feedbackModalHeader {
+    gap: 12px;
+  }
+
+  .feedbackModalGrid {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+
+  .feedbackModalActions {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+
+  .feedbackModalActions button {
+    width: 100%;
+  }
+}

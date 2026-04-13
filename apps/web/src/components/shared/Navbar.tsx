@@ -10,6 +10,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { usePendingWorkdaySelection } from "../../context/usePendingWorkdaySelection";
 import { useTheme } from "../../context/useTheme";
 import Modal from "./Modal";
+import FeedbackModal from "./FeedbackModal";
 import { supabase } from "../../lib/supabase";
 import { AuthContext } from "../../context/AuthContext";
 import { exportCowsCsv } from "../../services/cowService";
@@ -21,6 +22,7 @@ function Navbar() {
   const { theme, toggleTheme } = useTheme();
   const [pendingPath, setPendingPath] = useState<string | null>(null);
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
+  const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [exportError, setExportError] = useState("");
   const accountMenuRef = useRef<HTMLDivElement | null>(null);
@@ -82,6 +84,7 @@ function Navbar() {
 
   const handleOpenFeedback = () => {
     setIsAccountMenuOpen(false);
+    setIsFeedbackModalOpen(true);
   };
 
   const handleToggleTheme = () => {
@@ -307,6 +310,11 @@ function Navbar() {
           navigate(pendingPath);
           setPendingPath(null);
         }}
+      />
+      <FeedbackModal
+        isOpen={isFeedbackModalOpen}
+        onClose={() => setIsFeedbackModalOpen(false)}
+        user={user}
       />
     </>
   );

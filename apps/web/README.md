@@ -6,6 +6,7 @@ Create `apps/web/.env` from `apps/web/.env.example` and fill in your project val
 
 ```env
 VITE_API_URL=http://localhost:5150/api
+VITE_APP_NAME=HerdFlow
 VITE_SUPABASE_URL=https://your-project-ref.supabase.co
 VITE_SUPABASE_ANON_KEY=your-supabase-anon-key
 VITE_DEV_AUTH_BYPASS=false
