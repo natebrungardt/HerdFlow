@@ -1,4 +1,5 @@
 import { useContext, useState } from "react";
+import { useLocation } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import {
   getPasswordRequirementsMessage,
@@ -16,12 +17,18 @@ type ProfileFormState = {
   defaultOwnerName: string;
 };
 
+function isValidEmail(email: string) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
 function AccountSettingsPage() {
   const { user } = useContext(AuthContext);
+  const location = useLocation();
+  const authenticatedUser = user;
   const [profileValues, setProfileValues] = useState<ProfileFormState>(() =>
-    getUserProfileDefaults(user),
+    getUserProfileDefaults(authenticatedUser),
   );
-  const [emailValue, setEmailValue] = useState(user?.email ?? "");
+  const [emailValue, setEmailValue] = useState(authenticatedUser?.email ?? "");
   const [passwordValue, setPasswordValue] = useState("");
   const [confirmPasswordValue, setConfirmPasswordValue] = useState("");
   const [profileMessage, setProfileMessage] = useState<string | null>(null);
@@ -41,17 +48,29 @@ function AccountSettingsPage() {
   const [isSavingEmail, setIsSavingEmail] = useState(false);
   const [isSavingPassword, setIsSavingPassword] = useState(false);
 
-  if (!user) {
+  if (!authenticatedUser) {
     return null;
   }
 
-  const authenticatedUser = user;
+  const currentUser = authenticatedUser;
   const currentEmail = authenticatedUser.email ?? "";
   const normalizedCurrentEmail = currentEmail.trim().toLowerCase();
   const normalizedNewEmail = emailValue.trim().toLowerCase();
+  const isNewEmailValid = isValidEmail(normalizedNewEmail);
   const canSubmitEmailUpdate =
     normalizedNewEmail.length > 0 &&
+    isNewEmailValid &&
     normalizedNewEmail !== normalizedCurrentEmail;
+  const emailChangeConfirmed =
+    new URLSearchParams(location.search).get("email-change") === "confirmed";
+  const displayedEmailMessage =
+    emailMessage ??
+    (!isEditingEmail && emailChangeConfirmed
+      ? "Your new email address has been verified and updated."
+      : null);
+  const displayedEmailMessageType =
+    emailMessageType ??
+    (!isEditingEmail && emailChangeConfirmed ? "success" : null);
 
   function handleProfileFieldChange(
     field: keyof ProfileFormState,
@@ -79,7 +98,7 @@ function AccountSettingsPage() {
 
     const { error } = await supabase.auth.updateUser({
       data: {
-        ...(authenticatedUser.user_metadata ?? {}),
+        ...(currentUser.user_metadata ?? {}),
         display_name: nextProfileValues.displayName,
         full_name: nextProfileValues.displayName,
         farm_name: nextProfileValues.farmName,
@@ -113,7 +132,7 @@ function AccountSettingsPage() {
       return;
     }
 
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+    if (!isValidEmail(normalizedEmail)) {
       setEmailMessage("Enter a valid email address.");
       setEmailMessageType("error");
       return;
@@ -127,9 +146,14 @@ function AccountSettingsPage() {
 
     setIsSavingEmail(true);
 
-    const { error } = await supabase.auth.updateUser({
-      email: normalizedEmail,
-    });
+    const { error } = await supabase.auth.updateUser(
+      {
+        email: normalizedEmail,
+      },
+      {
+        emailRedirectTo: `${window.location.origin}/account-settings?email-change=confirmed`,
+      },
+    );
 
     if (error) {
       setEmailMessage(error.message);
@@ -141,7 +165,7 @@ function AccountSettingsPage() {
     setEmailValue("");
     setIsEditingEmail(false);
     setEmailMessage(
-      "Email update requested. Check both inboxes for any confirmation steps required by Supabase.",
+      `Verification email sent to ${normalizedEmail}. Your email address will update after you confirm it.`,
     );
     setEmailMessageType("success");
     setIsSavingEmail(false);
@@ -314,45 +338,44 @@ function AccountSettingsPage() {
                     />
                   </label>
 
-                  <label className="accountSettingsField">
-                    <span>New Email Address</span>
-                    <input
-                      className="authInput"
-                      autoComplete="email"
-                      disabled={!isEditingEmail}
-                      onChange={(event) => {
-                        setEmailValue(event.target.value);
-                        setEmailMessage(null);
-                        setEmailMessageType(null);
-                      }}
-                      placeholder="you@ranch.com"
-                      type="email"
-                      value={emailValue}
-                    />
-                  </label>
-
-                  {emailMessage ? (
+                  {displayedEmailMessage ? (
                     <p
                       className={
-                        emailMessageType === "success"
+                        displayedEmailMessageType === "success"
                           ? "authMessage authMessageSuccess"
                           : "authMessage authMessageError"
                       }
                     >
-                      {emailMessage}
+                      {displayedEmailMessage}
                     </p>
                   ) : null}
 
                   <div className="accountSettingsActionBlock">
-                    <div className="accountSettingsActions">
-                      {isEditingEmail ? (
-                        <>
+                    {isEditingEmail ? (
+                      <div className="accountSettingsDisclosure">
+                        <label className="accountSettingsField">
+                          <span>New Email Address</span>
+                          <input
+                            className="authInput"
+                            autoComplete="email"
+                            onChange={(event) => {
+                              setEmailValue(event.target.value);
+                              setEmailMessage(null);
+                              setEmailMessageType(null);
+                            }}
+                            placeholder="you@ranch.com"
+                            type="email"
+                            value={emailValue}
+                          />
+                        </label>
+
+                        <div className="accountSettingsActions">
                           <button
                             className="addCowButton"
                             disabled={isSavingEmail || !canSubmitEmailUpdate}
                             type="submit"
                           >
-                            {isSavingEmail ? "Updating..." : "Save Email"}
+                            {isSavingEmail ? "Sending..." : "Send Verification"}
                           </button>
                           <button
                             className="addCowButton addCowButtonGhost"
@@ -366,8 +389,16 @@ function AccountSettingsPage() {
                           >
                             Cancel
                           </button>
-                        </>
-                      ) : (
+                        </div>
+
+                        <p className="accountSettingsHelperText">
+                          We&apos;ll send a verification link to your new email
+                          address. Your current email stays active until you
+                          confirm the change.
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="accountSettingsActions">
                         <button
                           className="addCowButton"
                           onClick={() => {
@@ -378,14 +409,10 @@ function AccountSettingsPage() {
                           }}
                           type="button"
                         >
-                          Update Email
+                          Change Email
                         </button>
-                      )}
-                    </div>
-                    <p className="accountSettingsHelperText">
-                      You&apos;ll receive a confirmation email to verify this
-                      change.
-                    </p>
+                      </div>
+                    )}
                   </div>
                 </form>
 

@@ -75,6 +75,8 @@ Add:
 VITE_API_URL=http://localhost:5062/api/cows
 ```
 
+If you are using Supabase Auth for account email changes, disable `Secure email change` in the Supabase Auth settings so email updates follow a verify-the-new-email-only flow. With that setting enabled, Supabase will send confirmation emails to both the old and new addresses.
+
 ## Current Features
 
 - View all cows

@@ -62,6 +62,16 @@
   gap: 10px;
 }
 
+.accountSettingsDisclosure {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+  border: 1px solid var(--card-border);
+  border-radius: 18px;
+  background: var(--surface-faint);
+}
+
 .accountSettingsPasswordForm {
   gap: 20px;
 }
