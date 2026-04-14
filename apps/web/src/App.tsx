@@ -72,6 +72,7 @@ function App() {
         <PendingWorkdaySelectionProvider>
           <Navbar />
           <Routes>
+            <Route path="/auth" element={<Navigate to="/" replace />} />
             <Route path="/reset-password" element={<ResetPasswordPage />} />
             <Route path="/" element={<Dashboard />} />
             <Route path="/cows" element={<AllCowPage />} />
@@ -84,6 +85,7 @@ function App() {
             <Route path="/workdays/:id" element={<WorkdayPage />} />
             <Route path="/workdays/removed" element={<RemovedWorkdays />} />
             <Route path="/finances" element={<Finances />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </PendingWorkdaySelectionProvider>
       </BrowserRouter>
