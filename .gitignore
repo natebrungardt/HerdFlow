@@ -62,3 +62,12 @@ node_modules/
 dist/
 apps/web/.vite/
 Properties/launchSettings.json
+
+# macOS
+.DS_Store
+
+# Xcode
+xcuserdata/
+*.xcuserstate
+DerivedData/
+.build/
