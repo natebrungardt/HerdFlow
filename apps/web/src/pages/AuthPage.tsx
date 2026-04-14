@@ -1,44 +1,40 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import type { FormEvent } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 
+const MIN_PASSWORD_LENGTH = 8;
+
 export default function AuthPage() {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const requestedMode = searchParams.get("mode");
   const urlMode =
     requestedMode === "signup" || requestedMode === "login"
       ? requestedMode
       : "login";
-  const [fullName, setFullName] = useState("");
-  const [phoneNumber, setPhoneNumber] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [mode, setMode] = useState<"login" | "signup" | "forgot">(urlMode);
+  const [isForgotMode, setIsForgotMode] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [messageType, setMessageType] = useState<"error" | "success" | null>(
     null,
   );
 
-  useEffect(() => {
-    setMode(urlMode);
-    setMessage(null);
-    setMessageType(null);
-  }, [urlMode]);
+  const mode = isForgotMode ? "forgot" : urlMode;
 
   const normalizedEmail = email.trim().toLowerCase();
 
   const isEmailLike = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail);
-  const isPhoneLike = /^[0-9()\-\s]+$/.test(phoneNumber.trim());
+  const hasStrongEnoughPassword =
+    password.length >= MIN_PASSWORD_LENGTH &&
+    /[A-Za-z]/.test(password) &&
+    /\d/.test(password);
 
   const handleSignUp = async () => {
     setIsSubmitting(true);
     setMessage(null);
     setMessageType(null);
-
-    const normalizedName = fullName.trim();
-    const normalizedPhone = phoneNumber.trim();
 
     if (!normalizedEmail) {
       setMessage("Email is required.");
@@ -61,23 +57,9 @@ export default function AuthPage() {
       return;
     }
 
-    if (!normalizedName) {
-      setMessage("Name is required.");
-      setMessageType("error");
-      setIsSubmitting(false);
-      return;
-    }
-
-    if (!normalizedPhone) {
-      setMessage("Phone number is required.");
-      setMessageType("error");
-      setIsSubmitting(false);
-      return;
-    }
-
-    if (!isPhoneLike) {
+    if (!hasStrongEnoughPassword) {
       setMessage(
-        "Phone number can only include digits, spaces, dashes, and parentheses.",
+        `Password must be at least ${MIN_PASSWORD_LENGTH} characters and include at least one letter and one number.`,
       );
       setMessageType("error");
       setIsSubmitting(false);
@@ -88,10 +70,6 @@ export default function AuthPage() {
       email: normalizedEmail,
       password,
       options: {
-        data: {
-          full_name: normalizedName,
-          phone: normalizedPhone,
-        },
         emailRedirectTo: `${window.location.origin}/`,
       },
     });
@@ -261,12 +239,20 @@ export default function AuthPage() {
         <section className="authFormPanel">
           <form className="authFormCard" onSubmit={handleSubmit}>
             <div className="authFormHeader">
-              <p className="authFormKicker">Welcome back</p>
-              <h2 className="authFormTitle">Sign in to your ranch</h2>
+              <p className="authFormKicker">
+                {mode === "signup" ? "Start simple" : "Welcome back"}
+              </p>
+              <h2 className="authFormTitle">
+                {mode === "signup"
+                  ? "Create your HerdFlow account"
+                  : "Sign in to your ranch"}
+              </h2>
               <p className="authFormCopy">
                 {mode === "forgot"
                   ? "Enter your email and we will send you a password reset link."
-                  : "Sign in to continue, or create an account to start managing your operation in HerdFlow."}
+                  : mode === "signup"
+                    ? "Create your account in seconds. Add farm details later in settings."
+                    : "Sign in to continue, or create an account to start managing your operation in HerdFlow."}
               </p>
             </div>
 
@@ -274,7 +260,7 @@ export default function AuthPage() {
               <button
                 className="authTextButton authTextButtonInline"
                 onClick={() => {
-                  setMode("login");
+                  setIsForgotMode(false);
                   setMessage(null);
                   setMessageType(null);
                 }}
@@ -295,7 +281,8 @@ export default function AuthPage() {
                       : "authModeButton"
                   }
                   onClick={() => {
-                    setMode("login");
+                    setSearchParams({ mode: "login" });
+                    setIsForgotMode(false);
                     setMessage(null);
                     setMessageType(null);
                   }}
@@ -310,7 +297,8 @@ export default function AuthPage() {
                       : "authModeButton"
                   }
                   onClick={() => {
-                    setMode("signup");
+                    setSearchParams({ mode: "signup" });
+                    setIsForgotMode(false);
                     setMessage(null);
                     setMessageType(null);
                   }}
@@ -334,40 +322,16 @@ export default function AuthPage() {
                 />
               </label>
 
-              {mode === "signup" ? (
-                <label className="authField">
-                  <span>Name</span>
-                  <input
-                    className="authInput"
-                    placeholder="Your name"
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    type="text"
-                    autoComplete="name"
-                  />
-                </label>
-              ) : null}
-
-              {mode === "signup" ? (
-                <label className="authField">
-                  <span>Phone Number</span>
-                  <input
-                    className="authInput"
-                    placeholder="(555) 555-5555"
-                    value={phoneNumber}
-                    onChange={(e) => setPhoneNumber(e.target.value)}
-                    type="tel"
-                    autoComplete="tel"
-                  />
-                </label>
-              ) : null}
-
               {mode !== "forgot" ? (
                 <label className="authField">
                   <span>Password</span>
                   <input
                     className="authInput"
-                    placeholder="Enter your password"
+                    placeholder={
+                      mode === "signup"
+                        ? "Create a secure password"
+                        : "Enter your password"
+                    }
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
@@ -414,7 +378,9 @@ export default function AuthPage() {
                   disabled={isSubmitting}
                   type="submit"
                 >
-                  {isSubmitting ? "Creating account..." : "Create Account"}
+                  {isSubmitting
+                    ? "Creating account..."
+                    : "Start Tracking Your Herd"}
                 </button>
               )}
             </div>
@@ -424,7 +390,7 @@ export default function AuthPage() {
                 <button
                   className="authTextButton"
                   onClick={() => {
-                    setMode("forgot");
+                    setIsForgotMode(true);
                     setPassword("");
                     setMessage(null);
                     setMessageType(null);

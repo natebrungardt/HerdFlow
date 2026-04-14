@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 import { AuthContext } from "../context/AuthContext";
 
+const MIN_PASSWORD_LENGTH = 8;
+
 export default function ResetPasswordPage() {
   const navigate = useNavigate();
   const { setPasswordRecovery } = useContext(AuthContext);
@@ -15,6 +17,10 @@ export default function ResetPasswordPage() {
   const [messageType, setMessageType] = useState<"error" | "success" | null>(
     null,
   );
+  const hasStrongEnoughPassword =
+    password.length >= MIN_PASSWORD_LENGTH &&
+    /[A-Za-z]/.test(password) &&
+    /\d/.test(password);
 
   useEffect(() => {
     let isMounted = true;
@@ -58,8 +64,10 @@ export default function ResetPasswordPage() {
     setMessage(null);
     setMessageType(null);
 
-    if (password.trim().length < 6) {
-      setMessage("Password must be at least 6 characters.");
+    if (!hasStrongEnoughPassword) {
+      setMessage(
+        `Password must be at least ${MIN_PASSWORD_LENGTH} characters and include at least one letter and one number.`,
+      );
       setMessageType("error");
       return;
     }
@@ -132,7 +140,7 @@ export default function ResetPasswordPage() {
                     <span>New Password</span>
                     <input
                       className="authInput"
-                      placeholder="Enter a new password"
+                      placeholder="At least 8 characters, with a letter and number"
                       type="password"
                       value={password}
                       onChange={(event) => setPassword(event.target.value)}
