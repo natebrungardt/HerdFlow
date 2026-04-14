@@ -136,7 +136,7 @@ export default function ResetPasswordPage() {
                     <span>New Password</span>
                     <input
                       className="authInput"
-                      placeholder="At least 8 characters, with a letter and number"
+                      placeholder="At least 8 characters, including a letter and a number"
                       type="password"
                       value={password}
                       onChange={(event) => setPassword(event.target.value)}
@@ -151,7 +151,9 @@ export default function ResetPasswordPage() {
                       placeholder="Re-enter your new password"
                       type="password"
                       value={confirmPassword}
-                      onChange={(event) => setConfirmPassword(event.target.value)}
+                      onChange={(event) =>
+                        setConfirmPassword(event.target.value)
+                      }
                       autoComplete="new-password"
                     />
                   </label>

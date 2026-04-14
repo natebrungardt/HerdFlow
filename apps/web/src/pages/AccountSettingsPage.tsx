@@ -46,6 +46,12 @@ function AccountSettingsPage() {
   }
 
   const authenticatedUser = user;
+  const currentEmail = authenticatedUser.email ?? "";
+  const normalizedCurrentEmail = currentEmail.trim().toLowerCase();
+  const normalizedNewEmail = emailValue.trim().toLowerCase();
+  const canSubmitEmailUpdate =
+    normalizedNewEmail.length > 0 &&
+    normalizedNewEmail !== normalizedCurrentEmail;
 
   function handleProfileFieldChange(
     field: keyof ProfileFormState,
@@ -113,7 +119,7 @@ function AccountSettingsPage() {
       return;
     }
 
-    if (normalizedEmail === (authenticatedUser.email ?? "").toLowerCase()) {
+    if (normalizedEmail === normalizedCurrentEmail) {
       setEmailMessage("Your email address is already up to date.");
       setEmailMessageType("success");
       return;
@@ -132,7 +138,7 @@ function AccountSettingsPage() {
       return;
     }
 
-    setEmailValue(normalizedEmail);
+    setEmailValue("");
     setIsEditingEmail(false);
     setEmailMessage(
       "Email update requested. Check both inboxes for any confirmation steps required by Supabase.",
@@ -298,32 +304,32 @@ function AccountSettingsPage() {
                   onSubmit={handleEmailSubmit}
                 >
                   <label className="accountSettingsField">
-                    <span>Email Address</span>
+                    <span>Current Email</span>
                     <input
                       className="authInput accountSettingsReadonlyInput"
+                      disabled
                       readOnly
                       type="text"
-                      value={authenticatedUser.email ?? ""}
+                      value={currentEmail}
                     />
                   </label>
 
-                  {isEditingEmail ? (
-                    <label className="accountSettingsField">
-                      <span>New Email Address</span>
-                      <input
-                        className="authInput"
-                        autoComplete="email"
-                        onChange={(event) => {
-                          setEmailValue(event.target.value);
-                          setEmailMessage(null);
-                          setEmailMessageType(null);
-                        }}
-                        placeholder="you@ranch.com"
-                        type="email"
-                        value={emailValue}
-                      />
-                    </label>
-                  ) : null}
+                  <label className="accountSettingsField">
+                    <span>New Email Address</span>
+                    <input
+                      className="authInput"
+                      autoComplete="email"
+                      disabled={!isEditingEmail}
+                      onChange={(event) => {
+                        setEmailValue(event.target.value);
+                        setEmailMessage(null);
+                        setEmailMessageType(null);
+                      }}
+                      placeholder="you@ranch.com"
+                      type="email"
+                      value={emailValue}
+                    />
+                  </label>
 
                   {emailMessage ? (
                     <p
@@ -337,43 +343,49 @@ function AccountSettingsPage() {
                     </p>
                   ) : null}
 
-                  <div className="accountSettingsActions">
-                    {isEditingEmail ? (
-                      <>
+                  <div className="accountSettingsActionBlock">
+                    <div className="accountSettingsActions">
+                      {isEditingEmail ? (
+                        <>
+                          <button
+                            className="addCowButton"
+                            disabled={isSavingEmail || !canSubmitEmailUpdate}
+                            type="submit"
+                          >
+                            {isSavingEmail ? "Updating..." : "Save Email"}
+                          </button>
+                          <button
+                            className="addCowButton addCowButtonGhost"
+                            onClick={() => {
+                              setIsEditingEmail(false);
+                              setEmailValue("");
+                              setEmailMessage(null);
+                              setEmailMessageType(null);
+                            }}
+                            type="button"
+                          >
+                            Cancel
+                          </button>
+                        </>
+                      ) : (
                         <button
                           className="addCowButton"
-                          disabled={isSavingEmail}
-                          type="submit"
-                        >
-                          {isSavingEmail ? "Updating..." : "Save Email"}
-                        </button>
-                        <button
-                          className="addCowButton addCowButtonGhost"
                           onClick={() => {
-                            setIsEditingEmail(false);
-                            setEmailValue(authenticatedUser.email ?? "");
+                            setIsEditingEmail(true);
+                            setEmailValue("");
                             setEmailMessage(null);
                             setEmailMessageType(null);
                           }}
                           type="button"
                         >
-                          Cancel
+                          Update Email
                         </button>
-                      </>
-                    ) : (
-                      <button
-                        className="addCowButton"
-                        onClick={() => {
-                          setIsEditingEmail(true);
-                          setEmailValue(authenticatedUser.email ?? "");
-                          setEmailMessage(null);
-                          setEmailMessageType(null);
-                        }}
-                        type="button"
-                      >
-                        Update Email
-                      </button>
-                    )}
+                      )}
+                    </div>
+                    <p className="accountSettingsHelperText">
+                      You&apos;ll receive a confirmation email to verify this
+                      change.
+                    </p>
                   </div>
                 </form>
 
@@ -391,7 +403,7 @@ function AccountSettingsPage() {
                         setPasswordMessage(null);
                         setPasswordMessageType(null);
                       }}
-                      placeholder="At least 8 characters, with a letter and number"
+                      placeholder="At least 8 characters, including a letter and a number"
                       type="password"
                       value={passwordValue}
                     />

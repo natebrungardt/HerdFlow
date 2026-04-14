@@ -43,15 +43,23 @@
 }
 
 .accountSettingsReadonlyInput {
-  background: var(--surface-subtle);
-  color: var(--text-primary);
-  cursor: default;
+  background: var(--surface-faint);
+  border-color: var(--card-border);
+  color: var(--text-muted-strong);
+  cursor: not-allowed;
   opacity: 1;
+  -webkit-text-fill-color: var(--text-muted-strong);
 }
 
 .accountSettingsReadonlyInput:focus {
-  background: var(--surface-subtle);
+  background: var(--surface-faint);
   box-shadow: none;
+}
+
+.accountSettingsActionBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .accountSettingsPasswordForm {
@@ -68,6 +76,13 @@
 
 .accountSettingsActions .addCowButton {
   min-width: 170px;
+}
+
+.accountSettingsActions .addCowButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 
 @media (max-width: 980px) {
