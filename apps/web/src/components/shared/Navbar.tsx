@@ -11,6 +11,7 @@ import { usePendingWorkdaySelection } from "../../context/usePendingWorkdaySelec
 import { useTheme } from "../../context/useTheme";
 import Modal from "./Modal";
 import FeedbackModal from "./FeedbackModal";
+import { getUserDisplayName, getUserFarmName } from "../../lib/account";
 import { supabase } from "../../lib/supabase";
 import { AuthContext } from "../../context/AuthContext";
 import { exportCowsCsv } from "../../services/cowService";
@@ -29,24 +30,8 @@ function Navbar() {
 
   const { user } = useContext(AuthContext);
 
-  const accountName = useMemo(() => {
-    const metadataName =
-      typeof user?.user_metadata?.full_name === "string"
-        ? user.user_metadata.full_name
-        : typeof user?.user_metadata?.name === "string"
-          ? user.user_metadata.name
-          : null;
-
-    if (metadataName?.trim()) {
-      return metadataName.trim();
-    }
-
-    if (user?.email) {
-      return user.email.split("@")[0];
-    }
-
-    return "Account";
-  }, [user]);
+  const accountName = useMemo(() => getUserDisplayName(user), [user]);
+  const farmName = useMemo(() => getUserFarmName(user), [user]);
 
   const hasDisplayName = accountName !== "Account";
 
@@ -77,9 +62,9 @@ function Navbar() {
     navigate("/", { replace: true });
   };
 
-  const handleOpenResetPassword = () => {
+  const handleOpenAccountSettings = () => {
     setIsAccountMenuOpen(false);
-    navigate("/reset-password");
+    navigate("/account-settings");
   };
 
   const handleOpenFeedback = () => {
@@ -98,7 +83,7 @@ function Navbar() {
     setIsExporting(true);
 
     try {
-      await exportCowsCsv();
+      await exportCowsCsv({ farmName });
       setIsAccountMenuOpen(false);
     } catch (err) {
       const message =
@@ -243,20 +228,13 @@ function Navbar() {
                   {exportError ? (
                     <div className="notesErrorBanner">{exportError}</div>
                   ) : null}
-                  {/* <button
+                  <button
                     className="navbarMenuItem"
-                    onClick={() => setIsAccountMenuOpen(false)}
+                    onClick={handleOpenAccountSettings}
                     type="button"
                   >
-                    Profile
-                  </button> */}
-                  {/* <button
-                    className="navbarMenuItem"
-                    onClick={() => setIsAccountMenuOpen(false)}
-                    type="button"
-                  >
-                    Farm Settings
-                  </button> */}
+                    Account Settings
+                  </button>
                   <button
                     className="navbarMenuItem"
                     onClick={handleToggleTheme}
@@ -270,14 +248,7 @@ function Navbar() {
                     onClick={handleExportData}
                     type="button"
                   >
-                    {isExporting ? "Exporting..." : "Export Data"}
-                  </button>
-                  <button
-                    className="navbarMenuItem"
-                    onClick={handleOpenResetPassword}
-                    type="button"
-                  >
-                    Change Password
+                    {isExporting ? "Exporting..." : "Export Herd Data"}
                   </button>
                   <button
                     className="navbarMenuItem"

@@ -1,9 +1,11 @@
 import { useState } from "react";
 import type { FormEvent } from "react";
 import { Link, useSearchParams } from "react-router-dom";
+import {
+  getPasswordRequirementsMessage,
+  isStrongPassword,
+} from "../lib/account";
 import { supabase } from "../lib/supabase";
-
-const MIN_PASSWORD_LENGTH = 8;
 
 export default function AuthPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -26,10 +28,6 @@ export default function AuthPage() {
   const normalizedEmail = email.trim().toLowerCase();
 
   const isEmailLike = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail);
-  const hasStrongEnoughPassword =
-    password.length >= MIN_PASSWORD_LENGTH &&
-    /[A-Za-z]/.test(password) &&
-    /\d/.test(password);
 
   const handleSignUp = async () => {
     setIsSubmitting(true);
@@ -57,10 +55,8 @@ export default function AuthPage() {
       return;
     }
 
-    if (!hasStrongEnoughPassword) {
-      setMessage(
-        `Password must be at least ${MIN_PASSWORD_LENGTH} characters and include at least one letter and one number.`,
-      );
+    if (!isStrongPassword(password)) {
+      setMessage(getPasswordRequirementsMessage());
       setMessageType("error");
       setIsSubmitting(false);
       return;

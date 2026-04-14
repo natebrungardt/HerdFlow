@@ -1,5 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import { AuthContext } from "../context/AuthContext";
+import { getDashboardFarmLabel, getUserFarmName } from "../lib/account";
 import { getCows, getRemovedCows } from "../services/cowService";
 import {
   getActiveWorkdays,
@@ -40,12 +42,15 @@ function formatLabel(value: string) {
 }
 
 function Dashboard() {
+  const { user } = useContext(AuthContext);
   const [cows, setCows] = useState<Cow[]>([]);
   const [archivedCows, setArchivedCows] = useState<Cow[]>([]);
   const [workdays, setWorkdays] = useState<Workday[]>([]);
   const [archivedWorkdays, setArchivedWorkdays] = useState<Workday[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const farmLabel = getDashboardFarmLabel(user);
+  const hasFarmName = Boolean(getUserFarmName(user));
 
   useEffect(() => {
     async function loadDashboard() {
@@ -161,6 +166,15 @@ function Dashboard() {
         <div className="allCowsContent">
           <div className="allCowsHeader">
             <div className="titleBlock">
+              {farmLabel && farmLabel !== "Account" ? (
+                <p
+                  className={
+                    hasFarmName ? "dashboardFarmName" : "dashboardFarmFallback"
+                  }
+                >
+                  {farmLabel}
+                </p>
+              ) : null}
               <h1 className="pageTitle">Herd Summary</h1>
               <p className="pageSubtitle">
                 Get a quick view of herd health, workday activity, and the

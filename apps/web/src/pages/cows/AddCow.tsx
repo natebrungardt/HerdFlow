@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import CowDetailsSection from "../../components/cows/CowDetailsSection";
 import CowHeroCard from "../../components/cows/CowHeroCard";
@@ -6,12 +6,14 @@ import HasCalfToggle from "../../components/cows/HasCalfToggle";
 import CowSummaryCard from "../../components/cows/CowSummaryCard";
 import HealthStatusToggle from "../../components/cows/HealthStatusToggle";
 import Modal from "../../components/shared/Modal";
+import { AuthContext } from "../../context/AuthContext";
 import {
   heatStatusOptions,
   livestockGroupOptions,
   pregnancyStatusOptions,
   sexOptions,
 } from "../../constants/cowFormOptions";
+import { getUserDefaultOwnerName } from "../../lib/account";
 import { createCow, getCows } from "../../services/cowService";
 import "../../styles/CowDetailPage.css";
 
@@ -75,7 +77,11 @@ function delay(ms: number) {
 
 function AddCowPage() {
   const navigate = useNavigate();
-  const [formData, setFormData] = useState<FormState>(initialFormState);
+  const { user } = useContext(AuthContext);
+  const [formData, setFormData] = useState<FormState>(() => ({
+    ...initialFormState,
+    ownerName: getUserDefaultOwnerName(user),
+  }));
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
   const [showHasCalfSaveFirstModal, setShowHasCalfSaveFirstModal] =

@@ -33,6 +33,26 @@
   font-size: 0.96rem;
 }
 
+.dashboardFarmName,
+.dashboardFarmFallback {
+  margin: 0 0 8px;
+  line-height: 1.2;
+}
+
+.dashboardFarmName {
+  color: var(--text-muted-strong);
+  font-size: 0.92rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.dashboardFarmFallback {
+  color: var(--text-placeholder);
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
 .addCowButton {
   border: none;
   border-radius: 12px;

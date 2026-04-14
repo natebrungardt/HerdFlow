@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import type { User } from "@supabase/supabase-js";
+import { getUserDisplayName } from "../../lib/account";
 import { submitFeedback } from "../../services/feedbackService";
 import "../../styles/FeedbackModal.css";
 
@@ -19,29 +20,8 @@ type FormValues = {
 type FormErrors = Partial<Record<keyof FormValues, string>>;
 
 function getDefaultName(user: User | null): string {
-  const fullName =
-    typeof user?.user_metadata?.full_name === "string"
-      ? user.user_metadata.full_name.trim()
-      : "";
-
-  if (fullName) {
-    return fullName;
-  }
-
-  const name =
-    typeof user?.user_metadata?.name === "string"
-      ? user.user_metadata.name.trim()
-      : "";
-
-  if (name) {
-    return name;
-  }
-
-  if (user?.email) {
-    return user.email.split("@")[0];
-  }
-
-  return "";
+  const displayName = getUserDisplayName(user);
+  return displayName === "Account" ? "" : displayName;
 }
 
 function getDefaultValues(user: User | null): FormValues {

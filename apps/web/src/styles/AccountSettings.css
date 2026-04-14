@@ -1,0 +1,83 @@
+.accountSettingsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.accountSettingsCard {
+  min-width: 0;
+}
+
+.accountSettingsIntro {
+  margin: 8px 0 0;
+  color: var(--text-placeholder);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.accountSettingsStack {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.accountSettingsForm {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.accountSettingsField {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.accountSettingsHelperText {
+  color: var(--text-placeholder);
+  font-size: 0.9rem;
+  font-weight: 500;
+  line-height: 1.45;
+}
+
+.accountSettingsReadonlyInput {
+  background: var(--surface-subtle);
+  color: var(--text-primary);
+  cursor: default;
+  opacity: 1;
+}
+
+.accountSettingsReadonlyInput:focus {
+  background: var(--surface-subtle);
+  box-shadow: none;
+}
+
+.accountSettingsPasswordForm {
+  gap: 20px;
+}
+
+.accountSettingsActions {
+  display: flex;
+  justify-content: flex-start;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.accountSettingsActions .addCowButton {
+  min-width: 170px;
+}
+
+@media (max-width: 980px) {
+  .accountSettingsGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .accountSettingsActions .addCowButton {
+    width: 100%;
+  }
+}

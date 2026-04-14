@@ -1,4 +1,5 @@
 import type { Cow } from "../types/cow";
+import { slugifyFilePart } from "../lib/account";
 import { apiFetch } from "../lib/api";
 
 export type CreateCowInput = {
@@ -38,12 +39,47 @@ function getFilenameFromDisposition(header: string | null): string {
   return basicMatch?.[1] ?? "herd-export.csv";
 }
 
-export async function exportCowsCsv(): Promise<void> {
+type ExportCowsCsvOptions = {
+  farmName?: string;
+};
+
+function buildExportFilename(defaultFileName: string, farmName?: string): string {
+  const farmSlug = farmName ? slugifyFilePart(farmName) : "";
+
+  if (!farmSlug) {
+    return defaultFileName;
+  }
+
+  const extensionIndex = defaultFileName.lastIndexOf(".");
+  const extension =
+    extensionIndex >= 0 ? defaultFileName.slice(extensionIndex) : ".csv";
+
+  return `${farmSlug}-herd-data${extension}`;
+}
+
+function prependFarmMetadata(csvText: string, farmName?: string): string {
+  if (!farmName) {
+    return csvText;
+  }
+
+  return `Farm Name,${JSON.stringify(farmName)}\n\n${csvText}`;
+}
+
+export async function exportCowsCsv(
+  options: ExportCowsCsvOptions = {},
+): Promise<void> {
   const response = await apiFetch("/cows/export");
-  const fileName = getFilenameFromDisposition(
-    response.headers.get("Content-Disposition"),
+  const fileName = buildExportFilename(
+    getFilenameFromDisposition(
+      response.headers.get("Content-Disposition"),
+    ),
+    options.farmName,
   );
-  const blob = await response.blob();
+  const csvText = await response.text();
+  const blob = new Blob(
+    [prependFarmMetadata(csvText, options.farmName)],
+    { type: "text/csv; charset=utf-8" },
+  );
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
 

@@ -14,6 +14,7 @@ import { PendingWorkdaySelectionProvider } from "./context/PendingWorkdaySelecti
 import { ThemeProvider } from "./context/ThemeContext";
 import AuthPage from "./pages/AuthPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
+import AccountSettingsPage from "./pages/AccountSettingsPage";
 import { useContext } from "react";
 import { AuthContext } from "./context/AuthContext";
 import LandingPage from "./pages/LandingPage";
@@ -76,6 +77,7 @@ function App() {
             <Route path="/cows" element={<AllCowPage />} />
             <Route path="/cows/:id" element={<CowDetailPage />} />
             <Route path="/add-cow" element={<AddCowButton />} />
+            <Route path="/account-settings" element={<AccountSettingsPage />} />
             <Route path="/removed" element={<RemovedCows />} />
             <Route path="/workdays" element={<AllWorkdayPage />} />
             <Route path="/workdays/new" element={<AddWorkdayPage />} />
