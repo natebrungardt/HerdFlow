@@ -9,9 +9,18 @@ import SwiftUI
 
 @main
 struct herdflowApp: App {
+    @StateObject private var authManager = AuthManager()
+
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            Group {
+                if authManager.isAuthenticated {
+                    MainTabView()
+                } else {
+                    AuthView()
+                }
+            }
+            .environmentObject(authManager)
         }
     }
 }

@@ -26,6 +26,7 @@ builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddSwaggerGen();
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddAuthorization();
 
 builder.Services.AddScoped<CowService>();
 builder.Services.AddScoped<ActivityLogService>();
@@ -62,13 +63,39 @@ else
         .AddJwtBearer(options =>
         {
             options.Authority = $"{supabaseUrl.TrimEnd('/')}/auth/v1";
+
+            options.RequireHttpsMetadata = false;
+
             options.TokenValidationParameters = new TokenValidationParameters
             {
                 ValidateIssuer = true,
                 ValidIssuer = $"{supabaseUrl.TrimEnd('/')}/auth/v1",
+
                 ValidateAudience = true,
                 ValidAudience = "authenticated",
+
                 ValidateLifetime = true,
+
+                ValidateIssuerSigningKey = true,
+
+                NameClaimType = "sub",
+
+                ClockSkew = TimeSpan.Zero
+            };
+
+            // 🔥 Debug logging (temporary)
+            options.Events = new JwtBearerEvents
+            {
+                OnAuthenticationFailed = context =>
+                {
+                    Console.WriteLine($"❌ AUTH FAILED: {context.Exception.Message}");
+                    return Task.CompletedTask;
+                },
+                OnTokenValidated = context =>
+                {
+                    Console.WriteLine("✅ TOKEN VALIDATED");
+                    return Task.CompletedTask;
+                }
             };
         });
 }
