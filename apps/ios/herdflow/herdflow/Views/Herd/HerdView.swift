@@ -7,29 +7,41 @@ struct HerdView: View {
 
     var body: some View {
         NavigationStack {
-            List {
-                ForEach(cows) { cow in
-                HStack(spacing: 14) {
-                    Image(systemName: "tag.fill")
-                        .font(.title3)
-                        .foregroundStyle(.green)
-                        .frame(width: 36, height: 36)
-                        .background(Color.green.opacity(0.12))
-                        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+            ZStack {
+                Color(.systemGroupedBackground)
+                    .ignoresSafeArea()
 
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(cow.tagNumber)
-                            .font(.headline)
-                        Text(cow.status)
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
+                List {
+                    ForEach(cows) { cow in
+                        HStack(spacing: 14) {
+                            Image(systemName: "tag.fill")
+                                .font(.title3)
+                                .foregroundStyle(.green)
+                                .frame(width: 36, height: 36)
+                                .background(Color.green.opacity(0.12))
+                                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(cow.tagNumber)
+                                    .font(.headline)
+                                Text(cow.status)
+                                    .font(.subheadline)
+                                    .foregroundStyle(.secondary)
+                            }
+                            .padding(.vertical, 6)
+                        }
+                        .listRowInsets(EdgeInsets(top: 10, leading: 16, bottom: 10, trailing: 16))
+                        .listRowBackground(
+                            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                                .fill(Color(.secondarySystemBackground))
+                                .padding(.vertical, 2)
+                        )
                     }
-                    .padding(.vertical, 6)
                 }
-                .listRowInsets(EdgeInsets(top: 10, leading: 16, bottom: 10, trailing: 16))
+                .listStyle(.plain)
+                .scrollContentBackground(.hidden)
+                .contentMargins(.horizontal, 16, for: .scrollContent)
             }
-            }
-            .listStyle(.insetGrouped)
             .navigationTitle("Herd")
             .onAppear {
                 loadCows()

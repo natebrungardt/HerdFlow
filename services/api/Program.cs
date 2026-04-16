@@ -93,7 +93,6 @@ else
                 },
                 OnTokenValidated = context =>
                 {
-                    Console.WriteLine("✅ TOKEN VALIDATED");
                     return Task.CompletedTask;
                 }
             };
