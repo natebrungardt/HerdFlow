@@ -69,6 +69,6 @@ Properties/launchSettings.json
 # Xcode
 xcuserdata/
 *.xcuserstate
-DerivedData/
 .build/
-.deriveddata
+.deriveddata/
+DerivedData/
