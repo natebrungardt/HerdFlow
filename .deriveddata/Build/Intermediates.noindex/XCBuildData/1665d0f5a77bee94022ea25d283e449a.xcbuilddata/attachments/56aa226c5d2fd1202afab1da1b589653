@@ -1,0 +1,16 @@
+/Users/natebrungardt/HerdFlow/apps/ios/herdflow/herdflow/Models/AuthSession.swift
+/Users/natebrungardt/HerdFlow/apps/ios/herdflow/herdflow/Models/Cow.swift
+/Users/natebrungardt/HerdFlow/apps/ios/herdflow/herdflow/Services/AuthManager.swift
+/Users/natebrungardt/HerdFlow/apps/ios/herdflow/herdflow/Services/AuthService.swift
+/Users/natebrungardt/HerdFlow/apps/ios/herdflow/herdflow/Services/CowService.swift
+/Users/natebrungardt/HerdFlow/apps/ios/herdflow/herdflow/Views/Auth/AuthView.swift
+/Users/natebrungardt/HerdFlow/apps/ios/herdflow/herdflow/Views/Herd/AddCowView.swift
+/Users/natebrungardt/HerdFlow/apps/ios/herdflow/herdflow/Views/Herd/AllCowsView.swift
+/Users/natebrungardt/HerdFlow/apps/ios/herdflow/herdflow/Views/Herd/HerdView.swift
+/Users/natebrungardt/HerdFlow/apps/ios/herdflow/herdflow/Views/Home/HomeView.swift
+/Users/natebrungardt/HerdFlow/apps/ios/herdflow/herdflow/Views/Main/ContentView.swift
+/Users/natebrungardt/HerdFlow/apps/ios/herdflow/herdflow/Views/Main/MainTabView.swift
+/Users/natebrungardt/HerdFlow/apps/ios/herdflow/herdflow/Views/Profile/ProfileView.swift
+/Users/natebrungardt/HerdFlow/apps/ios/herdflow/herdflow/Views/Workdays/WorkdaysView.swift
+/Users/natebrungardt/HerdFlow/apps/ios/herdflow/herdflow/herdflowApp.swift
+/Users/natebrungardt/HerdFlow/.deriveddata/Build/Intermediates.noindex/herdflow.build/Debug-iphoneos/herdflow.build/DerivedSources/GeneratedAssetSymbols.swift

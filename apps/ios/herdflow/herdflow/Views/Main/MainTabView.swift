@@ -45,7 +45,6 @@ struct MainTabView: View {
         ZStack(alignment: .bottom) {
             currentScreen
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-                .padding(.bottom, dockClearance)
 
             BottomDock(
                 selectedTab: $selectedTab,
@@ -67,6 +66,7 @@ struct MainTabView: View {
         }
         .animation(.easeInOut(duration: 0.2), value: showingActionMenu)
         .background(Color(.systemGroupedBackground))
+        .ignoresSafeArea(edges: .bottom)
         .sheet(isPresented: $showingAddCow) {
             AddCowView()
         }
@@ -96,9 +96,13 @@ struct MainTabView: View {
         case .home:
             HomeView()
         case .herd:
-            HerdView()
+            NavigationStack {
+                AllCowsView()
+            }
         case .workdays:
-            WorkdaysView()
+            NavigationStack {
+                WorkdaysView()
+            }
         case .profile:
             ProfileView()
         }
@@ -153,8 +157,9 @@ private struct BottomDock: View {
             )
             .overlay(
                 Capsule()
-                    .stroke(Color.white.opacity(0.15), lineWidth: 0.5)
+                    .stroke(Color.white.opacity(0.12), lineWidth: 1)
             )
+            .shadow(color: Color.black.opacity(0.08), radius: 10, x: 0, y: 4)
 
             // Action button
             Button(action: onActionTap) {
@@ -164,8 +169,13 @@ private struct BottomDock: View {
                     .frame(width: actionButtonSize, height: actionButtonSize)
                     .background(
                         Circle()
-                            .fill(Color.black.opacity(0.8))
+                            .fill(Color.black)
                     )
+                    .overlay(
+                        Circle()
+                            .stroke(Color.white.opacity(0.12), lineWidth: 1)
+                    )
+                    .shadow(color: Color.black.opacity(0.08), radius: 10, x: 0, y: 4)
             }
             .buttonStyle(.plain)
         }

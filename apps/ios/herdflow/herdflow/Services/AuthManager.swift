@@ -3,7 +3,7 @@ import Combine
 
 @MainActor
 final class AuthManager: ObservableObject {
-    @Published var isAuthenticated = true // Assume user is authenticated by default for development purposes
+    @Published var isAuthenticated = false // Assume user is authenticated by default for development purposes
     @Published var accessToken: String?
 
     private let authService = AuthService()
