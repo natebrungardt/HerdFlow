@@ -71,3 +71,4 @@ xcuserdata/
 *.xcuserstate
 DerivedData/
 .build/
+.deriveddata
