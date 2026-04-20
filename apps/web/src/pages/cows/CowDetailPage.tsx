@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import CowDetailsSection from "../../components/cows/CowDetailsSection";
 import CowHeroCard from "../../components/cows/CowHeroCard";
-import HasCalfToggle from "../../components/cows/HasCalfToggle";
 import CowSummaryCard from "../../components/cows/CowSummaryCard";
 import HealthStatusToggle from "../../components/cows/HealthStatusToggle";
 import Modal from "../../components/shared/Modal";
@@ -33,10 +32,14 @@ type ActivityLogEntry = {
 
 type EditableFieldName =
   | "ownerName"
+  | "name"
   | "breed"
+  | "color"
   | "sex"
   | "heatStatus"
   | "dateOfBirth"
+  | "birthWeight"
+  | "easeOfBirth"
   | "purchaseDate"
   | "purchasePrice"
   | "saleDate"
@@ -59,10 +62,14 @@ type AddCalfModalState = {
 
 const editableFields: EditableFieldName[] = [
   "ownerName",
+  "name",
   "breed",
+  "color",
   "sex",
   "heatStatus",
   "dateOfBirth",
+  "birthWeight",
+  "easeOfBirth",
   "purchaseDate",
   "purchasePrice",
   "saleDate",
@@ -70,6 +77,13 @@ const editableFields: EditableFieldName[] = [
 ];
 
 const TAG_NUMBER_PATTERN = /^[A-Za-z0-9-]+$/;
+const easeOfBirthOptions = [
+  { value: "", label: "Select" },
+  { value: "Unassisted", label: "Unassisted" },
+  { value: "Assisted", label: "Assisted" },
+  { value: "Difficult", label: "Difficult" },
+  { value: "C-Section", label: "C-Section" },
+] as const;
 
 function formatValue(value: string | number | boolean | null | undefined) {
   if (value === null || value === undefined || value === "") return "—";
@@ -95,6 +109,35 @@ function formatBoolean(value: boolean | null | undefined) {
   return value ? "Yes" : "No";
 }
 
+function formatParentDisplay(
+  parent: Cow["sire"] | Cow["dam"],
+  fallback?: string | null,
+) {
+  if (parent) {
+    return parent.name?.trim()
+      ? `${parent.tagNumber} (${parent.name.trim()})`
+      : parent.tagNumber;
+  }
+
+  if (fallback?.trim()) {
+    return fallback.trim();
+  }
+
+  return "—";
+}
+
+function getParentValidationError(cow: Cow) {
+  if (cow.sireId && cow.sireName?.trim()) {
+    return "Choose either an in-herd sire or a manual sire name.";
+  }
+
+  if (cow.damId && cow.damName?.trim()) {
+    return "Choose either an in-herd dam or a manual dam name.";
+  }
+
+  return "";
+}
+
 function formatDateForApi(date: Date) {
   return date.toISOString().split("T")[0];
 }
@@ -106,11 +149,19 @@ function toCreateCowInput(cow: Cow): CreateCowInput {
     livestockGroup: cow.livestockGroup,
     breed: cow.breed,
     sex: cow.sex,
+    name: cow.name ?? null,
+    color: cow.color ?? null,
     healthStatus: cow.healthStatus,
     heatStatus: cow.heatStatus ?? null,
     pregnancyStatus: cow.pregnancyStatus ?? "N/A",
     hasCalf: cow.hasCalf,
     dateOfBirth: cow.dateOfBirth ?? null,
+    birthWeight: cow.birthWeight ?? null,
+    easeOfBirth: cow.easeOfBirth ?? null,
+    sireId: cow.sireId ?? null,
+    sireName: cow.sireId ? null : (cow.sireName ?? null),
+    damId: cow.damId ?? null,
+    damName: cow.damId ? null : (cow.damName ?? null),
     purchaseDate: cow.purchaseDate ?? null,
     saleDate: cow.saleDate ?? null,
     purchasePrice: cow.purchasePrice ?? null,
@@ -232,7 +283,9 @@ function CowDetailPage() {
       if (!prev) return prev;
 
       const normalizedValue =
-        name === "purchasePrice" || name === "salePrice"
+        name === "purchasePrice" ||
+        name === "salePrice" ||
+        name === "birthWeight"
           ? value === ""
             ? null
             : Number(value)
@@ -252,6 +305,12 @@ function CowDetailPage() {
       setError(
         "Tag number can only include letters, numbers, and dashes. Spaces cannot be used.",
       );
+      return false;
+    }
+
+    const parentValidationError = getParentValidationError(formData);
+    if (parentValidationError) {
+      setError(parentValidationError);
       return false;
     }
 
@@ -346,6 +405,8 @@ function CowDetailPage() {
     }
   }
 
+  void updateHasCalf;
+
   async function createCalfForCow(mother: Cow) {
     const currentYear = new Date().getFullYear();
     const baseTagNumber = `${mother.tagNumber}-${currentYear}`;
@@ -362,7 +423,15 @@ function CowDetailPage() {
           ownerName: mother.ownerName,
           sex: "",
           breed: mother.breed ?? "",
+          name: null,
+          color: null,
           dateOfBirth,
+          birthWeight: null,
+          easeOfBirth: null,
+          sireId: null,
+          sireName: null,
+          damId: null,
+          damName: null,
           hasCalf: false,
           healthStatus: "Healthy",
           heatStatus: null,
@@ -482,8 +551,18 @@ function CowDetailPage() {
       type: "text",
     }),
     renderEditableField({
+      name: "name",
+      label: "Name",
+      type: "text",
+    }),
+    renderEditableField({
       name: "breed",
       label: "Breed",
+      type: "text",
+    }),
+    renderEditableField({
+      name: "color",
+      label: "Color",
       type: "text",
     }),
     renderEditableField({
@@ -507,6 +586,32 @@ function CowDetailPage() {
       label: "Date of Birth",
       type: "date",
     }),
+    renderEditableField({
+      name: "birthWeight",
+      label: "Birth Weight",
+      type: "number",
+    }),
+    renderEditableField({
+      name: "easeOfBirth",
+      label: "Ease of Birth",
+      type: "select",
+      options: easeOfBirthOptions,
+      displayValue: formatValue(formData.easeOfBirth),
+    }),
+    {
+      key: "sire",
+      label: "Sire",
+      content: (
+        <span>{formatParentDisplay(formData.sire, formData.sireName)}</span>
+      ),
+    },
+    {
+      key: "dam",
+      label: "Dam",
+      content: (
+        <span>{formatParentDisplay(formData.dam, formData.damName)}</span>
+      ),
+    },
     renderEditableField({
       name: "purchaseDate",
       label: "Purchase Date",
@@ -533,11 +638,18 @@ function CowDetailPage() {
       key: "hasCalf",
       label: "Has Calf",
       content: (
-        <HasCalfToggle
-          compact
-          value={formData.hasCalf}
-          onChange={updateHasCalf}
-        />
+        <button
+          type="button"
+          className="detailActionButton"
+          onClick={() => {
+            setAddCalfModal({
+              isOpen: true,
+              motherCowId: cow.id,
+            });
+          }}
+        >
+          + Add Calf
+        </button>
       ),
     },
   ];

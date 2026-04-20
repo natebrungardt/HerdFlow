@@ -1,8 +1,9 @@
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import CowDetailsSection from "../../components/cows/CowDetailsSection";
 import CowHeroCard from "../../components/cows/CowHeroCard";
 import HasCalfToggle from "../../components/cows/HasCalfToggle";
+import ParentSelectorField from "../../components/cows/ParentSelectorField";
 import CowSummaryCard from "../../components/cows/CowSummaryCard";
 import HealthStatusToggle from "../../components/cows/HealthStatusToggle";
 import Modal from "../../components/shared/Modal";
@@ -15,6 +16,7 @@ import {
 } from "../../constants/cowFormOptions";
 import { getUserDefaultOwnerName } from "../../lib/account";
 import { createCow, getCows } from "../../services/cowService";
+import type { Cow } from "../../types/cow";
 import "../../styles/CowDetailPage.css";
 
 type FormState = {
@@ -22,12 +24,20 @@ type FormState = {
   ownerName: string;
   breed: string;
   sex: string;
+  name: string;
+  color: string;
+  birthWeight: string;
+  easeOfBirth: string;
   healthStatus: string;
   heatStatus: string;
   pregnancyStatus: string;
   hasCalf: boolean;
   livestockGroup: string;
   dateOfBirth: string;
+  sireId: string;
+  sireName: string;
+  damId: string;
+  damName: string;
   purchaseDate: string;
   saleDate: string;
   purchasePrice: string;
@@ -37,17 +47,33 @@ type FormState = {
 
 const TAG_NUMBER_PATTERN = /^[A-Za-z0-9-]+$/;
 
+const easeOfBirthOptions = [
+  { value: "", label: "Select ease of birth" },
+  { value: "Unassisted", label: "Unassisted" },
+  { value: "Assisted", label: "Assisted" },
+  { value: "Difficult", label: "Difficult" },
+  { value: "C-Section", label: "C-Section" },
+] as const;
+
 const initialFormState: FormState = {
   tagNumber: "",
   ownerName: "",
   breed: "",
   sex: "",
+  name: "",
+  color: "",
+  birthWeight: "",
+  easeOfBirth: "",
   healthStatus: "Healthy",
   heatStatus: "",
   pregnancyStatus: "N/A",
   hasCalf: false,
   livestockGroup: "",
   dateOfBirth: "",
+  sireId: "",
+  sireName: "",
+  damId: "",
+  damName: "",
   purchaseDate: "",
   saleDate: "",
   purchasePrice: "",
@@ -75,6 +101,18 @@ function delay(ms: number) {
   });
 }
 
+function getParentValidationError(formData: FormState) {
+  if (formData.sireId && formData.sireName.trim()) {
+    return "Choose either an in-herd sire or a manual sire name.";
+  }
+
+  if (formData.damId && formData.damName.trim()) {
+    return "Choose either an in-herd dam or a manual dam name.";
+  }
+
+  return "";
+}
+
 function AddCowPage() {
   const navigate = useNavigate();
   const { user } = useContext(AuthContext);
@@ -82,10 +120,24 @@ function AddCowPage() {
     ...initialFormState,
     ownerName: getUserDefaultOwnerName(user),
   }));
+  const [existingCows, setExistingCows] = useState<Cow[]>([]);
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
   const [showHasCalfSaveFirstModal, setShowHasCalfSaveFirstModal] =
     useState(false);
+
+  useEffect(() => {
+    async function loadExistingCows() {
+      try {
+        const cows = await getCows();
+        setExistingCows(cows);
+      } catch {
+        // Keep the form usable even if the herd list fails to load.
+      }
+    }
+
+    void loadExistingCows();
+  }, []);
 
   function handleHasCalfChange(value: boolean) {
     if (value) {
@@ -114,6 +166,18 @@ function AddCowPage() {
     }));
   }
 
+  function handleParentChange(
+    parent: "sire" | "dam",
+    next: { id: string; name: string },
+  ) {
+    setError("");
+    setFormData((current) => ({
+      ...current,
+      [`${parent}Id`]: next.id,
+      [`${parent}Name`]: next.name,
+    }));
+  }
+
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError("");
@@ -125,6 +189,13 @@ function AddCowPage() {
       setError(
         "Tag number can only include letters, numbers, and dashes. Spaces cannot be used.",
       );
+      setSaving(false);
+      return;
+    }
+
+    const parentValidationError = getParentValidationError(formData);
+    if (parentValidationError) {
+      setError(parentValidationError);
       setSaving(false);
       return;
     }
@@ -163,12 +234,20 @@ function AddCowPage() {
         ownerName: formData.ownerName,
         breed: formData.breed,
         sex: formData.sex,
+        name: formData.name.trim() || null,
+        color: formData.color.trim() || null,
+        birthWeight: formData.birthWeight ? Number(formData.birthWeight) : null,
+        easeOfBirth: formData.easeOfBirth || null,
         healthStatus: formData.healthStatus || "Healthy",
         heatStatus: formData.heatStatus === "" ? null : formData.heatStatus,
         pregnancyStatus: formData.pregnancyStatus || "N/A",
         hasCalf: formData.hasCalf,
         livestockGroup: formData.livestockGroup,
         dateOfBirth: formData.dateOfBirth || null,
+        sireId: formData.sireId || null,
+        sireName: formData.sireId ? null : formData.sireName.trim() || null,
+        damId: formData.damId || null,
+        damName: formData.damId ? null : formData.damName.trim() || null,
         purchaseDate: formData.purchaseDate || null,
         saleDate: formData.saleDate || null,
         purchasePrice: formData.purchasePrice
@@ -218,6 +297,20 @@ function AddCowPage() {
       ),
     },
     {
+      key: "name",
+      label: "Name",
+      content: (
+        <input
+          id="name"
+          name="name"
+          className="cardInput"
+          value={formData.name}
+          onChange={handleChange}
+          placeholder="Enter cow name"
+        />
+      ),
+    },
+    {
       key: "breed",
       label: "Breed",
       content: (
@@ -228,6 +321,20 @@ function AddCowPage() {
           value={formData.breed}
           onChange={handleChange}
           placeholder="Enter breed"
+        />
+      ),
+    },
+    {
+      key: "color",
+      label: "Color",
+      content: (
+        <input
+          id="color"
+          name="color"
+          className="cardInput"
+          value={formData.color}
+          onChange={handleChange}
+          placeholder="Enter color"
         />
       ),
     },
@@ -280,6 +387,66 @@ function AddCowPage() {
           className="cardInput"
           value={formData.dateOfBirth}
           onChange={handleChange}
+        />
+      ),
+    },
+    {
+      key: "birthWeight",
+      label: "Birth Weight",
+      content: (
+        <input
+          id="birthWeight"
+          name="birthWeight"
+          type="number"
+          className="cardInput"
+          value={formData.birthWeight}
+          onChange={handleChange}
+          placeholder="Enter birth weight"
+        />
+      ),
+    },
+    {
+      key: "easeOfBirth",
+      label: "Ease of Birth",
+      content: (
+        <select
+          id="easeOfBirth"
+          name="easeOfBirth"
+          className="cardInput"
+          value={formData.easeOfBirth}
+          onChange={handleChange}
+        >
+          {easeOfBirthOptions.map((option) => (
+            <option key={option.value || "empty"} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+      ),
+    },
+    {
+      key: "sire",
+      label: "Sire",
+      content: (
+        <ParentSelectorField
+          label="Sire"
+          cows={existingCows}
+          selectedId={formData.sireId}
+          manualName={formData.sireName}
+          onChange={(next) => handleParentChange("sire", next)}
+        />
+      ),
+    },
+    {
+      key: "dam",
+      label: "Dam",
+      content: (
+        <ParentSelectorField
+          label="Dam"
+          cows={existingCows}
+          selectedId={formData.damId}
+          manualName={formData.damName}
+          onChange={(next) => handleParentChange("dam", next)}
         />
       ),
     },

@@ -5,7 +5,25 @@ export type Cow = {
   livestockGroup: string;
   sex: string;
   breed: string;
+  name?: string | null;
+  color?: string | null;
   dateOfBirth?: string | null;
+  birthWeight?: number | null;
+  easeOfBirth?: string | null;
+  sireId?: string | null;
+  sireName?: string | null;
+  damId?: string | null;
+  damName?: string | null;
+  sire?: {
+    id: string;
+    tagNumber: string;
+    name?: string | null;
+  } | null;
+  dam?: {
+    id: string;
+    tagNumber: string;
+    name?: string | null;
+  } | null;
   healthStatus: string;
   heatStatus: string;
   pregnancyStatus: string;

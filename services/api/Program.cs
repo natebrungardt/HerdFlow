@@ -9,6 +9,7 @@ using Microsoft.IdentityModel.Tokens;
 using DotNetEnv;
 Env.Load();
 
+AppContext.SetSwitch("System.Net.DisableIPv6", true);
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Configuration.AddEnvironmentVariables();

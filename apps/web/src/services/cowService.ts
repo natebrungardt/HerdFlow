@@ -8,11 +8,19 @@ export type CreateCowInput = {
   livestockGroup: string;
   breed: string;
   sex: string;
+  name: string | null;
+  color: string | null;
   healthStatus: string;
   heatStatus: string | null;
   pregnancyStatus: string | null;
   hasCalf: boolean;
   dateOfBirth: string | null;
+  birthWeight: number | null;
+  easeOfBirth: string | null;
+  sireId: string | null;
+  sireName: string | null;
+  damId: string | null;
+  damName: string | null;
   purchaseDate: string | null;
   saleDate: string | null;
   purchasePrice: number | null;
@@ -100,7 +108,15 @@ export async function createCow(cowData: CreateCowInput): Promise<Cow> {
       livestockGroup: cowData.livestockGroup,
       sex: cowData.sex,
       breed: cowData.breed,
+      name: cowData.name,
+      color: cowData.color,
       dateOfBirth: cowData.dateOfBirth,
+      birthWeight: cowData.birthWeight,
+      easeOfBirth: cowData.easeOfBirth,
+      sireId: cowData.sireId,
+      sireName: cowData.sireName,
+      damId: cowData.damId,
+      damName: cowData.damName,
       healthStatus: cowData.healthStatus,
       heatStatus: cowData.heatStatus,
       pregnancyStatus: cowData.pregnancyStatus,
@@ -155,7 +171,15 @@ export async function updateCow(
       livestockGroup: cowData.livestockGroup,
       sex: cowData.sex,
       breed: cowData.breed,
+      name: cowData.name,
+      color: cowData.color,
       dateOfBirth: cowData.dateOfBirth,
+      birthWeight: cowData.birthWeight,
+      easeOfBirth: cowData.easeOfBirth,
+      sireId: cowData.sireId,
+      sireName: cowData.sireName,
+      damId: cowData.damId,
+      damName: cowData.damName,
       healthStatus: cowData.healthStatus,
       heatStatus: cowData.heatStatus,
       pregnancyStatus: cowData.pregnancyStatus,
