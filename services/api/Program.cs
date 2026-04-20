@@ -105,17 +105,8 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowFrontend",
         policy =>
         {
-            var allowedOrigins = builder.Configuration
-                .GetSection("Cors:AllowedOrigins")
-                .Get<string[]>();
-
-            if (allowedOrigins is null || allowedOrigins.Length == 0)
-            {
-                throw new InvalidOperationException("Cors:AllowedOrigins must contain at least one origin.");
-            }
-
             policy
-                .WithOrigins(allowedOrigins)
+                .AllowAnyOrigin()
                 .AllowAnyHeader()
                 .AllowAnyMethod();
         });
@@ -150,19 +141,7 @@ if (app.Environment.IsDevelopment())
 
 // Map controllers LAST
 app.MapControllers();
-using (var scope = app.Services.CreateScope())
-{
-    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    try
-    {
-        await Task.Delay(2000);
-        db.Database.Migrate();
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine($"Migration failed: {ex.Message}");
-    }
-}
+
 app.Run();
 
 public partial class Program { }
