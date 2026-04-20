@@ -7,10 +7,12 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using DotNetEnv;
-Env.Load();
-
-AppContext.SetSwitch("System.Net.DisableIPv6", true);
 var builder = WebApplication.CreateBuilder(args);
+
+if (builder.Environment.IsDevelopment())
+{
+    Env.Load();
+}
 
 builder.Configuration.AddEnvironmentVariables();
 // Add services to the container.
