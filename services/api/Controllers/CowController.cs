@@ -44,7 +44,7 @@ public class CowController : ControllerBase
     }
 
     [HttpPut("{id:guid}")]
-    public async Task<IActionResult> UpdateCow(Guid id, [FromBody] CreateCowDto dto)
+    public async Task<IActionResult> UpdateCow(Guid id, [FromBody] UpdateCowDto dto)
     {
         var updatedCow = await _cowService.UpdateCowAsync(id, dto);
         return Ok(updatedCow);

@@ -34,6 +34,18 @@ public class AppDbContext : DbContext
             .Property(c => c.HeatStatus)
             .HasConversion<string>();
 
+        modelBuilder.Entity<Cow>()
+            .HasOne(c => c.Sire)
+            .WithMany(c => c.SiredOffspring)
+            .HasForeignKey(c => c.SireId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<Cow>()
+            .HasOne(c => c.Dam)
+            .WithMany(c => c.BirthedOffspring)
+            .HasForeignKey(c => c.DamId)
+            .OnDelete(DeleteBehavior.SetNull);
+
         base.OnModelCreating(modelBuilder);
 
         modelBuilder.Entity<WorkdayCow>()

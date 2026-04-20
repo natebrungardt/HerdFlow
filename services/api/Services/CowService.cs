@@ -35,19 +35,62 @@ public class CowService
 
     private void ValidateCreateCow(CreateCowDto dto)
     {
-        if (dto.LivestockGroup == LivestockGroupType.None)
+        ValidateCowInput(
+            dto.TagNumber,
+            dto.LivestockGroup,
+            dto.SireId,
+            dto.SireName,
+            dto.DamId,
+            dto.DamName);
+    }
+
+    private void ValidateUpdateCow(UpdateCowDto dto)
+    {
+        ValidateCowInput(
+            dto.TagNumber,
+            dto.LivestockGroup,
+            dto.SireId,
+            dto.SireName,
+            dto.DamId,
+            dto.DamName);
+    }
+
+    private void ValidateCowInput(
+        string tagNumber,
+        LivestockGroupType livestockGroup,
+        Guid? sireId,
+        string? sireName,
+        Guid? damId,
+        string? damName)
+    {
+        if (livestockGroup == LivestockGroupType.None)
         {
             throw new ValidationException("Livestock group is required.");
         }
 
-        if (string.IsNullOrWhiteSpace(dto.TagNumber))
+        if (string.IsNullOrWhiteSpace(tagNumber))
         {
             throw new ValidationException("Tag number is required.");
         }
 
-        if (!TagNumberPattern.IsMatch(dto.TagNumber.Trim()))
+        if (!TagNumberPattern.IsMatch(tagNumber.Trim()))
         {
             throw new ValidationException("Tag number can only include letters, numbers, and dashes. Spaces cannot be used.");
+        }
+
+        if (sireId.HasValue && !string.IsNullOrWhiteSpace(sireName))
+        {
+            throw new ValidationException("Provide either SireId or SireName, but not both.");
+        }
+
+        if (damId.HasValue && !string.IsNullOrWhiteSpace(damName))
+        {
+            throw new ValidationException("Provide either DamId or DamName, but not both.");
+        }
+
+        if (sireId.HasValue && damId.HasValue && sireId.Value == damId.Value)
+        {
+            throw new ValidationException("Sire and Dam cannot be the same cow.");
         }
     }
 
@@ -56,27 +99,33 @@ public class CowService
         return string.IsNullOrWhiteSpace(pregnancyStatus) ? "N/A" : pregnancyStatus.Trim();
     }
 
-    public async Task<List<Cow>> GetCowsAsync()
+    public async Task<List<CowResponseDto>> GetCowsAsync()
     {
         var userId = GetCurrentUserId();
-        return await _context.Cows
+        var cows = await _context.Cows
+            .AsNoTracking()
+            .Include(c => c.Sire)
+            .Include(c => c.Dam)
             .Where(c => c.UserId == userId && !c.IsRemoved)
+            .OrderBy(c => c.TagNumber)
             .ToListAsync();
+
+        return cows.Select(MapCowResponse).ToList();
     }
 
-    public async Task<Cow> GetCowByIdAsync(Guid id)
+    public async Task<CowResponseDto> GetCowByIdAsync(Guid id)
     {
-        var userId = GetCurrentUserId();
-        var cow = await _context.Cows.FirstOrDefaultAsync(c => c.Id == id && c.UserId == userId);
-        return cow ?? throw new NotFoundException("Cow not found.");
+        var cow = await FindCowWithParentsAsync(id, asNoTracking: true);
+        return MapCowResponse(cow);
     }
 
-    public async Task<Cow> UpdateCowAsync(Guid id, CreateCowDto dto)
+    public async Task<CowResponseDto> UpdateCowAsync(Guid id, UpdateCowDto dto)
     {
-        var cow = await FindCowAsync(id);
-        ValidateCreateCow(dto);
+        var cow = await FindCowWithParentsAsync(id);
+        ValidateUpdateCow(dto);
         var normalizedTagNumber = dto.TagNumber.Trim();
         await EnsureTagNumberIsUniqueAsync(normalizedTagNumber, id);
+        await ValidateParentReferencesAsync(dto.SireId, dto.DamId, id);
         var changes = _cowChangeLogService.BuildUpdateMessages(cow, dto);
 
         cow.TagNumber = normalizedTagNumber;
@@ -84,7 +133,15 @@ public class CowService
         cow.LivestockGroup = dto.LivestockGroup;
         cow.Sex = dto.Sex;
         cow.Breed = dto.Breed;
+        cow.Name = NormalizeOptionalText(dto.Name);
+        cow.Color = NormalizeOptionalText(dto.Color);
         cow.DateOfBirth = dto.DateOfBirth;
+        cow.BirthWeight = dto.BirthWeight;
+        cow.EaseOfBirth = NormalizeOptionalText(dto.EaseOfBirth);
+        cow.SireId = dto.SireId;
+        cow.SireName = dto.SireId is not null ? null : NormalizeOptionalText(dto.SireName);
+        cow.DamId = dto.DamId;
+        cow.DamName = dto.DamId is not null ? null : NormalizeOptionalText(dto.DamName);
         cow.HealthStatus = dto.HealthStatus;
         cow.HeatStatus = dto.HeatStatus;
         cow.PregnancyStatus = NormalizePregnancyStatus(dto.PregnancyStatus);
@@ -100,15 +157,17 @@ public class CowService
             await _activityLogService.LogAsync(cow.Id, change);
         }
 
-        return cow;
+        var updatedCow = await FindCowWithParentsAsync(id, asNoTracking: true);
+        return MapCowResponse(updatedCow);
     }
 
-    public async Task<Cow> CreateCowAsync(CreateCowDto dto)
+    public async Task<CowResponseDto> CreateCowAsync(CreateCowDto dto)
     {
         ValidateCreateCow(dto);
         var normalizedTagNumber = dto.TagNumber.Trim();
         var userId = GetCurrentUserId();
         await EnsureTagNumberIsUniqueAsync(normalizedTagNumber, userId);
+        await ValidateParentReferencesAsync(dto.SireId, dto.DamId);
 
         var cow = new Cow
         {
@@ -118,7 +177,15 @@ public class CowService
             LivestockGroup = dto.LivestockGroup,
             Sex = dto.Sex,
             Breed = dto.Breed,
+            Name = NormalizeOptionalText(dto.Name),
+            Color = NormalizeOptionalText(dto.Color),
             DateOfBirth = dto.DateOfBirth,
+            BirthWeight = dto.BirthWeight,
+            EaseOfBirth = NormalizeOptionalText(dto.EaseOfBirth),
+            SireId = dto.SireId,
+            SireName = dto.SireId is not null ? null : NormalizeOptionalText(dto.SireName),
+            DamId = dto.DamId,
+            DamName = dto.DamId is not null ? null : NormalizeOptionalText(dto.DamName),
             HealthStatus = dto.HealthStatus,
             HeatStatus = dto.HeatStatus,
             PregnancyStatus = NormalizePregnancyStatus(dto.PregnancyStatus),
@@ -139,14 +206,16 @@ public class CowService
 
             if (existingCow is not null)
             {
-                return existingCow;
+                var existingCowWithParents = await FindCowWithParentsAsync(existingCow.Id, asNoTracking: true);
+                return MapCowResponse(existingCowWithParents);
             }
 
             throw;
         }
 
         await _activityLogService.LogAsync(cow.Id, "Cow record created");
-        return cow;
+        var createdCow = await FindCowWithParentsAsync(cow.Id, asNoTracking: true);
+        return MapCowResponse(createdCow);
     }
 
     public async Task ArchiveCowAsync(Guid id)
@@ -159,14 +228,19 @@ public class CowService
         await _activityLogService.LogAsync(cow.Id, "Cow archived from herd");
     }
 
-    public async Task<List<Cow>> GetRemovedCowsAsync()
+    public async Task<List<CowResponseDto>> GetRemovedCowsAsync()
     {
         var userId = GetCurrentUserId();
-        return await _context.Cows
+        var cows = await _context.Cows
+            .AsNoTracking()
+            .Include(c => c.Sire)
+            .Include(c => c.Dam)
             .Where(c => c.UserId == userId && c.IsRemoved)
             .OrderByDescending(c => c.RemovedAt.HasValue)
             .ThenByDescending(c => c.RemovedAt)
             .ToListAsync();
+
+        return cows.Select(MapCowResponse).ToList();
     }
 
     public async Task<string> ExportCowsCsvAsync()
@@ -188,7 +262,13 @@ public class CowService
             EscapeCsv("Livestock Group"),
             EscapeCsv("Sex"),
             EscapeCsv("Breed"),
+            EscapeCsv("Name"),
+            EscapeCsv("Color"),
             EscapeCsv("Date of Birth"),
+            EscapeCsv("Birth Weight"),
+            EscapeCsv("Ease Of Birth"),
+            EscapeCsv("Sire"),
+            EscapeCsv("Dam"),
             EscapeCsv("Health Status"),
             EscapeCsv("Heat Status"),
             EscapeCsv("Pregnancy Status"),
@@ -211,7 +291,13 @@ public class CowService
                 EscapeCsv(cow.LivestockGroup.ToString()),
                 EscapeCsv(cow.Sex),
                 EscapeCsv(cow.Breed),
+                EscapeCsv(cow.Name),
+                EscapeCsv(cow.Color),
                 EscapeCsv(FormatDate(cow.DateOfBirth)),
+                EscapeCsv(FormatDecimal(cow.BirthWeight)),
+                EscapeCsv(cow.EaseOfBirth),
+                EscapeCsv(cow.Sire?.TagNumber ?? cow.SireName),
+                EscapeCsv(cow.Dam?.TagNumber ?? cow.DamName),
                 EscapeCsv(cow.HealthStatus.ToString()),
                 EscapeCsv(cow.HeatStatus?.ToString()),
                 EscapeCsv(cow.PregnancyStatus),
@@ -241,6 +327,55 @@ public class CowService
         var userId = GetCurrentUserId();
         var cow = await _context.Cows.FirstOrDefaultAsync(c => c.Id == id && c.UserId == userId);
         return cow ?? throw new NotFoundException("Cow not found.");
+    }
+
+    private async Task<Cow> FindCowWithParentsAsync(Guid id, bool asNoTracking = false)
+    {
+        var userId = GetCurrentUserId();
+        IQueryable<Cow> query = _context.Cows
+            .Include(c => c.Sire)
+            .Include(c => c.Dam);
+
+        if (asNoTracking)
+        {
+            query = query.AsNoTracking();
+        }
+
+        var cow = await query.FirstOrDefaultAsync(c => c.Id == id && c.UserId == userId);
+        return cow ?? throw new NotFoundException("Cow not found.");
+    }
+
+    private async Task ValidateParentReferencesAsync(Guid? sireId, Guid? damId, Guid? currentCowId = null)
+    {
+        var userId = GetCurrentUserId();
+
+        if (sireId.HasValue)
+        {
+            if (currentCowId.HasValue && sireId.Value == currentCowId.Value)
+            {
+                throw new ValidationException("A cow cannot be its own parent.");
+            }
+
+            var sireExists = await _context.Cows.AnyAsync(c => c.Id == sireId.Value && c.UserId == userId);
+            if (!sireExists)
+            {
+                throw new ValidationException("Sire not found.");
+            }
+        }
+
+        if (damId.HasValue)
+        {
+            if (currentCowId.HasValue && damId.Value == currentCowId.Value)
+            {
+                throw new ValidationException("A cow cannot be its own parent.");
+            }
+
+            var damExists = await _context.Cows.AnyAsync(c => c.Id == damId.Value && c.UserId == userId);
+            if (!damExists)
+            {
+                throw new ValidationException("Dam not found.");
+            }
+        }
     }
 
     private async Task EnsureTagNumberIsUniqueAsync(string tagNumber, Guid? excludeCowId = null)
@@ -299,6 +434,57 @@ public class CowService
     private static string FormatDecimal(decimal? value)
     {
         return value?.ToString("0.##", CultureInfo.InvariantCulture) ?? string.Empty;
+    }
+
+    private static string? NormalizeOptionalText(string? value)
+    {
+        return string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+    }
+
+    private static CowResponseDto MapCowResponse(Cow cow)
+    {
+        return new CowResponseDto
+        {
+            Id = cow.Id,
+            UserId = cow.UserId,
+            TagNumber = cow.TagNumber,
+            OwnerName = cow.OwnerName,
+            LivestockGroup = cow.LivestockGroup,
+            Sex = cow.Sex,
+            Breed = cow.Breed,
+            Name = cow.Name,
+            Color = cow.Color,
+            DateOfBirth = cow.DateOfBirth,
+            BirthWeight = cow.BirthWeight,
+            EaseOfBirth = cow.EaseOfBirth,
+            SireId = cow.SireId,
+            SireName = cow.SireName,
+            DamId = cow.DamId,
+            DamName = cow.DamName,
+            HealthStatus = cow.HealthStatus,
+            HeatStatus = cow.HeatStatus,
+            PregnancyStatus = cow.PregnancyStatus,
+            HasCalf = cow.HasCalf,
+            PurchasePrice = cow.PurchasePrice,
+            SalePrice = cow.SalePrice,
+            PurchaseDate = cow.PurchaseDate,
+            SaleDate = cow.SaleDate,
+            CreatedAt = cow.CreatedAt,
+            IsRemoved = cow.IsRemoved,
+            RemovedAt = cow.RemovedAt,
+            Sire = cow.Sire is null ? null : new CowParentSummaryDto
+            {
+                Id = cow.Sire.Id,
+                TagNumber = cow.Sire.TagNumber,
+                Name = cow.Sire.Name,
+            },
+            Dam = cow.Dam is null ? null : new CowParentSummaryDto
+            {
+                Id = cow.Dam.Id,
+                TagNumber = cow.Dam.TagNumber,
+                Name = cow.Dam.Name,
+            }
+        };
     }
 
     private static string EscapeCsv(string? value)

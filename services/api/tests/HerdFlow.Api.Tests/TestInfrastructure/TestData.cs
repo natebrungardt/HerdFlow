@@ -10,7 +10,11 @@ internal static class TestData
         string tagNumber = "A-100",
         LivestockGroupType livestockGroup = LivestockGroupType.Breeding,
         string ownerName = "Dev Ranch",
-        string? pregnancyStatus = "Open")
+        string? pregnancyStatus = "Open",
+        Guid? sireId = null,
+        string? sireName = null,
+        Guid? damId = null,
+        string? damName = null)
     {
         return new CreateCowDto
         {
@@ -19,13 +23,56 @@ internal static class TestData
             LivestockGroup = livestockGroup,
             Breed = "Angus",
             Sex = "Female",
+            Name = "Daisy",
+            Color = "Black",
             HealthStatus = HealthStatusType.Healthy,
             HeatStatus = HeatStatusType.WatchHeat,
             PregnancyStatus = pregnancyStatus,
             HasCalf = false,
             DateOfBirth = new DateOnly(2022, 3, 1),
+            BirthWeight = 82.5m,
+            EaseOfBirth = "Easy pull",
             PurchaseDate = new DateOnly(2023, 5, 1),
             PurchasePrice = 1800m,
+            SireId = sireId,
+            SireName = sireName,
+            DamId = damId,
+            DamName = damName,
+        };
+    }
+
+    public static UpdateCowDto UpdateCowDto(
+        string tagNumber = "A-100",
+        LivestockGroupType livestockGroup = LivestockGroupType.Breeding,
+        string ownerName = "Dev Ranch",
+        string? pregnancyStatus = "Open",
+        Guid? sireId = null,
+        string? sireName = null,
+        Guid? damId = null,
+        string? damName = null)
+    {
+        return new UpdateCowDto
+        {
+            TagNumber = tagNumber,
+            OwnerName = ownerName,
+            LivestockGroup = livestockGroup,
+            Breed = "Angus",
+            Sex = "Female",
+            Name = "Daisy",
+            Color = "Black",
+            HealthStatus = HealthStatusType.Healthy,
+            HeatStatus = HeatStatusType.WatchHeat,
+            PregnancyStatus = pregnancyStatus,
+            HasCalf = false,
+            DateOfBirth = new DateOnly(2022, 3, 1),
+            BirthWeight = 82.5m,
+            EaseOfBirth = "Easy pull",
+            PurchaseDate = new DateOnly(2023, 5, 1),
+            PurchasePrice = 1800m,
+            SireId = sireId,
+            SireName = sireName,
+            DamId = damId,
+            DamName = damName,
         };
     }
 
@@ -44,9 +91,13 @@ internal static class TestData
             LivestockGroup = LivestockGroupType.Breeding,
             Breed = "Angus",
             Sex = "Female",
+            Name = "Daisy",
+            Color = "Black",
             HealthStatus = HealthStatusType.Healthy,
             HeatStatus = HeatStatusType.WatchHeat,
             PregnancyStatus = "Open",
+            BirthWeight = 82.5m,
+            EaseOfBirth = "Easy pull",
             CreatedAt = createdAt ?? DateTime.UtcNow,
             IsRemoved = isRemoved,
             RemovedAt = removedAt,

@@ -1,6 +1,7 @@
 using FluentAssertions;
 using HerdFlow.Api.Exceptions;
 using HerdFlow.Api.Tests.TestInfrastructure;
+using Microsoft.EntityFrameworkCore;
 
 namespace HerdFlow.Api.Tests.ServiceTests;
 
@@ -104,6 +105,94 @@ public class CowServiceTests
     }
 
     [Fact]
+    public async Task CreateCowAsync_rejects_both_sire_id_and_sire_name()
+    {
+        await using var testContext = new ServiceTestContext();
+        var service = testContext.CreateCowService();
+        var dto = TestData.CreateCowDto(sireId: Guid.NewGuid(), sireName: "Bull Alpha");
+
+        var action = () => service.CreateCowAsync(dto);
+
+        await action.Should().ThrowAsync<ValidationException>()
+            .WithMessage("Provide either SireId or SireName, but not both.");
+    }
+
+    [Fact]
+    public async Task CreateCowAsync_rejects_both_dam_id_and_dam_name()
+    {
+        await using var testContext = new ServiceTestContext();
+        var service = testContext.CreateCowService();
+        var dto = TestData.CreateCowDto(damId: Guid.NewGuid(), damName: "Cow Beta");
+
+        var action = () => service.CreateCowAsync(dto);
+
+        await action.Should().ThrowAsync<ValidationException>()
+            .WithMessage("Provide either DamId or DamName, but not both.");
+    }
+
+    [Fact]
+    public async Task CreateCowAsync_rejects_missing_parent_reference_for_current_user()
+    {
+        await using var testContext = new ServiceTestContext();
+        var service = testContext.CreateCowService();
+        var dto = TestData.CreateCowDto(sireId: Guid.NewGuid());
+
+        var action = () => service.CreateCowAsync(dto);
+
+        await action.Should().ThrowAsync<ValidationException>()
+            .WithMessage("Sire not found.");
+    }
+
+    [Fact]
+    public async Task CreateCowAsync_maps_fallback_parent_names()
+    {
+        await using var testContext = new ServiceTestContext();
+        var service = testContext.CreateCowService();
+
+        var cow = await service.CreateCowAsync(TestData.CreateCowDto(
+            sireName: "Bull Alpha",
+            damName: "Cow Beta"));
+
+        cow.SireId.Should().BeNull();
+        cow.Sire.Should().BeNull();
+        cow.SireName.Should().Be("Bull Alpha");
+        cow.DamId.Should().BeNull();
+        cow.Dam.Should().BeNull();
+        cow.DamName.Should().Be("Cow Beta");
+    }
+
+    [Fact]
+    public async Task UpdateCowAsync_returns_compact_parent_summaries()
+    {
+        await using var testContext = new ServiceTestContext();
+        var sire = TestData.Cow("test-user", "S-100");
+        sire.Name = "Bull Alpha";
+        var dam = TestData.Cow("test-user", "D-200");
+        dam.Name = "Cow Beta";
+        var calf = TestData.Cow("test-user", "C-300");
+        testContext.DbContext.Cows.AddRange(sire, dam, calf);
+        await testContext.DbContext.SaveChangesAsync();
+
+        var service = testContext.CreateCowService();
+
+        var updated = await service.UpdateCowAsync(calf.Id, TestData.UpdateCowDto(
+            tagNumber: calf.TagNumber,
+            sireId: sire.Id,
+            damId: dam.Id,
+            sireName: null,
+            damName: null));
+
+        updated.Sire.Should().NotBeNull();
+        updated.Sire!.Id.Should().Be(sire.Id);
+        updated.Sire.TagNumber.Should().Be("S-100");
+        updated.Sire.Name.Should().Be("Bull Alpha");
+        updated.Dam.Should().NotBeNull();
+        updated.Dam!.Id.Should().Be(dam.Id);
+        updated.Dam.TagNumber.Should().Be("D-200");
+        updated.Dam.Name.Should().Be("Cow Beta");
+    }
+
+    [Fact]
     public async Task ArchiveCowAsync_and_RestoreCowAsync_toggle_removed_state()
     {
         await using var testContext = new ServiceTestContext();
@@ -151,6 +240,25 @@ public class CowServiceTests
             newerRemovedCow.Id,
             olderRemovedCow.Id,
             legacyRemovedCow.Id);
+    }
+
+    [Fact]
+    public async Task Deleting_parent_sets_child_parent_fk_to_null()
+    {
+        await using var testContext = new ServiceTestContext();
+        var sire = TestData.Cow("test-user", "S-100");
+        var calf = TestData.Cow("test-user", "C-300");
+        calf.SireId = sire.Id;
+        testContext.DbContext.Cows.AddRange(sire, calf);
+        await testContext.DbContext.SaveChangesAsync();
+
+        testContext.DbContext.Cows.Remove(sire);
+        await testContext.DbContext.SaveChangesAsync();
+
+        var refreshedCalf = await testContext.DbContext.Cows.AsNoTracking()
+            .SingleAsync(c => c.Id == calf.Id);
+
+        refreshedCalf.SireId.Should().BeNull();
     }
 
     [Fact]

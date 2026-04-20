@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace HerdFlow.Api.DTOs;
 
-public class CreateCowDto
+public class UpdateCowDto
 {
     [Required]
     public string TagNumber { get; set; } = null!;
@@ -37,5 +37,4 @@ public class CreateCowDto
     public decimal? SalePrice { get; set; }
     public DateOnly? PurchaseDate { get; set; }
     public DateOnly? SaleDate { get; set; }
-
 }

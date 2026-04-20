@@ -9,7 +9,6 @@ namespace HerdFlow.Api.Models;
 [Index(nameof(UserId), nameof(TagNumber), IsUnique = true)]
 public class Cow
 {
-
     public Guid Id { get; set; } = Guid.NewGuid();
 
     [Required]
@@ -26,7 +25,20 @@ public class Cow
 
     public string? Sex { get; set; }
     public string? Breed { get; set; }
+    public string? Name { get; set; }
+    public string? Color { get; set; }
     public DateOnly? DateOfBirth { get; set; }
+
+    [Column(TypeName = "numeric")]
+    public decimal? BirthWeight { get; set; }
+
+    public string? EaseOfBirth { get; set; }
+
+    public Guid? SireId { get; set; }
+    public string? SireName { get; set; }
+
+    public Guid? DamId { get; set; }
+    public string? DamName { get; set; }
 
     [Required]
     public HealthStatusType HealthStatus { get; set; } = HealthStatusType.Healthy;
@@ -53,4 +65,16 @@ public class Cow
 
     [JsonIgnore]
     public List<WorkdayCow> WorkdayCows { get; set; } = new();
+
+    [JsonIgnore]
+    public Cow? Sire { get; set; }
+
+    [JsonIgnore]
+    public Cow? Dam { get; set; }
+
+    [JsonIgnore]
+    public List<Cow> SiredOffspring { get; set; } = new();
+
+    [JsonIgnore]
+    public List<Cow> BirthedOffspring { get; set; } = new();
 }

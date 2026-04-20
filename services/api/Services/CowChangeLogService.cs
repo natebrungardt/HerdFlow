@@ -5,7 +5,7 @@ namespace HerdFlow.Api.Services;
 
 public class CowChangeLogService
 {
-    public List<string> BuildUpdateMessages(Cow cow, CreateCowDto dto)
+    public List<string> BuildUpdateMessages(Cow cow, UpdateCowDto dto)
     {
         var changes = new List<string>();
 
@@ -15,6 +15,14 @@ public class CowChangeLogService
         AddChange(changes, cow.HealthStatus, dto.HealthStatus, "Health status");
         AddChange(changes, cow.Breed, dto.Breed, "Breed");
         AddChange(changes, cow.Sex, dto.Sex, "Sex");
+        AddChange(changes, cow.Name, dto.Name, "Name");
+        AddChange(changes, cow.Color, dto.Color, "Color");
+        AddChange(changes, cow.BirthWeight, dto.BirthWeight, "Birth weight");
+        AddChange(changes, cow.EaseOfBirth, dto.EaseOfBirth, "Ease of birth");
+        AddChange(changes, cow.SireId, dto.SireId, "Sire");
+        AddChange(changes, cow.SireName, dto.SireName, "Sire name");
+        AddChange(changes, cow.DamId, dto.DamId, "Dam");
+        AddChange(changes, cow.DamName, dto.DamName, "Dam name");
         AddChange(changes, cow.PurchasePrice, dto.PurchasePrice, "Purchase price");
         AddChange(changes, cow.SalePrice, dto.SalePrice, "Sale price");
         AddChange(changes, cow.DateOfBirth, dto.DateOfBirth, "Date of birth");
@@ -55,6 +63,7 @@ public class CowChangeLogService
             bool boolean => boolean ? "Yes" : "No",
             DateOnly date => date.ToString("MMM dd, yyyy"),
             decimal amount => amount.ToString("0.##"),
+            Guid guid => guid.ToString()[..8],
             _ => value.ToString() ?? "—",
         };
     }
