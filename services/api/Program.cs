@@ -2,7 +2,6 @@ using HerdFlow.Api.Data;
 using HerdFlow.Api.Development;
 using HerdFlow.Api.Middleware;
 using HerdFlow.Api.Services;
-using Npgsql;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -41,17 +40,6 @@ builder.Services.AddScoped<WorkdayService>();
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 var supabaseUrl = builder.Configuration["Supabase:Url"];
 var authBypassEnabled = builder.Configuration.GetValue<bool>("Auth:BypassEnabled");
-
-if (!string.IsNullOrWhiteSpace(connectionString))
-{
-    var builderConnection = new NpgsqlConnectionStringBuilder(connectionString);
-    Console.WriteLine(
-        $"DB CONFIG -> Host={builderConnection.Host}; Port={builderConnection.Port}; Database={builderConnection.Database}; Username={builderConnection.Username}");
-}
-else
-{
-    Console.WriteLine("DB CONFIG -> DefaultConnection is missing or empty.");
-}
 
 if (string.IsNullOrWhiteSpace(supabaseUrl))
 {
