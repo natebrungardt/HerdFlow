@@ -38,11 +38,17 @@
   margin-bottom: 22px;
 }
 
-.heroActions {
+.cow-header {
   display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-  justify-content: flex-end;
+  align-items: center;
+  justify-content: flex-start;
+  margin-bottom: 16px;
+}
+
+.cow-overview-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .titleBlock {
@@ -83,36 +89,12 @@
   border: 1px solid rgba(255, 0, 0, 0.2);
 }
 
-.deleteButton {
-  border: none;
-  border-radius: 12px;
-  padding: 12px 16px;
-  min-width: 170px;
-  background: linear-gradient(180deg, #c74652 0%, #9f2e39 100%);
-  color: #ffffff;
-  font-weight: 700;
-  font-size: 1rem;
-  cursor: pointer;
-  box-shadow: 0 10px 25px rgba(217, 76, 87, 0.22);
-  transition:
-    transform 0.18s ease,
-    box-shadow 0.18s ease,
-    filter 0.18s ease;
+.cowDetailPage .btn {
+  min-width: 120px;
 }
 
-.deleteButton:hover {
-  transform: translateY(-1px);
-  filter: brightness(1.04);
-  box-shadow: 0 14px 30px rgba(199, 70, 82, 0.32);
-}
-
-.deleteButton:active {
-  transform: translateY(0);
-}
-
-.deleteButtonCompact {
-  min-width: 130px;
-  padding: 10px 14px;
+.cowDetailPage .allCowsHeader .btn {
+  min-width: 140px;
 }
 
 .metricsGrid {
@@ -153,6 +135,13 @@
     transform 0.18s ease,
     box-shadow 0.18s ease,
     filter 0.18s ease;
+}
+
+.metricToggleButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+  transform: none;
+  box-shadow: none;
 }
 
 .metricToggleButton.isActive.isHealthy {
@@ -356,18 +345,6 @@ select.metricFieldInput:focus {
   padding: 16px;
   display: flex;
   align-items: flex-start;
-}
-
-.addCowButtonGhost {
-  background: transparent;
-  border: 1px solid var(--danger-border-subtle);
-  color: var(--danger-text-soft);
-  box-shadow: none;
-}
-
-.addCowButtonSuccess {
-  background: linear-gradient(180deg, #5fbf7a 0%, #3d8b40 100%);
-  box-shadow: 0 12px 28px rgba(76, 175, 80, 0.35);
 }
 
 .activityCardHeader {
@@ -642,63 +619,6 @@ select.metricFieldInput:focus {
   line-height: 1.3;
 }
 
-.detailActionButton {
-  border: 1px solid rgba(76, 122, 91, 0.2);
-  border-radius: 12px;
-  background: linear-gradient(180deg, rgba(95, 191, 122, 0.16) 0%, rgba(61, 139, 64, 0.12) 100%);
-  color: #3f684d;
-  font: inherit;
-  font-size: 0.95rem;
-  font-weight: 700;
-  line-height: 1;
-  padding: 0.7rem 0.95rem;
-  min-height: 40px;
-  cursor: pointer;
-  box-shadow: none;
-  transition:
-    background-color 0.18s ease,
-    border-color 0.18s ease,
-    transform 0.18s ease;
-}
-
-.detailActionButton:hover {
-  border-color: rgba(76, 122, 91, 0.32);
-  background: linear-gradient(180deg, rgba(95, 191, 122, 0.22) 0%, rgba(61, 139, 64, 0.18) 100%);
-  transform: translateY(-1px);
-}
-
-.detailActionButton:active {
-  transform: translateY(0);
-}
-
-.detailSecondaryButton {
-  border: 1px solid var(--input-border);
-  border-radius: 12px;
-  background: var(--surface-subtle);
-  color: var(--text-primary);
-  font: inherit;
-  font-size: 0.95rem;
-  font-weight: 600;
-  line-height: 1;
-  padding: 0.7rem 0.95rem;
-  min-height: 40px;
-  cursor: pointer;
-  transition:
-    border-color 0.18s ease,
-    background-color 0.18s ease,
-    transform 0.18s ease;
-}
-
-.detailSecondaryButton:hover {
-  border-color: var(--row-hover-border);
-  background: var(--surface-subtle-hover);
-  transform: translateY(-1px);
-}
-
-.detailSecondaryButton:active {
-  transform: translateY(0);
-}
-
 .ownerRole {
   color: var(--text-muted-strong);
   font-size: 0.9rem;
@@ -810,7 +730,7 @@ select.metricFieldInput:focus {
     flex-direction: column;
   }
 
-  .deleteButton {
+  .allCowsHeader .btn {
     width: 100%;
     min-width: 0;
   }
@@ -829,13 +749,9 @@ select.metricFieldInput:focus {
     font-size: 1.64rem;
   }
 
-  .heroActions {
+  .form-actions {
     width: 100%;
     justify-content: stretch;
-  }
-
-  .heroActions > * {
-    width: 100%;
   }
 
   .dataCardHeader {
@@ -895,26 +811,8 @@ select.metricFieldInput:focus {
     height: 38px;
   }
 }
-.restoreButton {
-  background: linear-gradient(180deg, #3ecf8e 0%, #2ea86f 100%);
-  color: white;
-  border: none;
-  padding: 10px 18px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: 500;
-  transition: all 0.2s ease;
-}
-
-.restoreButton:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(62, 207, 142, 0.3);
-}
-
-.infoTile:hover,
-.infoTileInteractive:hover {
+.infoTile:hover {
   background: var(--surface-subtle-hover);
-  cursor: pointer;
 }
 .notesContainer {
   display: flex;
@@ -1186,24 +1084,17 @@ input[type="date"]::-webkit-datetime-edit-fields-wrapper {
   gap: 12px;
 }
 
-.heroActions,
+.form-actions,
 .workdayDetailActionRow {
   width: 100%;
   justify-content: stretch;
 }
 
-.heroActions > *,
-.deleteButton,
-.restoreButton,
+.allCowsHeader .btn,
 .workdayRemoveCowButton,
 .addNoteRow button {
   width: 100%;
   min-width: 0;
-}
-
-.deleteButton,
-.restoreButton {
-  padding: 12px 16px;
 }
 
 .cowTitle {
@@ -1315,12 +1206,7 @@ input[type="date"]::-webkit-datetime-edit-fields-wrapper {
     padding: 16px;
   }
 
-  .heroActions > * {
-    width: auto;
-  }
-
-  .deleteButton,
-  .restoreButton {
+  .allCowsHeader .btn {
     width: 100%;
   }
 
@@ -1366,13 +1252,12 @@ input[type="date"]::-webkit-datetime-edit-fields-wrapper {
     align-items: center;
   }
 
-  .heroActions,
+  .form-actions,
   .workdayDetailActionRow {
     width: auto;
   }
 
-  .deleteButton,
-  .restoreButton,
+  .allCowsHeader .btn,
   .workdayRemoveCowButton {
     width: auto;
   }

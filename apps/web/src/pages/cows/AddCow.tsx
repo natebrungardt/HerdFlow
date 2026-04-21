@@ -541,10 +541,10 @@ function AddCowPage() {
               }
               subtitle="Create a new herd record with ownership, lifecycle, and status details."
               action={
-                <div className="heroActions">
+                <div className="form-actions">
                   <button
                     type="button"
-                    className="addCowButton addCowButtonGhost"
+                    className="btn btn-secondary"
                     onClick={() => navigate("/cows")}
                   >
                     Cancel
@@ -552,7 +552,7 @@ function AddCowPage() {
 
                   <button
                     type="submit"
-                    className="addCowButton addCowButtonSuccess"
+                    className="btn btn-primary"
                     disabled={saving}
                   >
                     {saving ? "Saving..." : "Save Cow"}

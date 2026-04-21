@@ -6,6 +6,7 @@ type CowHeroCardProps = {
   subtitle: string;
   action?: ReactNode;
   children?: ReactNode;
+  headerClassName?: string;
 };
 
 function CowHeroCard({
@@ -14,12 +15,13 @@ function CowHeroCard({
   subtitle,
   action,
   children,
+  headerClassName,
 }: CowHeroCardProps) {
   return (
     <section className="dashboardCard heroCard">
       <div className="eyebrow">{eyebrow}</div>
 
-      <div className="heroHeader">
+      <div className={["heroHeader", headerClassName].filter(Boolean).join(" ")}>
         <div className="titleBlock">
           {title}
           <p className="cowSubtitle">{subtitle}</p>

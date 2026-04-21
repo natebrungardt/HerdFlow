@@ -1,9 +1,14 @@
 type HealthStatusToggleProps = {
   value: string;
   onChange: (value: "Healthy" | "NeedsTreatment") => void | Promise<void>;
+  disabled?: boolean;
 };
 
-function HealthStatusToggle({ value, onChange }: HealthStatusToggleProps) {
+function HealthStatusToggle({
+  value,
+  onChange,
+  disabled = false,
+}: HealthStatusToggleProps) {
   return (
     <div className="metricCard">
       <div className="metricLabel">Health Status</div>
@@ -12,6 +17,7 @@ function HealthStatusToggle({ value, onChange }: HealthStatusToggleProps) {
         <button
           type="button"
           className={`metricToggleButton ${value === "Healthy" ? "isActive isHealthy" : ""}`.trim()}
+          disabled={disabled}
           onClick={() => void onChange("Healthy")}
         >
           Healthy
@@ -20,6 +26,7 @@ function HealthStatusToggle({ value, onChange }: HealthStatusToggleProps) {
         <button
           type="button"
           className={`metricToggleButton ${value === "NeedsTreatment" ? "isActive isNeedsTreatment" : ""}`.trim()}
+          disabled={disabled}
           onClick={() => void onChange("NeedsTreatment")}
         >
           Needs Treatment

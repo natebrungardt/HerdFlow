@@ -1,4 +1,11 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import {
+  createBrowserRouter,
+  createRoutesFromElements,
+  Navigate,
+  Outlet,
+  Route,
+  RouterProvider,
+} from "react-router-dom";
 import AllCowPage from "./pages/cows/AllCowPage";
 import CowDetailPage from "./pages/cows/CowDetailPage";
 import Navbar from "./components/shared/Navbar";
@@ -15,24 +22,26 @@ import { ThemeProvider } from "./context/ThemeContext";
 import AuthPage from "./pages/AuthPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 import AccountSettingsPage from "./pages/AccountSettingsPage";
-import { useContext } from "react";
+import { useContext, useMemo } from "react";
 import { AuthContext } from "./context/AuthContext";
 import LandingPage from "./pages/LandingPage";
 
+function AuthenticatedAppLayout() {
+  return (
+    <PendingWorkdaySelectionProvider>
+      <Navbar />
+      <Outlet />
+    </PendingWorkdaySelectionProvider>
+  );
+}
+
 function App() {
   const { user, loading, isPasswordRecovery } = useContext(AuthContext);
-
-  // Prevent flashing before auth resolves
-  if (loading) {
-    return <div style={{ padding: "2rem" }}>Loading...</div>;
-  }
-
-  // If NOT logged in → only show auth page
-  if (!user) {
-    return (
-      <ThemeProvider forcedTheme="light">
-        <BrowserRouter>
-          <Routes>
+  const publicRouter = useMemo(
+    () =>
+      createBrowserRouter(
+        createRoutesFromElements(
+          <>
             <Route path="/" element={<LandingPage />} />
             <Route path="/auth" element={<AuthPage />} />
             <Route path="/reset-password" element={<ResetPasswordPage />} />
@@ -46,39 +55,38 @@ function App() {
                 )
               }
             />
-          </Routes>
-        </BrowserRouter>
-      </ThemeProvider>
-    );
-  }
-
-  if (isPasswordRecovery) {
-    return (
-      <ThemeProvider forcedTheme="light">
-        <BrowserRouter>
-          <Routes>
+          </>,
+        ),
+      ),
+    [isPasswordRecovery],
+  );
+  const passwordRecoveryRouter = useMemo(
+    () =>
+      createBrowserRouter(
+        createRoutesFromElements(
+          <>
             <Route path="/reset-password" element={<ResetPasswordPage />} />
             <Route path="*" element={<Navigate to="/reset-password" replace />} />
-          </Routes>
-        </BrowserRouter>
-      </ThemeProvider>
-    );
-  }
-
-  // If logged in → show full app
-  return (
-    <ThemeProvider>
-      <BrowserRouter>
-        <PendingWorkdaySelectionProvider>
-          <Navbar />
-          <Routes>
+          </>,
+        ),
+      ),
+    [],
+  );
+  const authenticatedRouter = useMemo(
+    () =>
+      createBrowserRouter(
+        createRoutesFromElements(
+          <Route element={<AuthenticatedAppLayout />}>
             <Route path="/auth" element={<Navigate to="/" replace />} />
             <Route path="/reset-password" element={<ResetPasswordPage />} />
             <Route path="/" element={<Dashboard />} />
             <Route path="/cows" element={<AllCowPage />} />
             <Route path="/cows/:id" element={<CowDetailPage />} />
             <Route path="/add-cow" element={<AddCowButton />} />
-            <Route path="/account-settings" element={<AccountSettingsPage />} />
+            <Route
+              path="/account-settings"
+              element={<AccountSettingsPage />}
+            />
             <Route path="/removed" element={<RemovedCows />} />
             <Route path="/workdays" element={<AllWorkdayPage />} />
             <Route path="/workdays/new" element={<AddWorkdayPage />} />
@@ -86,9 +94,38 @@ function App() {
             <Route path="/workdays/removed" element={<RemovedWorkdays />} />
             <Route path="/finances" element={<Finances />} />
             <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </PendingWorkdaySelectionProvider>
-      </BrowserRouter>
+          </Route>,
+        ),
+      ),
+    [],
+  );
+
+  // Prevent flashing before auth resolves
+  if (loading) {
+    return <div style={{ padding: "2rem" }}>Loading...</div>;
+  }
+
+  // If NOT logged in → only show auth page
+  if (!user) {
+    return (
+      <ThemeProvider forcedTheme="light">
+        <RouterProvider router={publicRouter} />
+      </ThemeProvider>
+    );
+  }
+
+  if (isPasswordRecovery) {
+    return (
+      <ThemeProvider forcedTheme="light">
+        <RouterProvider router={passwordRecoveryRouter} />
+      </ThemeProvider>
+    );
+  }
+
+  // If logged in → show full app
+  return (
+    <ThemeProvider>
+      <RouterProvider router={authenticatedRouter} />
     </ThemeProvider>
   );
 }

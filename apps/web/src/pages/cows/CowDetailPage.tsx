@@ -1,5 +1,10 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import {
+  useNavigate,
+  useParams,
+  useBlocker,
+  useLocation,
+} from "react-router-dom";
 import CowDetailsSection from "../../components/cows/CowDetailsSection";
 import CowHeroCard from "../../components/cows/CowHeroCard";
 import ParentSelectorField from "../../components/cows/ParentSelectorField";
@@ -32,29 +37,6 @@ type ActivityLogEntry = {
   createdAt: string;
 };
 
-type EditableFieldName =
-  | "ownerName"
-  | "name"
-  | "breed"
-  | "color"
-  | "sex"
-  | "heatStatus"
-  | "dateOfBirth"
-  | "birthWeight"
-  | "easeOfBirth"
-  | "purchaseDate"
-  | "purchasePrice"
-  | "saleDate"
-  | "salePrice";
-
-type EditingFieldName =
-  | EditableFieldName
-  | "tagNumber"
-  | "livestockGroup"
-  | "pregnancyStatus"
-  | "sire"
-  | "dam";
-
 type ApiError = Error & {
   status?: number;
 };
@@ -64,41 +46,14 @@ type AddCalfModalState = {
   motherCowId: string | null;
 };
 
-const editableFields: EditableFieldName[] = [
-  "ownerName",
-  "name",
-  "breed",
-  "color",
-  "sex",
-  "heatStatus",
-  "dateOfBirth",
-  "birthWeight",
-  "easeOfBirth",
-  "purchaseDate",
-  "purchasePrice",
-  "saleDate",
-  "salePrice",
-];
-
 const TAG_NUMBER_PATTERN = /^[A-Za-z0-9-]+$/;
 const easeOfBirthOptions = [
-  { value: "", label: "Select" },
+  { value: "", label: "Select ease of birth" },
   { value: "Unassisted", label: "Unassisted" },
   { value: "Assisted", label: "Assisted" },
   { value: "Difficult", label: "Difficult" },
   { value: "C-Section", label: "C-Section" },
 ] as const;
-
-function formatValue(value: string | number | boolean | null | undefined) {
-  if (value === null || value === undefined || value === "") return "—";
-  if (typeof value === "boolean") return formatBoolean(value);
-  return String(value);
-}
-
-function formatLabel(value: string | null | undefined) {
-  if (!value) return "—";
-  return value.replace(/([A-Z])/g, " $1").trim();
-}
 
 function formatCurrency(value: number | null | undefined) {
   if (value === null || value === undefined) return "—";
@@ -109,8 +64,34 @@ function formatCurrency(value: number | null | undefined) {
   }).format(value);
 }
 
-function formatBoolean(value: boolean | null | undefined) {
-  return value ? "Yes" : "No";
+function formatValue(value: string | number | boolean | null | undefined) {
+  if (value === null || value === undefined || value === "") return "—";
+  if (typeof value === "boolean") return value ? "Yes" : "No";
+  return String(value);
+}
+
+function formatDateInputValue(value: string | null | undefined) {
+  return value?.split("T")[0] ?? "";
+}
+
+function formatDateDisplay(value: string | null | undefined) {
+  return value ? formatDateInputValue(value) : "—";
+}
+
+function formatDateForApi(date: Date) {
+  return date.toISOString().split("T")[0];
+}
+
+function getParentValidationError(cow: Cow) {
+  if (cow.sireId && cow.sireName?.trim()) {
+    return "Choose either an in-herd sire or a manual sire name.";
+  }
+
+  if (cow.damId && cow.damName?.trim()) {
+    return "Choose either an in-herd dam or a manual dam name.";
+  }
+
+  return "";
 }
 
 function formatParentDisplay(
@@ -128,22 +109,6 @@ function formatParentDisplay(
   }
 
   return "—";
-}
-
-function getParentValidationError(cow: Cow) {
-  if (cow.sireId && cow.sireName?.trim()) {
-    return "Choose either an in-herd sire or a manual sire name.";
-  }
-
-  if (cow.damId && cow.damName?.trim()) {
-    return "Choose either an in-herd dam or a manual dam name.";
-  }
-
-  return "";
-}
-
-function formatDateForApi(date: Date) {
-  return date.toISOString().split("T")[0];
 }
 
 function toCreateCowInput(cow: Cow): CreateCowInput {
@@ -176,21 +141,28 @@ function toCreateCowInput(cow: Cow): CreateCowInput {
 
 function CowDetailPage() {
   const { id } = useParams();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [cow, setCow] = useState<Cow | null>(null);
+  const [originalCow, setOriginalCow] = useState<Cow | null>(null);
+  const [formData, setFormData] = useState<Cow | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const navigate = useNavigate();
-
-  const [formData, setFormData] = useState<Cow | null>(null);
-  const [editingField, setEditingField] = useState<EditingFieldName | null>(
-    null,
-  );
+  const [saving, setSaving] = useState(false);
   const [activities, setActivities] = useState<ActivityLogEntry[]>([]);
   const [existingCows, setExistingCows] = useState<Cow[]>([]);
   const [loadingActivities, setLoadingActivities] = useState(false);
   const [activitiesError, setActivitiesError] = useState("");
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showRestoreModal, setShowRestoreModal] = useState(false);
+  const [showUnsavedModal, setShowUnsavedModal] = useState(false);
+  const [pendingNavigation, setPendingNavigation] = useState<
+    (() => void) | null
+  >(null);
+  const [allowNavigation, setAllowNavigation] = useState(false);
+  const [confirmedNavigation, setConfirmedNavigation] = useState<
+    (() => void) | null
+  >(null);
   const [addCalfModal, setAddCalfModal] = useState<AddCalfModalState>({
     isOpen: false,
     motherCowId: null,
@@ -203,7 +175,9 @@ function CowDetailPage() {
         if (!id) return;
         const data = await getCowById(id);
         setCow(data);
+        setOriginalCow(data);
         setFormData(data);
+        setError("");
       } catch (err) {
         const message =
           err instanceof Error ? err.message : "Failed to load cow";
@@ -251,6 +225,55 @@ function CowDetailPage() {
     void loadActivities();
   }, [cow?.id]);
 
+  const isDirty =
+    formData !== null &&
+    originalCow !== null &&
+    JSON.stringify(formData) !== JSON.stringify(originalCow);
+  const blocker = useBlocker(isDirty && !allowNavigation);
+
+  useEffect(() => {
+    function handleBeforeUnload(event: BeforeUnloadEvent) {
+      if (!isDirty) {
+        return;
+      }
+
+      event.preventDefault();
+      event.returnValue = "";
+    }
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [isDirty]);
+
+  useEffect(() => {
+    if (blocker.state !== "blocked") {
+      return;
+    }
+
+    setShowUnsavedModal(true);
+    setPendingNavigation(() => () => {
+      blocker.proceed();
+    });
+  }, [blocker]);
+
+  useEffect(() => {
+    if (!allowNavigation || !confirmedNavigation) {
+      return;
+    }
+
+    confirmedNavigation();
+    setConfirmedNavigation(null);
+  }, [allowNavigation, confirmedNavigation]);
+
+  useEffect(() => {
+    setAllowNavigation(false);
+    setConfirmedNavigation(null);
+    setPendingNavigation(null);
+  }, [location.key]);
+
   async function refreshActivities() {
     if (!cow?.id) return;
     setActivitiesError("");
@@ -262,6 +285,154 @@ function CowDetailPage() {
       const message =
         err instanceof Error ? err.message : "Failed to load activities";
       setActivitiesError(message);
+    }
+  }
+
+  function handleChange(
+    event: React.ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >,
+  ) {
+    const { name, value } = event.target;
+
+    setError("");
+    setFormData((current) => {
+      if (!current) return current;
+
+      const normalizedValue =
+        name === "purchasePrice" ||
+        name === "salePrice" ||
+        name === "birthWeight"
+          ? value === ""
+            ? null
+            : Number(value)
+          : value;
+
+      return {
+        ...current,
+        [name]: normalizedValue,
+      };
+    });
+  }
+
+  function handleParentChange(
+    parent: "sire" | "dam",
+    next: { id: string; name: string },
+  ) {
+    setError("");
+    setFormData((current) => {
+      if (!current) return current;
+
+      const selectedCow =
+        existingCows.find((candidate) => candidate.id === next.id) ?? null;
+      const parentSummary = selectedCow
+        ? {
+            id: selectedCow.id,
+            tagNumber: selectedCow.tagNumber,
+            name: selectedCow.name ?? null,
+          }
+        : null;
+
+      return {
+        ...current,
+        [`${parent}Id`]: next.id || null,
+        [`${parent}Name`]: next.id ? null : next.name || null,
+        [parent]: parentSummary,
+      };
+    });
+  }
+
+  function handleReset() {
+    if (!originalCow) return;
+    setFormData(originalCow);
+    setError("");
+  }
+
+  function requestNavigation(next: () => void) {
+    if (isDirty) {
+      setPendingNavigation(() => () => {
+        setAllowNavigation(true);
+        next();
+      });
+      setShowUnsavedModal(true);
+      return;
+    }
+
+    next();
+  }
+
+  function handleBackClick() {
+    requestNavigation(() => navigate("/cows"));
+  }
+
+  function handleConfirmLeave() {
+    setShowUnsavedModal(false);
+    setAllowNavigation(true);
+
+    if (pendingNavigation) {
+      setConfirmedNavigation(() => pendingNavigation);
+    }
+  }
+
+  function handleStay() {
+    setShowUnsavedModal(false);
+    setAllowNavigation(false);
+
+    if (blocker.state === "blocked") {
+      blocker.reset();
+    }
+
+    setPendingNavigation(null);
+  }
+
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    if (!formData || !cow || cow.isRemoved) {
+      return;
+    }
+
+    const normalizedTagNumber = formData.tagNumber.trim();
+
+    if (!TAG_NUMBER_PATTERN.test(normalizedTagNumber)) {
+      setError(
+        "Tag number can only include letters, numbers, and dashes. Spaces cannot be used.",
+      );
+      return;
+    }
+
+    const payload = {
+      ...formData,
+      tagNumber: normalizedTagNumber,
+    };
+
+    const parentValidationError = getParentValidationError(payload);
+    if (parentValidationError) {
+      setError(parentValidationError);
+      return;
+    }
+
+    setSaving(true);
+    setError("");
+
+    try {
+      const updated = await updateCow(cow.id, toCreateCowInput(payload));
+      setCow(updated);
+      setOriginalCow(updated);
+      setFormData(updated);
+      await refreshActivities();
+    } catch (err) {
+      let message = "Failed to update cow";
+      const apiErr = err as ApiError;
+      if (apiErr?.status === 409) {
+        message = "Tag number already exists";
+      } else if (err instanceof Error) {
+        message = err.message;
+      }
+
+      setError(message);
+    } finally {
+      setSaving(false);
     }
   }
 
@@ -290,174 +461,6 @@ function CowDetailPage() {
         err instanceof Error ? err.message : "Failed to restore cow";
       setError(message);
     }
-  }
-
-  function handleChange(
-    event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
-  ) {
-    const { name, value } = event.target;
-
-    setFormData((prev) => {
-      if (!prev) return prev;
-
-      const normalizedValue =
-        name === "purchasePrice" ||
-        name === "salePrice" ||
-        name === "birthWeight"
-          ? value === ""
-            ? null
-            : Number(value)
-          : value;
-
-      return {
-        ...prev,
-        [name]: normalizedValue,
-      };
-    });
-  }
-
-  async function saveCowUpdates() {
-    if (!formData || !cow) return false;
-
-    if (!TAG_NUMBER_PATTERN.test(formData.tagNumber.trim())) {
-      setError(
-        "Tag number can only include letters, numbers, and dashes. Spaces cannot be used.",
-      );
-      return false;
-    }
-
-    const parentValidationError = getParentValidationError(formData);
-    if (parentValidationError) {
-      setError(parentValidationError);
-      return false;
-    }
-
-    const prev = cow;
-
-    try {
-      const updated = await updateCow(cow.id, toCreateCowInput(formData));
-      setCow(updated);
-      setFormData(updated);
-      await refreshActivities();
-      return true;
-    } catch (err) {
-      let message = "Failed to update cow";
-      const apiErr = err as ApiError;
-      if (apiErr?.status === 409) {
-        message = "Tag number already exists";
-      } else if (err instanceof Error) {
-        message = err.message;
-      }
-
-      setError(message);
-      setFormData(prev);
-      return false;
-    }
-  }
-
-  async function commitField(nextField: EditingFieldName | null = null) {
-    const didSave = await saveCowUpdates();
-
-    if (didSave) {
-      setEditingField(nextField);
-    }
-  }
-
-  async function handleEditableKeyDown(
-    event: React.KeyboardEvent<HTMLInputElement | HTMLSelectElement>,
-  ) {
-    if (!editingField) return;
-
-    if (event.key === "Enter") {
-      event.preventDefault();
-      await commitField();
-      return;
-    }
-
-    if (event.key === "Tab") {
-      event.preventDefault();
-      const currentIndex = editableFields.indexOf(
-        editingField as EditableFieldName,
-      );
-      const nextField = editableFields[currentIndex + 1] ?? null;
-      await commitField(nextField);
-    }
-  }
-
-  async function updateHealthStatus(value: "Healthy" | "NeedsTreatment") {
-    if (!formData || !cow) return;
-
-    const next = { ...formData, healthStatus: value } as Cow;
-    setFormData(next);
-
-    const updated = await updateCow(cow.id, toCreateCowInput(next));
-    setCow(updated);
-    setFormData(updated);
-    await refreshActivities();
-  }
-
-  async function updateHasCalf(value: boolean) {
-    if (!formData || !cow) return;
-
-    const next = { ...formData, hasCalf: value } as Cow;
-    setFormData(next);
-    setError("");
-
-    try {
-      const updated = await updateCow(cow.id, toCreateCowInput(next));
-      setCow(updated);
-      setFormData(updated);
-      await refreshActivities();
-
-      if (!cow.hasCalf && value) {
-        setAddCalfModal({
-          isOpen: true,
-          motherCowId: cow.id,
-        });
-      }
-    } catch (err) {
-      const message =
-        err instanceof Error ? err.message : "Failed to update cow";
-      setError(message);
-      setFormData(cow);
-    }
-  }
-
-  void updateHasCalf;
-
-  function handleParentChange(
-    parent: "sire" | "dam",
-    next: { id: string; name: string },
-  ) {
-    setError("");
-    setFormData((prev) => {
-      if (!prev) return prev;
-
-      const selectedCow =
-        existingCows.find((candidate) => candidate.id === next.id) ?? null;
-      const parentSummary = selectedCow
-        ? {
-            id: selectedCow.id,
-            tagNumber: selectedCow.tagNumber,
-            name: selectedCow.name ?? null,
-          }
-        : null;
-
-      return {
-        ...prev,
-        [`${parent}Id`]: next.id || null,
-        [`${parent}Name`]: next.id ? null : (next.name || null),
-        [parent]: parentSummary,
-      };
-    });
-  }
-
-  function cancelFieldEdit(field: EditingFieldName) {
-    setFormData(cow);
-    if (editingField === field) {
-      setEditingField(null);
-    }
-    setError("");
   }
 
   async function createCalfForCow(mother: Cow) {
@@ -532,269 +535,328 @@ function CowDetailPage() {
     }
   }
 
-  function renderEditableField(config: {
-    name: EditableFieldName;
-    label: string;
-    type: "text" | "number" | "date" | "select";
-    options?: readonly { value: string; label: string }[];
-    displayValue?: string;
-  }) {
-    const isEditing = editingField === config.name;
-    const value = formData?.[config.name];
-    const inputValue =
-      config.type === "date"
-        ? (value?.toString().split("T")[0] ?? "")
-        : (value ?? "");
-
-    let content: React.ReactNode;
-
-    if (isEditing) {
-      content =
-        config.type === "select" ? (
-          <select
-            name={config.name}
-            value={String(inputValue)}
-            onChange={handleChange}
-            onBlur={async () => commitField()}
-            onKeyDown={handleEditableKeyDown}
-            autoFocus
-            className="inlineFieldInput"
-          >
-            {config.options?.map((option) => (
-              <option key={option.value || "empty"} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-        ) : (
-          <input
-            type={config.type}
-            name={config.name}
-            value={inputValue as string | number}
-            onChange={handleChange}
-            onBlur={async () => commitField()}
-            onKeyDown={handleEditableKeyDown}
-            autoFocus
-            className="inlineFieldInput"
-          />
-        );
-    } else {
-      content = <span>{config.displayValue ?? formatValue(value)}</span>;
-    }
-
-    return {
-      key: config.name,
-      label: config.label,
-      content,
-      onDoubleClick: () => {
-        if (editingField !== config.name) {
-          setEditingField(config.name);
-        }
-      },
-    };
-  }
-
   if (loading) return <p>Loading cow...</p>;
   if (!cow || !formData) return <p>Cow not found</p>;
 
+  const isEditable = !cow.isRemoved;
+  const parentOptions = existingCows.filter(
+    (existingCow) => existingCow.id !== cow.id,
+  );
+
   const detailFields = [
-    renderEditableField({
-      name: "ownerName",
+    {
+      key: "ownerName",
       label: "Owner",
-      type: "text",
-    }),
-    renderEditableField({
-      name: "name",
+      content: isEditable ? (
+        <input
+          id="ownerName"
+          name="ownerName"
+          className="cardInput"
+          value={formData.ownerName}
+          onChange={handleChange}
+          placeholder="Enter owner name"
+          required
+        />
+      ) : (
+        <span>{formatValue(formData.ownerName)}</span>
+      ),
+    },
+    {
+      key: "name",
       label: "Name",
-      type: "text",
-    }),
-    renderEditableField({
-      name: "breed",
+      content: isEditable ? (
+        <input
+          id="name"
+          name="name"
+          className="cardInput"
+          value={formData.name ?? ""}
+          onChange={handleChange}
+          placeholder="Enter cow name"
+        />
+      ) : (
+        <span>{formatValue(formData.name)}</span>
+      ),
+    },
+    {
+      key: "breed",
       label: "Breed",
-      type: "text",
-    }),
-    renderEditableField({
-      name: "color",
+      content: isEditable ? (
+        <input
+          id="breed"
+          name="breed"
+          className="cardInput"
+          value={formData.breed}
+          onChange={handleChange}
+          placeholder="Enter breed"
+        />
+      ) : (
+        <span>{formatValue(formData.breed)}</span>
+      ),
+    },
+    {
+      key: "color",
       label: "Color",
-      type: "text",
-    }),
-    renderEditableField({
-      name: "sex",
+      content: isEditable ? (
+        <input
+          id="color"
+          name="color"
+          className="cardInput"
+          value={formData.color ?? ""}
+          onChange={handleChange}
+          placeholder="Enter color"
+        />
+      ) : (
+        <span>{formatValue(formData.color)}</span>
+      ),
+    },
+    {
+      key: "sex",
       label: "Sex",
-      type: "select",
-      options: sexOptions,
-    }),
-    renderEditableField({
-      name: "heatStatus",
+      content: isEditable ? (
+        <select
+          id="sex"
+          name="sex"
+          className="cardInput"
+          value={formData.sex}
+          onChange={handleChange}
+        >
+          {sexOptions.map((option) => (
+            <option key={option.value || "empty"} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+      ) : (
+        <span>{formatValue(formData.sex)}</span>
+      ),
+    },
+    {
+      key: "heatStatus",
       label: "Heat Status",
-      type: "select",
-      options: [
-        { value: "", label: "Select" },
-        ...heatStatusOptions.filter((option) => option.value !== ""),
-      ],
-      displayValue: formatLabel(formData.heatStatus),
-    }),
-    renderEditableField({
-      name: "dateOfBirth",
+      content: isEditable ? (
+        <select
+          id="heatStatus"
+          name="heatStatus"
+          className="cardInput"
+          value={formData.heatStatus ?? ""}
+          onChange={handleChange}
+        >
+          {heatStatusOptions.map((option) => (
+            <option key={option.value || "empty"} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+      ) : (
+        <span>{formatValue(formData.heatStatus)}</span>
+      ),
+    },
+    {
+      key: "dateOfBirth",
       label: "Date of Birth",
-      type: "date",
-    }),
-    renderEditableField({
-      name: "birthWeight",
+      content: isEditable ? (
+        <input
+          id="dateOfBirth"
+          name="dateOfBirth"
+          type="date"
+          className="cardInput"
+          value={formatDateInputValue(formData.dateOfBirth)}
+          onChange={handleChange}
+        />
+      ) : (
+        <span>{formatDateDisplay(formData.dateOfBirth)}</span>
+      ),
+    },
+    {
+      key: "birthWeight",
       label: "Birth Weight",
-      type: "number",
-    }),
-    renderEditableField({
-      name: "easeOfBirth",
+      content: isEditable ? (
+        <input
+          id="birthWeight"
+          name="birthWeight"
+          type="number"
+          className="cardInput"
+          value={formData.birthWeight ?? ""}
+          onChange={handleChange}
+          placeholder="Enter birth weight"
+        />
+      ) : (
+        <span>{formatValue(formData.birthWeight)}</span>
+      ),
+    },
+    {
+      key: "easeOfBirth",
       label: "Ease of Birth",
-      type: "select",
-      options: easeOfBirthOptions,
-      displayValue: formatValue(formData.easeOfBirth),
-    }),
+      content: isEditable ? (
+        <select
+          id="easeOfBirth"
+          name="easeOfBirth"
+          className="cardInput"
+          value={formData.easeOfBirth ?? ""}
+          onChange={handleChange}
+        >
+          {easeOfBirthOptions.map((option) => (
+            <option key={option.value || "empty"} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+      ) : (
+        <span>{formatValue(formData.easeOfBirth)}</span>
+      ),
+    },
     {
       key: "sire",
       label: "Sire (Father)",
-      content:
-        editingField === "sire" ? (
-          <div className="detailActionStack">
-            <ParentSelectorField
-              type="sire"
-              cows={existingCows.filter((existingCow) => existingCow.id !== cow.id)}
-              selectedId={formData.sireId ?? ""}
-              manualName={formData.sireName ?? ""}
-              onChange={(next) => handleParentChange("sire", next)}
-            />
-            <div className="detailInlineActions">
-              <button
-                type="button"
-                className="detailActionButton"
-                onClick={() => {
-                  void commitField();
-                }}
-              >
-                Save Sire
-              </button>
-              <button
-                type="button"
-                className="detailSecondaryButton"
-                onClick={() => cancelFieldEdit("sire")}
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        ) : (
-          <span>{formatParentDisplay(formData.sire, formData.sireName)}</span>
-        ),
-      onDoubleClick: () => {
-        if (editingField !== "sire") {
-          setEditingField("sire");
-        }
-      },
+      content: isEditable ? (
+        <ParentSelectorField
+          type="sire"
+          cows={parentOptions}
+          selectedId={formData.sireId ?? ""}
+          manualName={formData.sireName ?? ""}
+          onChange={(next) => handleParentChange("sire", next)}
+        />
+      ) : (
+        <span>{formatParentDisplay(formData.sire, formData.sireName)}</span>
+      ),
     },
     {
       key: "dam",
       label: "Dam (Mother)",
-      content:
-        editingField === "dam" ? (
-          <div className="detailActionStack">
-            <ParentSelectorField
-              type="dam"
-              cows={existingCows.filter((existingCow) => existingCow.id !== cow.id)}
-              selectedId={formData.damId ?? ""}
-              manualName={formData.damName ?? ""}
-              onChange={(next) => handleParentChange("dam", next)}
-            />
-            <div className="detailInlineActions">
-              <button
-                type="button"
-                className="detailActionButton"
-                onClick={() => {
-                  void commitField();
-                }}
-              >
-                Save Dam
-              </button>
-              <button
-                type="button"
-                className="detailSecondaryButton"
-                onClick={() => cancelFieldEdit("dam")}
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        ) : (
-          <span>{formatParentDisplay(formData.dam, formData.damName)}</span>
-        ),
-      onDoubleClick: () => {
-        if (editingField !== "dam") {
-          setEditingField("dam");
-        }
-      },
+      content: isEditable ? (
+        <ParentSelectorField
+          type="dam"
+          cows={parentOptions}
+          selectedId={formData.damId ?? ""}
+          manualName={formData.damName ?? ""}
+          onChange={(next) => handleParentChange("dam", next)}
+        />
+      ) : (
+        <span>{formatParentDisplay(formData.dam, formData.damName)}</span>
+      ),
     },
-    renderEditableField({
-      name: "purchaseDate",
+    {
+      key: "purchaseDate",
       label: "Purchase Date",
-      type: "date",
-    }),
-    renderEditableField({
-      name: "saleDate",
+      content: isEditable ? (
+        <input
+          id="purchaseDate"
+          name="purchaseDate"
+          type="date"
+          className="cardInput"
+          value={formatDateInputValue(formData.purchaseDate)}
+          onChange={handleChange}
+        />
+      ) : (
+        <span>{formatDateDisplay(formData.purchaseDate)}</span>
+      ),
+    },
+    {
+      key: "saleDate",
       label: "Sale Date",
-      type: "date",
-    }),
-    renderEditableField({
-      name: "purchasePrice",
+      content: isEditable ? (
+        <input
+          id="saleDate"
+          name="saleDate"
+          type="date"
+          className="cardInput"
+          value={formatDateInputValue(formData.saleDate)}
+          onChange={handleChange}
+        />
+      ) : (
+        <span>{formatDateDisplay(formData.saleDate)}</span>
+      ),
+    },
+    {
+      key: "purchasePrice",
       label: "Purchase Price",
-      type: "number",
-      displayValue: formatCurrency(formData.purchasePrice),
-    }),
-    renderEditableField({
-      name: "salePrice",
+      content: isEditable ? (
+        <input
+          id="purchasePrice"
+          name="purchasePrice"
+          type="number"
+          className="cardInput"
+          value={formData.purchasePrice ?? ""}
+          onChange={handleChange}
+          placeholder="Enter purchase price"
+        />
+      ) : (
+        <span>{formatCurrency(formData.purchasePrice)}</span>
+      ),
+    },
+    {
+      key: "salePrice",
       label: "Sale Price",
-      type: "number",
-      displayValue: formatCurrency(formData.salePrice),
-    }),
+      content: isEditable ? (
+        <input
+          id="salePrice"
+          name="salePrice"
+          type="number"
+          className="cardInput"
+          value={formData.salePrice ?? ""}
+          onChange={handleChange}
+          placeholder="Enter sale price"
+        />
+      ) : (
+        <span>{formatCurrency(formData.salePrice)}</span>
+      ),
+    },
     {
       key: "hasCalf",
       label: "Has Calf",
-      content: (
-        <button
-          type="button"
-          className="detailActionButton"
-          onClick={() => {
-            setAddCalfModal({
-              isOpen: true,
-              motherCowId: cow.id,
-            });
-          }}
-        >
-          + Add Calf
-        </button>
+      content: isEditable ? (
+        <div className="detailActionStack">
+          <div className="detailHelperText">
+            Current status: {formData.hasCalf ? "Yes" : "No"}
+          </div>
+          <button
+            type="button"
+            className="btn btn-secondary"
+            onClick={() => {
+              setAddCalfModal({
+                isOpen: true,
+                motherCowId: cow.id,
+              });
+            }}
+          >
+            + Add Calf
+          </button>
+        </div>
+      ) : (
+        <span>{formatValue(formData.hasCalf)}</span>
       ),
     },
   ];
-
-  const groupValue = formData.livestockGroup || "";
-  const pregnancyValue = formData.pregnancyStatus || "";
 
   return (
     <div className="cowDetailPage">
       {error && <div className="pageErrorBanner">{error}</div>}
 
       <div className="cowDetailShell">
+        <div className="cow-header">
+          <button
+            type="button"
+            className="btn btn-outline"
+            onClick={handleBackClick}
+          >
+            ← Back to Herd
+          </button>
+        </div>
+
         <div className="allCowsHeader">
           <div className="titleBlock">
             <h1 className="pageTitle">Cow Details</h1>
             <p className="pageSubtitle">
-              Detailed record for herd tracking, ownership, and lifecycle data.
+              {isEditable
+                ? "Detailed record for herd tracking, ownership, and lifecycle data."
+                : "Archived herd record with historical details and activity."}
             </p>
           </div>
 
           {cow.isRemoved ? (
             <button
               type="button"
-              className="restoreButton"
+              className="btn btn-primary"
               onClick={() => setShowRestoreModal(true)}
             >
               Restore Cow
@@ -802,7 +864,7 @@ function CowDetailPage() {
           ) : (
             <button
               type="button"
-              className="deleteButton deleteButtonCompact"
+              className="btn btn-danger"
               onClick={() => setShowDeleteModal(true)}
             >
               Remove from Herd
@@ -810,143 +872,153 @@ function CowDetailPage() {
           )}
         </div>
 
-        <div className="cowDashboardGrid">
+        <form className="cowDashboardGrid" onSubmit={handleSubmit}>
           <div className="leftColumn">
             <CowHeroCard
-              eyebrow="Cow Overview"
+              eyebrow={isEditable ? "Cow Overview" : "Archived Cow"}
+              headerClassName="cow-overview-header"
               title={
-                <h1
-                  className="cowTitle"
-                  onDoubleClick={() => {
-                    if (editingField !== "tagNumber") {
-                      setEditingField("tagNumber");
-                    }
-                  }}
-                >
-                  {editingField === "tagNumber" ? (
-                    <input
-                      name="tagNumber"
-                      value={formData.tagNumber || ""}
-                      onChange={handleChange}
-                      onBlur={async () => commitField()}
-                      onKeyDown={handleEditableKeyDown}
-                      autoFocus
-                      autoComplete="off"
-                      autoCorrect="off"
-                      autoCapitalize="off"
-                      spellCheck={false}
-                      className="heroTitleInput"
-                    />
-                  ) : (
-                    formatValue(formData.tagNumber)
-                  )}
-                </h1>
+                isEditable ? (
+                  <input
+                    name="tagNumber"
+                    value={formData.tagNumber}
+                    onChange={handleChange}
+                    required
+                    placeholder="Tag #"
+                    autoComplete="off"
+                    autoCorrect="off"
+                    autoCapitalize="off"
+                    spellCheck={false}
+                    className="cowTitle heroTitleInput"
+                  />
+                ) : (
+                  <h1 className="cowTitle">
+                    {formatValue(formData.tagNumber)}
+                  </h1>
+                )
               }
-              subtitle="Return to the herd list or keep editing this record."
+              subtitle={
+                isEditable
+                  ? "Review this record, make any updates, then save once when you're ready."
+                  : "This record is archived. Restore it to make changes."
+              }
               action={
-                <div className="heroActions">
-                  <button
-                    type="button"
-                    className="addCowButton addCowButtonSuccess"
-                    onClick={() => navigate("/cows")}
-                  >
-                    Back to Herd
-                  </button>
-                </div>
+                isEditable ? (
+                  <div className="form-actions">
+                    <button
+                      type="button"
+                      className="btn btn-secondary"
+                      onClick={handleReset}
+                      disabled={!isDirty || saving}
+                    >
+                      Reset
+                    </button>
+
+                    <button
+                      type="submit"
+                      className="btn btn-primary"
+                      disabled={!isDirty || saving}
+                    >
+                      {saving ? "Saving..." : "Save Changes"}
+                    </button>
+                  </div>
+                ) : null
               }
             >
               <div className="metricsGrid">
                 <HealthStatusToggle
                   value={formData.healthStatus || cow.healthStatus}
-                  onChange={updateHealthStatus}
+                  disabled={!isEditable}
+                  onChange={(value) => {
+                    if (!isEditable) return;
+                    setFormData((current) =>
+                      current ? { ...current, healthStatus: value } : current,
+                    );
+                  }}
                 />
 
                 <div className="metricCard">
-                  <div className="metricLabel">Livestock Group</div>
-                  <div
-                    className="metricValue"
-                    onDoubleClick={() => {
-                      if (editingField !== "livestockGroup") {
-                        setEditingField("livestockGroup");
-                      }
-                    }}
-                  >
-                    {editingField === "livestockGroup" ? (
-                      <select
-                        name="livestockGroup"
-                        value={groupValue}
-                        onChange={handleChange}
-                        onBlur={async () => commitField()}
-                        autoFocus
-                        className="metricFieldInput"
-                      >
-                        {livestockGroupOptions.map((option) => (
-                          <option key={option.value} value={option.value}>
-                            {option.label}
-                          </option>
-                        ))}
-                      </select>
-                    ) : (
-                      <span>{formatValue(formData.livestockGroup)}</span>
-                    )}
-                  </div>
-                  <div className="metricAccent" />
+                  <label className="metricLabel" htmlFor="livestockGroup">
+                    Livestock Group
+                  </label>
+                  {isEditable ? (
+                    <select
+                      id="livestockGroup"
+                      name="livestockGroup"
+                      className="metricFieldInput"
+                      value={formData.livestockGroup}
+                      onChange={handleChange}
+                      required
+                    >
+                      <option value="" disabled>
+                        Select group
+                      </option>
+                      {livestockGroupOptions.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <div className="metricValue">
+                      {formatValue(formData.livestockGroup)}
+                    </div>
+                  )}
+                  <div />
                 </div>
 
                 <div className="metricCard">
-                  <div className="metricLabel">Pregnancy Status</div>
-                  <div
-                    className="metricValue"
-                    onDoubleClick={() => {
-                      if (editingField !== "pregnancyStatus") {
-                        setEditingField("pregnancyStatus");
-                      }
-                    }}
-                  >
-                    {editingField === "pregnancyStatus" ? (
-                      <select
-                        name="pregnancyStatus"
-                        value={pregnancyValue}
-                        onChange={handleChange}
-                        onBlur={async () => commitField()}
-                        autoFocus
-                        className="metricFieldInput"
-                      >
-                        {pregnancyStatusOptions.map((option) => (
-                          <option
-                            key={option.value || "empty"}
-                            value={option.value}
-                          >
-                            {option.label}
-                          </option>
-                        ))}
-                      </select>
-                    ) : (
-                      <span>{formatValue(formData.pregnancyStatus)}</span>
-                    )}
-                  </div>
-                  <div className="metricAccent" />
+                  <label className="metricLabel" htmlFor="pregnancyStatus">
+                    Pregnancy Status
+                  </label>
+                  {isEditable ? (
+                    <select
+                      id="pregnancyStatus"
+                      name="pregnancyStatus"
+                      className="metricFieldInput"
+                      value={formData.pregnancyStatus || ""}
+                      onChange={handleChange}
+                    >
+                      {pregnancyStatusOptions.map((option) => (
+                        <option
+                          key={option.value || "empty"}
+                          value={option.value}
+                        >
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <div className="metricValue">
+                      {formatValue(formData.pregnancyStatus)}
+                    </div>
+                  )}
+                  <div />
                 </div>
               </div>
             </CowHeroCard>
 
             <CowDetailsSection
               title="Cow Details"
-              subtitle="Profile information"
+              subtitle={
+                isEditable
+                  ? "Update profile information"
+                  : "Profile information"
+              }
               fields={detailFields}
             />
           </div>
 
           <div className="rightColumn cowDetailRightColumnOffset">
             <CowSummaryCard
-              ownerName={cow.ownerName}
-              subtitle="At a glance"
-              purchasePrice={formatCurrency(cow.purchasePrice)}
-              salePrice={formatCurrency(cow.salePrice)}
+              ownerName={formData.ownerName}
+              subtitle={isEditable ? "Live preview" : "At a glance"}
+              purchasePrice={formatCurrency(formData.purchasePrice)}
+              salePrice={formatCurrency(formData.salePrice)}
             />
             <Notes cowId={cow.id} />
           </div>
-        </div>
+        </form>
 
         <div className="fullWidthRow">
           <section className="dashboardCard activityCard">
@@ -979,6 +1051,16 @@ function CowDetailPage() {
           </section>
         </div>
       </div>
+
+      <Modal
+        isOpen={showUnsavedModal}
+        title="Unsaved Changes"
+        message="You have unsaved changes. Are you sure you want to leave without saving?"
+        confirmText="Leave Without Saving"
+        confirmVariant="danger"
+        onCancel={handleStay}
+        onConfirm={handleConfirmLeave}
+      />
 
       <Modal
         isOpen={showDeleteModal}

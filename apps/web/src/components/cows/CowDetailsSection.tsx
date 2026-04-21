@@ -4,7 +4,6 @@ type CowDetailsField = {
   key: string;
   label: string;
   content: ReactNode;
-  onDoubleClick?: () => void;
 };
 
 type CowDetailsSectionProps = {
@@ -27,11 +26,7 @@ function CowDetailsSection({
 
       <div className="infoGrid">
         {fields.map((field) => (
-          <div
-            key={field.key}
-            className={`infoTile ${field.onDoubleClick ? "infoTileInteractive" : ""}`.trim()}
-            onDoubleClick={field.onDoubleClick}
-          >
+          <div key={field.key} className="infoTile">
             <div className="infoLabel">{field.label}</div>
             <div className="infoValue">{field.content}</div>
           </div>
