@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import CowDetailsSection from "../../components/cows/CowDetailsSection";
 import CowHeroCard from "../../components/cows/CowHeroCard";
 import ParentSelectorField from "../../components/cows/ParentSelectorField";
@@ -42,6 +42,16 @@ type FormState = {
   purchasePrice: string;
   salePrice: string;
   notes: string;
+};
+
+type AddCowLocationState = {
+  presetParentCowId?: string;
+  presetParentType?: "sire" | "dam";
+  openAddCalfModal?: boolean;
+};
+
+type ApiError = Error & {
+  status?: number;
 };
 
 const TAG_NUMBER_PATTERN = /^[A-Za-z0-9-]+$/;
@@ -112,8 +122,36 @@ function getParentValidationError(formData: FormState) {
   return "";
 }
 
+function formatDateForApi(date: Date) {
+  return date.toISOString().split("T")[0];
+}
+
+function getAddCalfModalMessage(
+  presetParentType?: "sire" | "dam",
+  presetParent?: Cow | null,
+) {
+  if (presetParentType === "dam") {
+    return presetParent?.tagNumber
+      ? `This calf will be linked to Cow #${presetParent.tagNumber} as the dam and added to your herd.`
+      : "This calf will be linked to this cow as the dam and added to your herd.";
+  }
+
+  if (presetParentType === "sire") {
+    return presetParent?.tagNumber
+      ? `This calf will be linked to Animal #${presetParent.tagNumber} as the sire and added to your herd.`
+      : "This calf will be linked to this animal as the sire and added to your herd.";
+  }
+
+  return "This calf will be added to your herd.";
+}
+
 function AddCowPage() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const [addCalfContext] = useState<AddCowLocationState | null>(() => {
+    const state = location.state as AddCowLocationState | null;
+    return state ?? null;
+  });
   const { user } = useContext(AuthContext);
   const [formData, setFormData] = useState<FormState>(() => ({
     ...initialFormState,
@@ -124,6 +162,23 @@ function AddCowPage() {
   const [saving, setSaving] = useState(false);
   const [showHasCalfSaveFirstModal, setShowHasCalfSaveFirstModal] =
     useState(false);
+  const [showAddCalfModal, setShowAddCalfModal] = useState(
+    Boolean(addCalfContext?.openAddCalfModal),
+  );
+  const [hasAppliedPresetParent, setHasAppliedPresetParent] = useState(
+    !addCalfContext?.presetParentCowId || !addCalfContext?.presetParentType,
+  );
+  const [hasInitializedAddCalfModal, setHasInitializedAddCalfModal] = useState(
+    !addCalfContext?.openAddCalfModal,
+  );
+  const [hasClearedNavigationState, setHasClearedNavigationState] =
+    useState(false);
+  const presetParent =
+    addCalfContext?.presetParentCowId && existingCows.length > 0
+      ? existingCows.find(
+          (candidate) => candidate.id === addCalfContext.presetParentCowId,
+        ) ?? null
+      : null;
 
   useEffect(() => {
     async function loadExistingCows() {
@@ -137,6 +192,71 @@ function AddCowPage() {
 
     void loadExistingCows();
   }, []);
+
+  useEffect(() => {
+    const presetParentCowId = addCalfContext?.presetParentCowId;
+    const presetParentType = addCalfContext?.presetParentType;
+
+    if (!presetParentCowId || !presetParentType || existingCows.length === 0) {
+      return;
+    }
+
+    if (!presetParent) {
+      return;
+    }
+
+    setFormData((current) => {
+      const nextParentIdKey = `${presetParentType}Id` as "sireId" | "damId";
+      const nextParentNameKey = `${presetParentType}Name` as
+        | "sireName"
+        | "damName";
+
+      if (current[nextParentIdKey] === presetParent.id) {
+        return current;
+      }
+
+      return {
+        ...current,
+        [nextParentIdKey]: presetParent.id,
+        [nextParentNameKey]: "",
+      };
+    });
+
+    setHasAppliedPresetParent(true);
+  }, [
+    addCalfContext?.presetParentCowId,
+    addCalfContext?.presetParentType,
+    existingCows,
+  ]);
+
+  useEffect(() => {
+    if (!addCalfContext?.openAddCalfModal) {
+      return;
+    }
+
+    setShowAddCalfModal(true);
+    setHasInitializedAddCalfModal(true);
+  }, [addCalfContext?.openAddCalfModal]);
+
+  useEffect(() => {
+    if (!location.state || hasClearedNavigationState) {
+      return;
+    }
+
+    if (!hasInitializedAddCalfModal || !hasAppliedPresetParent) {
+      return;
+    }
+
+    navigate(location.pathname, { replace: true, state: null });
+    setHasClearedNavigationState(true);
+  }, [
+    hasAppliedPresetParent,
+    hasClearedNavigationState,
+    hasInitializedAddCalfModal,
+    location.pathname,
+    location.state,
+    navigate,
+  ]);
 
   function handleAddCalfClick() {
     setShowHasCalfSaveFirstModal(true);
@@ -167,6 +287,85 @@ function AddCowPage() {
       [`${parent}Id`]: next.id,
       [`${parent}Name`]: next.name,
     }));
+  }
+
+  async function createCalfFromPresetParent() {
+    const presetParentCowId = addCalfContext?.presetParentCowId;
+    const presetParentType = addCalfContext?.presetParentType;
+
+    if (!presetParentCowId || !presetParentType) {
+      throw new Error("No parent was provided for this calf.");
+    }
+
+    const presetParent =
+      existingCows.find((candidate) => candidate.id === presetParentCowId) ?? null;
+
+    if (!presetParent) {
+      throw new Error("Unable to find the selected parent in your herd.");
+    }
+
+    const currentYear = new Date().getFullYear();
+    const baseTagNumber = `${presetParent.tagNumber}-${currentYear}`;
+    const dateOfBirth = formatDateForApi(new Date());
+
+    for (let suffix = 0; suffix < 100; suffix += 1) {
+      const tagNumber =
+        suffix === 0 ? baseTagNumber : `${baseTagNumber}-${suffix}`;
+
+      try {
+        await createCow({
+          tagNumber,
+          livestockGroup: "Calf",
+          ownerName: presetParent.ownerName,
+          sex: "",
+          breed: presetParent.breed ?? "",
+          name: null,
+          color: null,
+          dateOfBirth,
+          birthWeight: null,
+          easeOfBirth: null,
+          sireId: presetParentType === "sire" ? presetParent.id : null,
+          sireName: null,
+          damId: presetParentType === "dam" ? presetParent.id : null,
+          damName: null,
+          hasCalf: false,
+          healthStatus: "Healthy",
+          heatStatus: null,
+          pregnancyStatus: "N/A",
+          purchaseDate: null,
+          saleDate: null,
+          purchasePrice: null,
+          salePrice: null,
+          notes: null,
+        });
+        return;
+      } catch (err) {
+        const apiErr = err as ApiError;
+
+        if (apiErr?.status === 409) {
+          continue;
+        }
+
+        throw err;
+      }
+    }
+
+    throw new Error("Failed to generate a unique calf tag number.");
+  }
+
+  async function handleConfirmAddCalf() {
+    setError("");
+    setSaving(true);
+
+    try {
+      await createCalfFromPresetParent();
+      navigate("/cows");
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to add calf to herd";
+      setError(message);
+      setSaving(false);
+    }
   }
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -702,6 +901,26 @@ function AddCowPage() {
         hideCancel
         onCancel={() => setShowHasCalfSaveFirstModal(false)}
         onConfirm={() => setShowHasCalfSaveFirstModal(false)}
+      />
+
+      <Modal
+        isOpen={showAddCalfModal}
+        title="Add Calf to Herd"
+        message={getAddCalfModalMessage(
+          addCalfContext?.presetParentType,
+          presetParent,
+        )}
+        confirmText={saving ? "Adding..." : "Add Calf"}
+        confirmVariant="success"
+        onCancel={() => {
+          if (saving) return;
+          setShowAddCalfModal(false);
+          navigate("/cows");
+        }}
+        onConfirm={() => {
+          if (saving) return;
+          void handleConfirmAddCalf();
+        }}
       />
     </div>
   );

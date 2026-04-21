@@ -22,7 +22,6 @@ import { getActivities } from "../../services/activityService";
 import {
   type CreateCowInput,
   archiveCow,
-  createCow,
   getCowById,
   getCows,
   restoreCow,
@@ -39,11 +38,6 @@ type ActivityLogEntry = {
 
 type ApiError = Error & {
   status?: number;
-};
-
-type AddCalfModalState = {
-  isOpen: boolean;
-  motherCowId: string | null;
 };
 
 const TAG_NUMBER_PATTERN = /^[A-Za-z0-9-]+$/;
@@ -76,10 +70,6 @@ function formatDateInputValue(value: string | null | undefined) {
 
 function formatDateDisplay(value: string | null | undefined) {
   return value ? formatDateInputValue(value) : "—";
-}
-
-function formatDateForApi(date: Date) {
-  return date.toISOString().split("T")[0];
 }
 
 function getParentValidationError(cow: Cow) {
@@ -139,6 +129,21 @@ function toCreateCowInput(cow: Cow): CreateCowInput {
   };
 }
 
+function getAddCalfParentPreset(cow: Cow): {
+  parentCowId: string | null;
+  parentType: "sire" | "dam" | null;
+} {
+  if (cow.sex === "Cow" || cow.sex === "Heifer") {
+    return { parentCowId: cow.id, parentType: "dam" };
+  }
+
+  if (cow.sex === "Bull") {
+    return { parentCowId: cow.id, parentType: "sire" };
+  }
+
+  return { parentCowId: null, parentType: null };
+}
+
 function CowDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -163,11 +168,6 @@ function CowDetailPage() {
   const [confirmedNavigation, setConfirmedNavigation] = useState<
     (() => void) | null
   >(null);
-  const [addCalfModal, setAddCalfModal] = useState<AddCalfModalState>({
-    isOpen: false,
-    motherCowId: null,
-  });
-  const [creatingCalf, setCreatingCalf] = useState(false);
 
   useEffect(() => {
     async function loadCow() {
@@ -463,78 +463,6 @@ function CowDetailPage() {
     }
   }
 
-  async function createCalfForCow(mother: Cow) {
-    const currentYear = new Date().getFullYear();
-    const baseTagNumber = `${mother.tagNumber}-${currentYear}`;
-    const dateOfBirth = formatDateForApi(new Date());
-
-    for (let suffix = 0; suffix < 100; suffix += 1) {
-      const tagNumber =
-        suffix === 0 ? baseTagNumber : `${baseTagNumber}-${suffix}`;
-
-      try {
-        await createCow({
-          tagNumber,
-          livestockGroup: "Calf",
-          ownerName: mother.ownerName,
-          sex: "",
-          breed: mother.breed ?? "",
-          name: null,
-          color: null,
-          dateOfBirth,
-          birthWeight: null,
-          easeOfBirth: null,
-          sireId: null,
-          sireName: null,
-          damId: null,
-          damName: null,
-          hasCalf: false,
-          healthStatus: "Healthy",
-          heatStatus: null,
-          pregnancyStatus: "N/A",
-          purchaseDate: null,
-          saleDate: null,
-          purchasePrice: null,
-          salePrice: null,
-          notes: null,
-        });
-        return;
-      } catch (err) {
-        const apiErr = err as ApiError;
-
-        if (apiErr?.status === 409) {
-          continue;
-        }
-
-        throw err;
-      }
-    }
-
-    throw new Error("Failed to generate a unique calf tag number.");
-  }
-
-  async function handleConfirmAddCalf() {
-    if (!cow || addCalfModal.motherCowId !== cow.id) {
-      setAddCalfModal({ isOpen: false, motherCowId: null });
-      return;
-    }
-
-    setCreatingCalf(true);
-    setError("");
-
-    try {
-      await createCalfForCow(cow);
-      setAddCalfModal({ isOpen: false, motherCowId: null });
-      navigate("/cows");
-    } catch (err) {
-      const message =
-        err instanceof Error ? err.message : "Failed to add calf to herd";
-      setError(message);
-    } finally {
-      setCreatingCalf(false);
-    }
-  }
-
   if (loading) return <p>Loading cow...</p>;
   if (!cow || !formData) return <p>Cow not found</p>;
 
@@ -810,9 +738,14 @@ function CowDetailPage() {
             type="button"
             className="detailActionButton"
             onClick={() => {
-              setAddCalfModal({
-                isOpen: true,
-                motherCowId: cow.id,
+              const preset = getAddCalfParentPreset(cow);
+
+              navigate("/add-cow", {
+                state: {
+                  openAddCalfModal: true,
+                  presetParentCowId: preset.parentCowId,
+                  presetParentType: preset.parentType,
+                },
               });
             }}
           >
@@ -1084,22 +1017,6 @@ function CowDetailPage() {
         onConfirm={async () => {
           await handleRestore();
           setShowRestoreModal(false);
-        }}
-      />
-
-      <Modal
-        isOpen={addCalfModal.isOpen}
-        title="Add Calf to Herd"
-        message="Do you want to add this calf to your herd?"
-        confirmText={creatingCalf ? "Adding..." : "Add Calf"}
-        confirmVariant="success"
-        onCancel={() => {
-          if (creatingCalf) return;
-          setAddCalfModal({ isOpen: false, motherCowId: null });
-        }}
-        onConfirm={() => {
-          if (creatingCalf) return;
-          void handleConfirmAddCalf();
         }}
       />
     </div>
