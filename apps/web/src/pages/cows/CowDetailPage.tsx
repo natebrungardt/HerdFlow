@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import CowDetailsSection from "../../components/cows/CowDetailsSection";
 import CowHeroCard from "../../components/cows/CowHeroCard";
+import ParentSelectorField from "../../components/cows/ParentSelectorField";
 import CowSummaryCard from "../../components/cows/CowSummaryCard";
 import HealthStatusToggle from "../../components/cows/HealthStatusToggle";
 import Modal from "../../components/shared/Modal";
@@ -18,6 +19,7 @@ import {
   archiveCow,
   createCow,
   getCowById,
+  getCows,
   restoreCow,
   updateCow,
 } from "../../services/cowService";
@@ -49,7 +51,9 @@ type EditingFieldName =
   | EditableFieldName
   | "tagNumber"
   | "livestockGroup"
-  | "pregnancyStatus";
+  | "pregnancyStatus"
+  | "sire"
+  | "dam";
 
 type ApiError = Error & {
   status?: number;
@@ -182,6 +186,7 @@ function CowDetailPage() {
     null,
   );
   const [activities, setActivities] = useState<ActivityLogEntry[]>([]);
+  const [existingCows, setExistingCows] = useState<Cow[]>([]);
   const [loadingActivities, setLoadingActivities] = useState(false);
   const [activitiesError, setActivitiesError] = useState("");
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -210,6 +215,19 @@ function CowDetailPage() {
 
     void loadCow();
   }, [id]);
+
+  useEffect(() => {
+    async function loadExistingCows() {
+      try {
+        const cows = await getCows();
+        setExistingCows(cows);
+      } catch {
+        // Keep the detail page usable even if the herd list fails to load.
+      }
+    }
+
+    void loadExistingCows();
+  }, []);
 
   useEffect(() => {
     async function loadActivities() {
@@ -407,6 +425,41 @@ function CowDetailPage() {
 
   void updateHasCalf;
 
+  function handleParentChange(
+    parent: "sire" | "dam",
+    next: { id: string; name: string },
+  ) {
+    setError("");
+    setFormData((prev) => {
+      if (!prev) return prev;
+
+      const selectedCow =
+        existingCows.find((candidate) => candidate.id === next.id) ?? null;
+      const parentSummary = selectedCow
+        ? {
+            id: selectedCow.id,
+            tagNumber: selectedCow.tagNumber,
+            name: selectedCow.name ?? null,
+          }
+        : null;
+
+      return {
+        ...prev,
+        [`${parent}Id`]: next.id || null,
+        [`${parent}Name`]: next.id ? null : (next.name || null),
+        [parent]: parentSummary,
+      };
+    });
+  }
+
+  function cancelFieldEdit(field: EditingFieldName) {
+    setFormData(cow);
+    if (editingField === field) {
+      setEditingField(null);
+    }
+    setError("");
+  }
+
   async function createCalfForCow(mother: Cow) {
     const currentYear = new Date().getFullYear();
     const baseTagNumber = `${mother.tagNumber}-${currentYear}`;
@@ -600,17 +653,85 @@ function CowDetailPage() {
     }),
     {
       key: "sire",
-      label: "Sire",
-      content: (
-        <span>{formatParentDisplay(formData.sire, formData.sireName)}</span>
-      ),
+      label: "Sire (Father)",
+      content:
+        editingField === "sire" ? (
+          <div className="detailActionStack">
+            <ParentSelectorField
+              type="sire"
+              cows={existingCows.filter((existingCow) => existingCow.id !== cow.id)}
+              selectedId={formData.sireId ?? ""}
+              manualName={formData.sireName ?? ""}
+              onChange={(next) => handleParentChange("sire", next)}
+            />
+            <div className="detailInlineActions">
+              <button
+                type="button"
+                className="detailActionButton"
+                onClick={() => {
+                  void commitField();
+                }}
+              >
+                Save Sire
+              </button>
+              <button
+                type="button"
+                className="detailSecondaryButton"
+                onClick={() => cancelFieldEdit("sire")}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        ) : (
+          <span>{formatParentDisplay(formData.sire, formData.sireName)}</span>
+        ),
+      onDoubleClick: () => {
+        if (editingField !== "sire") {
+          setEditingField("sire");
+        }
+      },
     },
     {
       key: "dam",
-      label: "Dam",
-      content: (
-        <span>{formatParentDisplay(formData.dam, formData.damName)}</span>
-      ),
+      label: "Dam (Mother)",
+      content:
+        editingField === "dam" ? (
+          <div className="detailActionStack">
+            <ParentSelectorField
+              type="dam"
+              cows={existingCows.filter((existingCow) => existingCow.id !== cow.id)}
+              selectedId={formData.damId ?? ""}
+              manualName={formData.damName ?? ""}
+              onChange={(next) => handleParentChange("dam", next)}
+            />
+            <div className="detailInlineActions">
+              <button
+                type="button"
+                className="detailActionButton"
+                onClick={() => {
+                  void commitField();
+                }}
+              >
+                Save Dam
+              </button>
+              <button
+                type="button"
+                className="detailSecondaryButton"
+                onClick={() => cancelFieldEdit("dam")}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        ) : (
+          <span>{formatParentDisplay(formData.dam, formData.damName)}</span>
+        ),
+      onDoubleClick: () => {
+        if (editingField !== "dam") {
+          setEditingField("dam");
+        }
+      },
     },
     renderEditableField({
       name: "purchaseDate",
