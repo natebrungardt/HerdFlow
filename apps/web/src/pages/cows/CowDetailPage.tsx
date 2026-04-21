@@ -803,15 +803,12 @@ function CowDetailPage() {
     },
     {
       key: "hasCalf",
-      label: "Has Calf",
+      label: "Calves",
       content: isEditable ? (
         <div className="detailActionStack">
-          <div className="detailHelperText">
-            Current status: {formData.hasCalf ? "Yes" : "No"}
-          </div>
           <button
             type="button"
-            className="btn btn-secondary"
+            className="detailActionButton"
             onClick={() => {
               setAddCalfModal({
                 isOpen: true,
@@ -819,7 +816,10 @@ function CowDetailPage() {
               });
             }}
           >
-            + Add Calf
+            <span className="detailActionIcon" aria-hidden="true">
+              +
+            </span>
+            <span>Add Calf</span>
           </button>
         </div>
       ) : (

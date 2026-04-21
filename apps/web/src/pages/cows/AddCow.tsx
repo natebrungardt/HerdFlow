@@ -509,7 +509,10 @@ function AddCowPage() {
             className="detailActionButton"
             onClick={handleAddCalfClick}
           >
-            + Add Calf
+            <span className="detailActionIcon" aria-hidden="true">
+              +
+            </span>
+            <span>Add Calf</span>
           </button>
         </div>
       ),
@@ -694,7 +697,7 @@ function AddCowPage() {
       <Modal
         isOpen={showHasCalfSaveFirstModal}
         title="Save Cow First"
-        message="Save the cow first, then you can mark ‘Has Calf’ as yes."
+        message="Save the cow first, then you can Add Calf to the record."
         confirmText="OK"
         hideCancel
         onCancel={() => setShowHasCalfSaveFirstModal(false)}
