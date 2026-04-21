@@ -2,7 +2,6 @@ import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import CowDetailsSection from "../../components/cows/CowDetailsSection";
 import CowHeroCard from "../../components/cows/CowHeroCard";
-import HasCalfToggle from "../../components/cows/HasCalfToggle";
 import ParentSelectorField from "../../components/cows/ParentSelectorField";
 import CowSummaryCard from "../../components/cows/CowSummaryCard";
 import HealthStatusToggle from "../../components/cows/HealthStatusToggle";
@@ -139,16 +138,8 @@ function AddCowPage() {
     void loadExistingCows();
   }, []);
 
-  function handleHasCalfChange(value: boolean) {
-    if (value) {
-      setShowHasCalfSaveFirstModal(true);
-      return;
-    }
-
-    setFormData((current) => ({
-      ...current,
-      hasCalf: false,
-    }));
+  function handleAddCalfClick() {
+    setShowHasCalfSaveFirstModal(true);
   }
 
   function handleChange(
@@ -426,10 +417,10 @@ function AddCowPage() {
     },
     {
       key: "sire",
-      label: "Sire",
+      label: "Sire (Father)",
       content: (
         <ParentSelectorField
-          label="Sire"
+          type="sire"
           cows={existingCows}
           selectedId={formData.sireId}
           manualName={formData.sireName}
@@ -439,10 +430,10 @@ function AddCowPage() {
     },
     {
       key: "dam",
-      label: "Dam",
+      label: "Dam (Mother)",
       content: (
         <ParentSelectorField
-          label="Dam"
+          type="dam"
           cows={existingCows}
           selectedId={formData.damId}
           manualName={formData.damName}
@@ -512,11 +503,15 @@ function AddCowPage() {
       key: "hasCalf",
       label: "Has Calf",
       content: (
-        <HasCalfToggle
-          compact
-          value={formData.hasCalf}
-          onChange={handleHasCalfChange}
-        />
+        <div className="detailActionStack">
+          <button
+            type="button"
+            className="detailActionButton"
+            onClick={handleAddCalfClick}
+          >
+            + Add Calf
+          </button>
+        </div>
       ),
     },
   ];

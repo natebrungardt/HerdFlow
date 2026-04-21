@@ -278,6 +278,7 @@ select.cardInput option {
   border-radius: 14px;
   padding: 16px 18px;
   min-width: 0;
+  overflow: visible;
 }
 
 .infoLabel {
@@ -431,42 +432,84 @@ select.metricFieldInput:focus {
 .parentFieldControl {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
+  min-height: 154px;
 }
 
-.parentFieldHeader {
+.parentSegmentedControl {
+  display: flex;
+  width: 100%;
+  overflow: hidden;
+  border: 1px solid var(--input-border);
+  border-radius: 14px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent 100%),
+    var(--surface-subtle);
+  box-shadow: var(--card-shadow);
+  transition: all 0.18s ease;
+}
+
+.parentSegmentButton {
+  flex: 1 1 0;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  flex-wrap: wrap;
+  justify-content: center;
+  min-height: 42px;
+  border: 0;
+  border-right: 1px solid var(--input-border);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.18s ease;
 }
 
-.parentFieldMode {
+.parentSegmentButton:first-child {
+  border-top-left-radius: 13px;
+  border-bottom-left-radius: 13px;
+}
+
+.parentSegmentButton:last-child {
+  border-right: 0;
+  border-top-right-radius: 13px;
+  border-bottom-right-radius: 13px;
+}
+
+.parentSegmentButton:hover {
+  background: rgba(76, 122, 91, 0.1);
+  color: #385c45;
+}
+
+.parentSegmentButton.isActive {
+  background: linear-gradient(180deg, rgba(76, 122, 91, 0.38) 0%, rgba(61, 139, 64, 0.28) 100%);
+  color: #254332;
+  font-weight: 700;
+  box-shadow:
+    inset 0 0 0 1px rgba(76, 122, 91, 0.32),
+    0 1px 2px rgba(0, 0, 0, 0.08);
+}
+
+.parentSegmentButton:focus-visible {
+  outline: 2px solid var(--input-focus);
+  outline-offset: 2px;
+}
+
+.parentHelperText {
+  margin: 0;
   color: var(--text-muted-soft);
   font-size: 0.85rem;
   font-weight: 500;
-}
-
-.parentFieldToggle {
-  border: none;
-  background: transparent;
-  color: var(--accent-primary, #4c7a5b);
-  font: inherit;
-  font-size: 0.9rem;
-  font-weight: 600;
-  padding: 0;
-  cursor: pointer;
-}
-
-.parentFieldToggle:hover {
-  text-decoration: underline;
+  line-height: 1.35;
 }
 
 .parentFieldStack {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
+  position: relative;
+  overflow: visible;
 }
 
 .parentSearchInput,
@@ -516,10 +559,79 @@ select.metricFieldInput:focus {
   background-repeat: no-repeat;
 }
 
+.parentAutocompleteDropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  margin-top: 6px;
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid var(--input-border);
+  border-radius: 14px;
+  background: #fff;
+  box-shadow:
+    0 10px 24px rgba(20, 27, 18, 0.12),
+    0 2px 6px rgba(20, 27, 18, 0.06);
+}
+
+.parentAutocompleteOption {
+  width: 100%;
+  border: 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--input-border) 72%, transparent);
+  background: transparent;
+  color: var(--text-primary);
+  font: inherit;
+  text-align: left;
+  padding: 0.72rem 0.95rem;
+  cursor: pointer;
+  transition:
+    background-color 0.18s ease,
+    color 0.18s ease;
+}
+
+.parentAutocompleteOption:last-child {
+  border-bottom: 0;
+}
+
+.parentAutocompleteOption:hover,
+.parentAutocompleteOption.isSelected {
+  background: rgba(76, 122, 91, 0.1);
+  color: #254332;
+}
+
+.parentAutocompleteOption:focus-visible {
+  outline: 2px solid var(--input-focus);
+  outline-offset: -2px;
+}
+
+.parentAutocompleteEmpty {
+  color: var(--text-muted-soft);
+  font-size: 0.9rem;
+  padding: 0.82rem 0.95rem;
+  background: #fff;
+}
+
+.parentAutocompleteMatch {
+  background: transparent;
+  color: inherit;
+  font-weight: 700;
+}
+
 .detailActionStack {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+  gap: 10px;
+}
+
+.detailInlineActions {
+  display: flex;
+  flex-wrap: wrap;
   gap: 10px;
 }
 
@@ -556,6 +668,34 @@ select.metricFieldInput:focus {
 }
 
 .detailActionButton:active {
+  transform: translateY(0);
+}
+
+.detailSecondaryButton {
+  border: 1px solid var(--input-border);
+  border-radius: 12px;
+  background: var(--surface-subtle);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1;
+  padding: 0.7rem 0.95rem;
+  min-height: 40px;
+  cursor: pointer;
+  transition:
+    border-color 0.18s ease,
+    background-color 0.18s ease,
+    transform 0.18s ease;
+}
+
+.detailSecondaryButton:hover {
+  border-color: var(--row-hover-border);
+  background: var(--surface-subtle-hover);
+  transform: translateY(-1px);
+}
+
+.detailSecondaryButton:active {
   transform: translateY(0);
 }
 
