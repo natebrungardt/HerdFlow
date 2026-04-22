@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using HerdFlow.Api.Models;
+using HerdFlow.Api.Models.Enums;
 
 namespace HerdFlow.Api.Data;
 
@@ -18,6 +19,8 @@ public class AppDbContext : DbContext
     public DbSet<Workday> Workdays { get; set; }
     public DbSet<WorkdayCow> WorkdayCows { get; set; }
     public DbSet<WorkdayNote> WorkdayNotes { get; set; }
+    public DbSet<WorkdayAction> WorkdayActions { get; set; }
+    public DbSet<WorkdayEntry> WorkdayEntries { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -46,6 +49,11 @@ public class AppDbContext : DbContext
             .HasForeignKey(c => c.DamId)
             .OnDelete(DeleteBehavior.SetNull);
 
+        modelBuilder.Entity<Workday>()
+            .Property(w => w.Status)
+            .HasConversion<int>()
+            .HasDefaultValue(WorkdayStatus.Draft);
+
         base.OnModelCreating(modelBuilder);
 
         modelBuilder.Entity<WorkdayCow>()
@@ -66,6 +74,40 @@ public class AppDbContext : DbContext
             .HasOne(n => n.Workday)
             .WithMany(w => w.WorkdayNotes)
             .HasForeignKey(n => n.WorkdayId);
+
+        modelBuilder.Entity<WorkdayAction>()
+            .Property(a => a.CreatedAt)
+            .HasDefaultValueSql("NOW()");
+
+        modelBuilder.Entity<WorkdayAction>()
+            .HasOne(a => a.Workday)
+            .WithMany(w => w.Actions)
+            .HasForeignKey(a => a.WorkdayId);
+
+        modelBuilder.Entity<WorkdayEntry>()
+            .HasKey(e => new { e.WorkdayId, e.CowId, e.ActionId });
+
+        modelBuilder.Entity<WorkdayEntry>()
+            .Property(e => e.IsCompleted)
+            .HasDefaultValue(false);
+
+        modelBuilder.Entity<WorkdayEntry>()
+            .HasOne(e => e.Workday)
+            .WithMany(w => w.Entries)
+            .HasForeignKey(e => e.WorkdayId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<WorkdayEntry>()
+            .HasOne(e => e.Cow)
+            .WithMany(c => c.WorkdayEntries)
+            .HasForeignKey(e => e.CowId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<WorkdayEntry>()
+            .HasOne(e => e.WorkdayAction)
+            .WithMany(a => a.Entries)
+            .HasForeignKey(e => e.ActionId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 
 }

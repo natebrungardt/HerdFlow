@@ -46,7 +46,7 @@ namespace HerdFlow.Api.Migrations
 
                     b.HasIndex("CowId");
 
-                    b.ToTable("ActivityLogEntries");
+                    b.ToTable("ActivityLogEntries", (string)null);
                 });
 
             modelBuilder.Entity("HerdFlow.Api.Models.Cow", b =>
@@ -147,7 +147,7 @@ namespace HerdFlow.Api.Migrations
                     b.HasIndex("UserId", "TagNumber")
                         .IsUnique();
 
-                    b.ToTable("Cows");
+                    b.ToTable("Cows", (string)null);
                 });
 
             modelBuilder.Entity("HerdFlow.Api.Models.Note", b =>
@@ -178,7 +178,7 @@ namespace HerdFlow.Api.Migrations
 
                     b.HasIndex("CowId");
 
-                    b.ToTable("Notes");
+                    b.ToTable("Notes", (string)null);
                 });
 
             modelBuilder.Entity("HerdFlow.Api.Models.Workday", b =>
@@ -199,6 +199,11 @@ namespace HerdFlow.Api.Migrations
                     b.Property<DateTime?>("RemovedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<int>("Status")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
+
                     b.Property<string>("Summary")
                         .HasColumnType("text");
 
@@ -215,7 +220,33 @@ namespace HerdFlow.Api.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Workdays");
+                    b.ToTable("Workdays", (string)null);
+                });
+
+            modelBuilder.Entity("HerdFlow.Api.Models.WorkdayAction", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("NOW()");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)");
+
+                    b.Property<Guid>("WorkdayId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("WorkdayId");
+
+                    b.ToTable("WorkdayActions", (string)null);
                 });
 
             modelBuilder.Entity("HerdFlow.Api.Models.WorkdayCow", b =>
@@ -240,7 +271,32 @@ namespace HerdFlow.Api.Migrations
                     b.HasIndex("WorkdayId", "CowId")
                         .IsUnique();
 
-                    b.ToTable("WorkdayCows");
+                    b.ToTable("WorkdayCows", (string)null);
+                });
+
+            modelBuilder.Entity("HerdFlow.Api.Models.WorkdayEntry", b =>
+                {
+                    b.Property<Guid>("WorkdayId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("CowId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ActionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("IsCompleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
+
+                    b.HasKey("WorkdayId", "CowId", "ActionId");
+
+                    b.HasIndex("ActionId");
+
+                    b.HasIndex("CowId");
+
+                    b.ToTable("WorkdayEntries", (string)null);
                 });
 
             modelBuilder.Entity("HerdFlow.Api.Models.WorkdayNote", b =>
@@ -271,7 +327,7 @@ namespace HerdFlow.Api.Migrations
 
                     b.HasIndex("WorkdayId");
 
-                    b.ToTable("WorkdayNotes");
+                    b.ToTable("WorkdayNotes", (string)null);
                 });
 
             modelBuilder.Entity("HerdFlow.Api.Models.ActivityLogEntry", b =>
@@ -313,6 +369,17 @@ namespace HerdFlow.Api.Migrations
                     b.Navigation("Cow");
                 });
 
+            modelBuilder.Entity("HerdFlow.Api.Models.WorkdayAction", b =>
+                {
+                    b.HasOne("HerdFlow.Api.Models.Workday", "Workday")
+                        .WithMany("Actions")
+                        .HasForeignKey("WorkdayId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Workday");
+                });
+
             modelBuilder.Entity("HerdFlow.Api.Models.WorkdayCow", b =>
                 {
                     b.HasOne("HerdFlow.Api.Models.Cow", "Cow")
@@ -330,6 +397,33 @@ namespace HerdFlow.Api.Migrations
                     b.Navigation("Cow");
 
                     b.Navigation("Workday");
+                });
+
+            modelBuilder.Entity("HerdFlow.Api.Models.WorkdayEntry", b =>
+                {
+                    b.HasOne("HerdFlow.Api.Models.WorkdayAction", "WorkdayAction")
+                        .WithMany("Entries")
+                        .HasForeignKey("ActionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("HerdFlow.Api.Models.Cow", "Cow")
+                        .WithMany("WorkdayEntries")
+                        .HasForeignKey("CowId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("HerdFlow.Api.Models.Workday", "Workday")
+                        .WithMany("Entries")
+                        .HasForeignKey("WorkdayId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Cow");
+
+                    b.Navigation("Workday");
+
+                    b.Navigation("WorkdayAction");
                 });
 
             modelBuilder.Entity("HerdFlow.Api.Models.WorkdayNote", b =>
@@ -352,13 +446,24 @@ namespace HerdFlow.Api.Migrations
                     b.Navigation("SiredOffspring");
 
                     b.Navigation("WorkdayCows");
+
+                    b.Navigation("WorkdayEntries");
                 });
 
             modelBuilder.Entity("HerdFlow.Api.Models.Workday", b =>
                 {
+                    b.Navigation("Actions");
+
+                    b.Navigation("Entries");
+
                     b.Navigation("WorkdayCows");
 
                     b.Navigation("WorkdayNotes");
+                });
+
+            modelBuilder.Entity("HerdFlow.Api.Models.WorkdayAction", b =>
+                {
+                    b.Navigation("Entries");
                 });
 #pragma warning restore 612, 618
         }

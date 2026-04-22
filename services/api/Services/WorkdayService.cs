@@ -6,6 +6,7 @@ using HerdFlow.Api.DTOs;
 using Microsoft.AspNetCore.Http;
 using Npgsql;
 using System.Security.Claims;
+using HerdFlow.Api.Models.Enums;
 
 namespace HerdFlow.Api.Services;
 
@@ -104,6 +105,8 @@ public class WorkdayService
             .Include(w => w.WorkdayCows)
                 .ThenInclude(wc => wc.Cow)
             .Include(w => w.WorkdayNotes)
+            .Include(w => w.Actions)
+            .Include(w => w.Entries)
             .FirstOrDefaultAsync(w => w.Id == id && w.UserId == userId);
 
         return workday ?? throw new NotFoundException("Workday not found.");
@@ -161,9 +164,28 @@ public class WorkdayService
         {
             WorkdayId = id,
             CowId = cowId
-        });
+        }).ToList();
 
         _context.WorkdayCows.AddRange(assignments);
+
+        var actionIds = await _context.WorkdayActions
+            .Where(action => action.WorkdayId == id)
+            .Select(action => action.Id)
+            .ToListAsync();
+
+        if (actionIds.Count > 0)
+        {
+            var entries = newCowIds.SelectMany(cowId =>
+                actionIds.Select(actionId => new WorkdayEntry
+                {
+                    WorkdayId = id,
+                    CowId = cowId,
+                    ActionId = actionId,
+                    IsCompleted = false
+                }));
+
+            _context.WorkdayEntries.AddRange(entries);
+        }
 
         try
         {
@@ -188,6 +210,11 @@ public class WorkdayService
         }
     }
 
+    public Task AddCowToWorkday(Guid workdayId, Guid cowId)
+    {
+        return AddCowsToWorkday(workdayId, new List<Guid> { cowId });
+    }
+
     public async Task RemoveCowFromWorkday(Guid id, Guid cowId)
     {
         var userId = GetCurrentUserId();
@@ -210,6 +237,10 @@ public class WorkdayService
             return;
         }
 
+        var entries = _context.WorkdayEntries
+            .Where(e => e.WorkdayId == id && e.CowId == cowId);
+
+        _context.WorkdayEntries.RemoveRange(entries);
         _context.WorkdayCows.Remove(workdayCow);
         await _context.SaveChangesAsync();
     }
@@ -230,6 +261,104 @@ public class WorkdayService
         }
 
         workdayCow.Status = isWorked ? "Worked" : null;
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task<WorkdayAction> AddActionToWorkday(Guid workdayId, string actionName)
+    {
+        if (string.IsNullOrWhiteSpace(actionName))
+        {
+            throw new ValidationException("Action name is required.");
+        }
+
+        var workday = await FindWorkdayAsync(workdayId);
+        var normalizedName = actionName.Trim();
+
+        var exists = await _context.WorkdayActions
+            .AnyAsync(a =>
+                a.WorkdayId == workdayId &&
+                a.Name.ToLower() == normalizedName.ToLower());
+
+        if (exists)
+        {
+            throw new ValidationException("Action already exists.");
+        }
+
+        var action = new WorkdayAction
+        {
+            WorkdayId = workday.Id,
+            Name = normalizedName
+        };
+
+        _context.WorkdayActions.Add(action);
+
+        var cowIds = await _context.WorkdayCows
+            .Where(wc => wc.WorkdayId == workdayId)
+            .Select(wc => wc.CowId)
+            .ToListAsync();
+
+        if (cowIds.Count > 0)
+        {
+            var entries = cowIds.Select(cowId => new WorkdayEntry
+            {
+                WorkdayId = workdayId,
+                CowId = cowId,
+                ActionId = action.Id,
+                IsCompleted = false
+            });
+
+            _context.WorkdayEntries.AddRange(entries);
+        }
+
+        await _context.SaveChangesAsync();
+        return action;
+    }
+
+    public async Task ToggleEntry(Guid workdayId, Guid cowId, Guid actionId)
+    {
+        var userId = GetCurrentUserId();
+        var entry = await _context.WorkdayEntries
+            .Include(e => e.Workday)
+            .FirstOrDefaultAsync(e =>
+                e.WorkdayId == workdayId &&
+                e.CowId == cowId &&
+                e.ActionId == actionId &&
+                e.Workday.UserId == userId);
+
+        if (entry == null)
+        {
+            throw new NotFoundException("Workday entry not found.");
+        }
+
+        entry.IsCompleted = !entry.IsCompleted;
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task StartWorkday(Guid workdayId)
+    {
+        var workday = await FindWorkdayAsync(workdayId);
+
+        await _context.Entry(workday)
+            .Collection(w => w.WorkdayCows)
+            .LoadAsync();
+
+        await _context.Entry(workday)
+            .Collection(w => w.Actions)
+            .LoadAsync();
+
+        if (!workday.WorkdayCows.Any() || !workday.Actions.Any())
+        {
+            throw new ValidationException("Workday must have at least one cow and one action.");
+        }
+
+        workday.Status = WorkdayStatus.InProgress;
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task CompleteWorkday(Guid workdayId)
+    {
+        var workday = await FindWorkdayAsync(workdayId);
+        workday.Status = WorkdayStatus.Completed;
         await _context.SaveChangesAsync();
     }
 

@@ -67,6 +67,9 @@ public class Cow
     public List<WorkdayCow> WorkdayCows { get; set; } = new();
 
     [JsonIgnore]
+    public List<WorkdayEntry> WorkdayEntries { get; set; } = new();
+
+    [JsonIgnore]
     public Cow? Sire { get; set; }
 
     [JsonIgnore]

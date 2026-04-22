@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using Microsoft.EntityFrameworkCore;
+using HerdFlow.Api.Models.Enums;
 
 namespace HerdFlow.Api.Models;
 
@@ -15,6 +16,7 @@ public class Workday
 
     public DateOnly Date { get; set; } = DateOnly.FromDateTime(DateTime.UtcNow);
     public string? Summary { get; set; }
+    public WorkdayStatus Status { get; set; } = WorkdayStatus.Draft;
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public bool IsRemoved { get; set; } = false;
@@ -22,4 +24,6 @@ public class Workday
     // Relationships
     public List<WorkdayCow> WorkdayCows { get; set; } = new();
     public List<WorkdayNote> WorkdayNotes { get; set; } = new();
+    public List<WorkdayAction> Actions { get; set; } = new();
+    public List<WorkdayEntry> Entries { get; set; } = new();
 }

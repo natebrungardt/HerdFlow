@@ -531,7 +531,7 @@ function WorkdayPage() {
             ) : (
               <button
                 type="button"
-                className="deleteButton deleteButtonCompact"
+                className="btn btn-danger"
                 onClick={handleArchiveClick}
               >
                 Archive Workday
