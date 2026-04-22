@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
+import CowRowCard from "./CowRowCard";
 import type { Cow } from "../../types/cow";
 
 type HerdListViewProps = {
@@ -48,10 +49,6 @@ function getFilterFromSearchParams(searchParams: URLSearchParams): HerdStatFilte
   return HERD_FILTER_VALUES.includes(filter as HerdStatFilter)
     ? (filter as HerdStatFilter)
     : "All";
-}
-
-function formatHealthStatus(status: string | null | undefined) {
-  return (status ?? "Unknown").replace(/([A-Z])/g, " $1").trim();
 }
 
 function getNormalizedTagNumber(tagNumber: string) {
@@ -287,42 +284,15 @@ function HerdListView({
               <p className="emptyState">{emptyMessage}</p>
             ) : (
               filteredCows.map((cow) => {
-                const statusClassName =
-                  cow.healthStatus === "Healthy"
-                    ? "statusPill"
-                    : "statusPill needsTreatment";
                 const supplementaryMeta = getCowSupplementaryMeta?.(cow);
 
                 return (
-                  <Link
+                  <CowRowCard
                     key={cow.id}
-                    className="cowRowCard"
+                    cow={cow}
+                    supplementaryMeta={supplementaryMeta}
                     to={getCowHref(cow)}
-                  >
-                    <div className="cowRowMain">
-                      <div className="cowRowTitle">Tag #{cow.tagNumber}</div>
-                      <div className="cowRowMeta">
-                        {cow.livestockGroup || "Unassigned"} •{" "}
-                        {cow.healthStatus || "Unknown health status"} •{" "}
-                        {cow.sex || "Unknown sex"} •{" "}
-                        {cow.pregnancyStatus || "No pregnancy status"}
-                      </div>
-                      <div className="cowRowOwner">
-                        Owner: {cow.ownerName || "Unknown owner"}
-                      </div>
-                      {supplementaryMeta ? (
-                        <div className="cowRowSupplementaryMeta">
-                          {supplementaryMeta}
-                        </div>
-                      ) : null}
-                    </div>
-
-                    <div className="cowRowActions">
-                      <div className={statusClassName}>
-                        {formatHealthStatus(cow.healthStatus)}
-                      </div>
-                    </div>
-                  </Link>
+                  />
                 );
               })
             )}

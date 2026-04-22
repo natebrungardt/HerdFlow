@@ -92,7 +92,7 @@ function Notes({ cowId }: Props) {
   }
 
   return (
-    <section className="dashboardCard">
+    <section className="dashboardCard notesPanel">
       <div className="dataCardHeader">
         <h2 className="cardTitle">Notes</h2>
         <span className="cardSubtle">Internal record</span>

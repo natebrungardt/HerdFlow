@@ -33,6 +33,20 @@ export async function getCows(): Promise<Cow[]> {
   return response.json();
 }
 
+export async function getAllCows(): Promise<Cow[]> {
+  const [activeCows, removedCows] = await Promise.all([
+    getCows(),
+    getRemovedCows(),
+  ]);
+  const cowsById = new Map<string, Cow>();
+
+  for (const cow of [...activeCows, ...removedCows]) {
+    cowsById.set(cow.id, cow);
+  }
+
+  return Array.from(cowsById.values());
+}
+
 function getFilenameFromDisposition(header: string | null): string {
   if (!header) {
     return "herd-export.csv";

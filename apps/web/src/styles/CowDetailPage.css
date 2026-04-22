@@ -254,8 +254,7 @@ select.cardInput option {
   align-content: stretch;
 }
 
-.leftColumn > .dashboardCard:last-child,
-.rightColumn > .dashboardCard:last-child {
+.leftColumn > .dashboardCard:last-child {
   display: flex;
   flex: 1;
   flex-direction: column;
@@ -696,6 +695,123 @@ select.metricFieldInput:focus {
   text-align: right;
 }
 
+.calvesCard {
+  display: flex;
+  flex-direction: column;
+  flex: 0 0 auto;
+  flex-shrink: 0;
+  gap: 14px;
+  height: auto;
+}
+
+.calvesCount {
+  color: var(--text-primary);
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+.calvesList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.calfListItem {
+  padding: 12px 0;
+  border-top: 1px solid var(--card-border);
+}
+
+.calfListItem:first-child {
+  border-top: none;
+  padding-top: 0;
+}
+
+.calfListPrimary {
+  color: var(--text-primary);
+  font-size: 0.98rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.calfListSecondary {
+  color: var(--text-muted-soft);
+  font-size: 0.88rem;
+  margin-top: 4px;
+}
+
+.calvesEmptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.calvesViewAllButton {
+  border: none;
+  background: transparent;
+  color: #4c7a5b;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+}
+
+.calvesViewAllButton:hover {
+  color: #3f684d;
+}
+
+.modalCard.calfHistoryModal {
+  width: 100%;
+  max-width: 900px;
+  max-height: 80vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.calfHistoryHeader {
+  margin-bottom: 12px;
+}
+
+.calfHistoryHeader h3 {
+  margin: 0;
+}
+
+.calfHistoryList {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding-top: 8px;
+}
+
+.calfArchivedBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--surface-subtle);
+  color: var(--text-muted-soft);
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.calfHistoryCowCard {
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: transparent;
+  padding: 16px 18px;
+  border-radius: 14px;
+  cursor: pointer;
+}
+
+.calfHistoryCowCard .cowRowActions {
+  margin-left: 16px;
+}
+
 .notesBody {
   max-height: 720px;
   overflow-y: auto;
@@ -761,6 +877,7 @@ select.metricFieldInput:focus {
   .infoGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
 }
 
 @media (max-width: 760px) {
@@ -866,11 +983,21 @@ select.metricFieldInput:focus {
   flex-direction: column;
   flex: 1;
   height: 100%;
+  min-height: 0;
+  gap: 12px;
+}
+
+.notesPanel {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
 }
 
 .notesBody {
   flex: 1;
   overflow-y: auto;
+  min-height: 0;
   padding-right: 6px;
   scrollbar-width: thin;
   scrollbar-color: var(--scroll-thumb) transparent;
@@ -997,9 +1124,12 @@ select.metricFieldInput:focus {
 .addNoteRow {
   display: flex;
   gap: 8px;
-  margin-top: 6px;
+  margin-top: auto;
+  padding-top: 6px;
   padding-bottom: 12px;
   font-size: 0.95rem;
+  flex: 0 0 auto;
+  flex-shrink: 0;
 }
 
 .addNoteRow textarea {
