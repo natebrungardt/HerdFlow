@@ -110,6 +110,59 @@ public class CowApiIntegrationTests
     }
 
     [Fact]
+    public async Task CreateCalf_creates_first_available_tag_for_dam()
+    {
+        await using var factory = new HerdFlowApiFactory();
+        var dam = TestData.Cow("user-a", "A-100");
+        dam.Breed = "Angus";
+        await factory.SeedAsync(dbContext =>
+        {
+            dbContext.Cows.Add(dam);
+            return Task.CompletedTask;
+        });
+        using var client = factory.CreateClientForUser("user-a");
+
+        var response = await client.PostAsync($"/api/cows/{dam.Id}/calves", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var calf = await response.Content.ReadFromJsonAsync<CowResponseDto>(ApiJson.Options);
+        calf.Should().NotBeNull();
+        calf!.TagNumber.Should().Be($"A-100-{DateTime.UtcNow.Year}");
+        calf.LivestockGroup.ToString().Should().Be("Calf");
+        calf.DamId.Should().Be(dam.Id);
+        calf.OwnerName.Should().Be(dam.OwnerName);
+        calf.Breed.Should().Be("Angus");
+    }
+
+    [Fact]
+    public async Task CreateCalf_uses_next_open_suffix_when_prior_tags_exist()
+    {
+        await using var factory = new HerdFlowApiFactory();
+        var year = DateTime.UtcNow.Year;
+        var dam = TestData.Cow("user-a", "A-100");
+        var existingBaseCalf = TestData.Cow("user-a", $"A-100-{year}");
+        existingBaseCalf.LivestockGroup = HerdFlow.Api.Models.Enums.LivestockGroupType.Calf;
+        existingBaseCalf.DamId = dam.Id;
+        var existingSuffixCalf = TestData.Cow("user-a", $"A-100-{year}-1");
+        existingSuffixCalf.LivestockGroup = HerdFlow.Api.Models.Enums.LivestockGroupType.Calf;
+        existingSuffixCalf.DamId = dam.Id;
+
+        await factory.SeedAsync(dbContext =>
+        {
+            dbContext.Cows.AddRange(dam, existingBaseCalf, existingSuffixCalf);
+            return Task.CompletedTask;
+        });
+        using var client = factory.CreateClientForUser("user-a");
+
+        var response = await client.PostAsync($"/api/cows/{dam.Id}/calves", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var calf = await response.Content.ReadFromJsonAsync<CowResponseDto>(ApiJson.Options);
+        calf.Should().NotBeNull();
+        calf!.TagNumber.Should().Be($"A-100-{year}-2");
+    }
+
+    [Fact]
     public async Task CreateCow_returns_problem_details_for_duplicate_tag()
     {
         await using var factory = new HerdFlowApiFactory();

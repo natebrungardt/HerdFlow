@@ -22,7 +22,7 @@ import { getActivities } from "../../services/activityService";
 import {
   type CreateCowInput,
   archiveCow,
-  createCow,
+  createCalf,
   getAllCows,
   getCowById,
   restoreCow,
@@ -71,10 +71,6 @@ function formatDateInputValue(value: string | null | undefined) {
 
 function formatDateDisplay(value: string | null | undefined) {
   return value ? formatDateInputValue(value) : "—";
-}
-
-function formatDateForApi(date: Date) {
-  return date.toISOString().split("T")[0];
 }
 
 function getAddCalfModalMessage(
@@ -506,53 +502,7 @@ function CowDetailPage() {
   }
 
   async function createCalfForCow(mother: Cow) {
-    const currentYear = new Date().getFullYear();
-    const baseTagNumber = `${mother.tagNumber}-${currentYear}`;
-    const dateOfBirth = formatDateForApi(new Date());
-
-    for (let suffix = 0; suffix < 100; suffix += 1) {
-      const tagNumber =
-        suffix === 0 ? baseTagNumber : `${baseTagNumber}-${suffix}`;
-
-      try {
-        const createdCalf = await createCow({
-          tagNumber,
-          livestockGroup: "Calf",
-          ownerName: mother.ownerName,
-          sex: "",
-          breed: mother.breed ?? "",
-          name: null,
-          color: null,
-          dateOfBirth,
-          birthWeight: null,
-          easeOfBirth: null,
-          sireId: null,
-          sireName: null,
-          damId: mother.id,
-          damName: null,
-          hasCalf: false,
-          healthStatus: "Healthy",
-          heatStatus: null,
-          pregnancyStatus: "N/A",
-          purchaseDate: null,
-          saleDate: null,
-          purchasePrice: null,
-          salePrice: null,
-          notes: null,
-        });
-        return createdCalf;
-      } catch (err) {
-        const apiErr = err as ApiError;
-
-        if (apiErr?.status === 409) {
-          continue;
-        }
-
-        throw err;
-      }
-    }
-
-    throw new Error("Failed to generate a unique calf tag number.");
+    return createCalf(mother.id);
   }
 
   async function handleConfirmAddCalfStart() {

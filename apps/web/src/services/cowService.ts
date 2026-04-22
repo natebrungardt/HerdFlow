@@ -146,6 +146,14 @@ export async function createCow(cowData: CreateCowInput): Promise<Cow> {
   return response.json();
 }
 
+export async function createCalf(damId: string): Promise<Cow> {
+  const response = await apiFetch(`/cows/${damId}/calves`, {
+    method: "POST",
+  });
+
+  return response.json();
+}
+
 export async function getCowById(id: string): Promise<Cow> {
   const response = await apiFetch(`/cows/${id}`);
   return response.json();

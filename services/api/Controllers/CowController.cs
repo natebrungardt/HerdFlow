@@ -57,6 +57,13 @@ public class CowController : ControllerBase
         return Ok(cow);
     }
 
+    [HttpPost("{id:guid}/calves")]
+    public async Task<IActionResult> CreateCalf(Guid id)
+    {
+        var calf = await _cowService.CreateCalfForDamAsync(id);
+        return Ok(calf);
+    }
+
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> DeleteCow(Guid id)
     {

@@ -10,12 +10,14 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 using System.Globalization;
 using System.Text;
+using System.Linq;
 
 namespace HerdFlow.Api.Services;
 
 public class CowService
 {
     private static readonly Regex TagNumberPattern = new("^[A-Za-z0-9-]+$");
+    private const int MaxCreateCowAttempts = 5;
     private readonly AppDbContext _context;
     private readonly ActivityLogService _activityLogService;
     private readonly CowChangeLogService _cowChangeLogService;
@@ -168,54 +170,47 @@ public class CowService
         var userId = GetCurrentUserId();
         await EnsureTagNumberIsUniqueAsync(normalizedTagNumber, userId);
         await ValidateParentReferencesAsync(dto.SireId, dto.DamId);
+        return await CreateCowRecordAsync(BuildCow(userId, dto, normalizedTagNumber));
+    }
 
-        var cow = new Cow
-        {
-            UserId = userId,
-            TagNumber = normalizedTagNumber,
-            OwnerName = dto.OwnerName,
-            LivestockGroup = dto.LivestockGroup,
-            Sex = dto.Sex,
-            Breed = dto.Breed,
-            Name = NormalizeOptionalText(dto.Name),
-            Color = NormalizeOptionalText(dto.Color),
-            DateOfBirth = dto.DateOfBirth,
-            BirthWeight = dto.BirthWeight,
-            EaseOfBirth = NormalizeOptionalText(dto.EaseOfBirth),
-            SireId = dto.SireId,
-            SireName = dto.SireId is not null ? null : NormalizeOptionalText(dto.SireName),
-            DamId = dto.DamId,
-            DamName = dto.DamId is not null ? null : NormalizeOptionalText(dto.DamName),
-            HealthStatus = dto.HealthStatus,
-            HeatStatus = dto.HeatStatus,
-            PregnancyStatus = NormalizePregnancyStatus(dto.PregnancyStatus),
-            HasCalf = dto.HasCalf,
-            PurchasePrice = dto.PurchasePrice,
-            SalePrice = dto.SalePrice,
-            PurchaseDate = dto.PurchaseDate,
-            SaleDate = dto.SaleDate,
-        };
-        _context.Cows.Add(cow);
-        try
-        {
-            await _context.SaveChangesAsync();
-        }
-        catch (DbUpdateException ex) when (WasDuplicatePrimaryKeyInsert(ex))
-        {
-            var existingCow = await _context.Cows.FirstOrDefaultAsync(c => c.Id == cow.Id && c.UserId == userId);
+    public async Task<CowResponseDto> CreateCalfForDamAsync(Guid damId)
+    {
+        var dam = await FindCowAsync(damId);
+        var userId = dam.UserId;
+        var currentYear = DateTime.UtcNow.Year;
+        var baseTagNumber = $"{dam.TagNumber}-{currentYear}";
+        var nextTagNumber = await GetNextCalfTagNumberAsync(userId, baseTagNumber);
 
-            if (existingCow is not null)
+        var calf = BuildCow(
+            userId,
+            new CreateCowDto
             {
-                var existingCowWithParents = await FindCowWithParentsAsync(existingCow.Id, asNoTracking: true);
-                return MapCowResponse(existingCowWithParents);
-            }
+                TagNumber = nextTagNumber,
+                OwnerName = dam.OwnerName,
+                LivestockGroup = LivestockGroupType.Calf,
+                Sex = string.Empty,
+                Breed = dam.Breed ?? string.Empty,
+                Name = null,
+                Color = null,
+                DateOfBirth = DateOnly.FromDateTime(DateTime.UtcNow),
+                BirthWeight = null,
+                EaseOfBirth = null,
+                SireId = null,
+                SireName = null,
+                DamId = dam.Id,
+                DamName = null,
+                HealthStatus = HealthStatusType.Healthy,
+                HeatStatus = null,
+                PregnancyStatus = "N/A",
+                HasCalf = false,
+                PurchaseDate = null,
+                SaleDate = null,
+                PurchasePrice = null,
+                SalePrice = null,
+            },
+            nextTagNumber);
 
-            throw;
-        }
-
-        await _activityLogService.LogAsync(cow.Id, "Cow record created");
-        var createdCow = await FindCowWithParentsAsync(cow.Id, asNoTracking: true);
-        return MapCowResponse(createdCow);
+        return await CreateCowRecordWithGeneratedTagAsync(calf, baseTagNumber, userId);
     }
 
     public async Task ArchiveCowAsync(Guid id)
@@ -424,6 +419,138 @@ public class CowService
         return exception.InnerException is PostgresException postgresException
             && postgresException.SqlState == PostgresErrorCodes.UniqueViolation
             && postgresException.ConstraintName == "PK_Cows";
+    }
+
+    private static bool WasDuplicateTagNumberInsert(DbUpdateException exception)
+    {
+        return exception.InnerException is PostgresException postgresException
+            && postgresException.SqlState == PostgresErrorCodes.UniqueViolation
+            && postgresException.ConstraintName == "IX_Cows_UserId_TagNumber";
+    }
+
+    private Cow BuildCow(string userId, CreateCowDto dto, string normalizedTagNumber)
+    {
+        return new Cow
+        {
+            UserId = userId,
+            TagNumber = normalizedTagNumber,
+            OwnerName = dto.OwnerName,
+            LivestockGroup = dto.LivestockGroup,
+            Sex = dto.Sex,
+            Breed = dto.Breed,
+            Name = NormalizeOptionalText(dto.Name),
+            Color = NormalizeOptionalText(dto.Color),
+            DateOfBirth = dto.DateOfBirth,
+            BirthWeight = dto.BirthWeight,
+            EaseOfBirth = NormalizeOptionalText(dto.EaseOfBirth),
+            SireId = dto.SireId,
+            SireName = dto.SireId is not null ? null : NormalizeOptionalText(dto.SireName),
+            DamId = dto.DamId,
+            DamName = dto.DamId is not null ? null : NormalizeOptionalText(dto.DamName),
+            HealthStatus = dto.HealthStatus,
+            HeatStatus = dto.HeatStatus,
+            PregnancyStatus = NormalizePregnancyStatus(dto.PregnancyStatus),
+            HasCalf = dto.HasCalf,
+            PurchasePrice = dto.PurchasePrice,
+            SalePrice = dto.SalePrice,
+            PurchaseDate = dto.PurchaseDate,
+            SaleDate = dto.SaleDate,
+        };
+    }
+
+    private async Task<CowResponseDto> CreateCowRecordAsync(Cow cow)
+    {
+        _context.Cows.Add(cow);
+        try
+        {
+            await _context.SaveChangesAsync();
+        }
+        catch (DbUpdateException ex) when (WasDuplicatePrimaryKeyInsert(ex))
+        {
+            var existingCow = await _context.Cows.FirstOrDefaultAsync(c => c.Id == cow.Id && c.UserId == cow.UserId);
+
+            if (existingCow is not null)
+            {
+                var existingCowWithParents = await FindCowWithParentsAsync(existingCow.Id, asNoTracking: true);
+                return MapCowResponse(existingCowWithParents);
+            }
+
+            throw;
+        }
+        catch (DbUpdateException ex) when (WasDuplicateTagNumberInsert(ex))
+        {
+            throw new ConflictException("Tag number already exists.");
+        }
+
+        await _activityLogService.LogAsync(cow.Id, "Cow record created");
+        var createdCow = await FindCowWithParentsAsync(cow.Id, asNoTracking: true);
+        return MapCowResponse(createdCow);
+    }
+
+    private async Task<CowResponseDto> CreateCowRecordWithGeneratedTagAsync(Cow calf, string baseTagNumber, string userId)
+    {
+        for (var attempt = 0; attempt < MaxCreateCowAttempts; attempt += 1)
+        {
+            try
+            {
+                return await CreateCowRecordAsync(calf);
+            }
+            catch (ConflictException) when (attempt < MaxCreateCowAttempts - 1)
+            {
+                _context.Entry(calf).State = EntityState.Detached;
+                calf.TagNumber = await GetNextCalfTagNumberAsync(userId, baseTagNumber);
+            }
+        }
+
+        throw new ConflictException("Unable to generate a unique calf tag number.");
+    }
+
+    private async Task<string> GetNextCalfTagNumberAsync(string userId, string baseTagNumber)
+    {
+        var existingTagNumbers = await _context.Cows
+            .AsNoTracking()
+            .Where(c => c.UserId == userId &&
+                (c.TagNumber == baseTagNumber || EF.Functions.Like(c.TagNumber, $"{baseTagNumber}-%")))
+            .Select(c => c.TagNumber)
+            .ToListAsync();
+
+        if (!existingTagNumbers.Contains(baseTagNumber))
+        {
+            return baseTagNumber;
+        }
+
+        var suffixes = existingTagNumbers
+            .Select(tagNumber => TryGetCalfTagSuffix(baseTagNumber, tagNumber))
+            .Where(suffix => suffix.HasValue)
+            .Select(suffix => suffix!.Value)
+            .ToHashSet();
+
+        var nextSuffix = 1;
+        while (suffixes.Contains(nextSuffix))
+        {
+            nextSuffix += 1;
+        }
+
+        return $"{baseTagNumber}-{nextSuffix}";
+    }
+
+    private static int? TryGetCalfTagSuffix(string baseTagNumber, string tagNumber)
+    {
+        if (tagNumber == baseTagNumber)
+        {
+            return 0;
+        }
+
+        var prefix = $"{baseTagNumber}-";
+        if (!tagNumber.StartsWith(prefix, StringComparison.Ordinal))
+        {
+            return null;
+        }
+
+        var suffix = tagNumber[prefix.Length..];
+        return int.TryParse(suffix, NumberStyles.None, CultureInfo.InvariantCulture, out var value)
+            ? value
+            : null;
     }
 
     private static string FormatDate(DateOnly? date)
