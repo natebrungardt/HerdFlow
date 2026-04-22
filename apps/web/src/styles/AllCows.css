@@ -1,5 +1,5 @@
 .allCowsShell {
-  padding: 24px;
+  padding: var(--space-5);
 }
 
 .allCowsContent {
@@ -11,8 +11,8 @@
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 22px;
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
 }
 
 .titleBlock {
@@ -28,14 +28,14 @@
 }
 
 .pageSubtitle {
-  margin: 8px 0 0;
+  margin: var(--space-2) 0 0;
   color: var(--text-placeholder);
   font-size: 0.96rem;
 }
 
 .dashboardFarmName,
 .dashboardFarmFallback {
-  margin: 0 0 8px;
+  margin: 0 0 var(--space-2);
   line-height: 1.2;
 }
 
@@ -56,7 +56,7 @@
 .addCowButton {
   border: none;
   border-radius: 12px;
-  padding: 12px 18px;
+  padding: 12px 16px;
   min-width: 140px;
   background: linear-gradient(180deg, #6ea97f 0%, #4c7a5b 100%);
   color: #ffffff;
@@ -83,18 +83,18 @@
 .toolbarCard,
 .statsCard,
 .cowListCard {
-  padding: 18px;
+  padding: var(--space-4);
 }
 
 .toolbarCard {
-  margin-bottom: 18px;
+  margin-bottom: var(--space-4);
 }
 
 .searchInput {
   width: 100%;
   height: 48px;
   border-radius: 14px;
-  padding: 0 14px;
+  padding: 0 var(--space-3);
   box-sizing: border-box;
   font-size: 0.95rem;
   outline: none;
@@ -120,12 +120,12 @@
 .filterRow {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
-  margin-top: 16px;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
 }
 
 .workdayFilterRow {
-  margin-bottom: 8px;
+  margin-bottom: var(--space-2);
 }
 
 .filterChip {
@@ -133,7 +133,7 @@
   background: var(--surface-faint);
   color: var(--text-primary);
   border-radius: 999px;
-  padding: 10px 17px;
+  padding: 10px 16px;
   font-weight: 600;
   font-size: 0.92rem;
   cursor: pointer;
@@ -162,8 +162,8 @@
 .statsGrid {
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
-  gap: 14px;
-  margin-bottom: 14px;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
 }
 
 .herdStatsGrid {
@@ -173,8 +173,8 @@
 .dashboardQuickActions {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 14px;
-  margin-bottom: 14px;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
 }
 
 .dashboardQuickActions .addCowButton {
@@ -188,14 +188,14 @@
 .dashboardSplitGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
-  margin-bottom: 14px;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
 }
 
 .dashboardList {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 .dashboardListScrollable {
@@ -329,7 +329,7 @@
 .cowListCard {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: var(--space-3);
   border-color: var(--shell-border);
 }
 
@@ -337,7 +337,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: var(--space-3);
   margin-bottom: 4px;
 }
 
@@ -357,8 +357,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 18px;
-  padding: 14px 18px;
+  gap: var(--space-4);
+  padding: var(--space-3) var(--space-4);
   cursor: pointer;
   transition:
     transform 0.18s ease,
@@ -499,7 +499,7 @@
   display: flex;
   align-items: center;
   align-self: center;
-  gap: 12px;
+  gap: var(--space-3);
   flex: 0 0 auto;
   min-width: max-content;
   justify-content: flex-end;
@@ -537,7 +537,7 @@
 .workdayCreateLayout {
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: var(--space-4);
   min-width: 0;
 }
 
@@ -545,7 +545,7 @@
 .workday-actions {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-3);
   flex-wrap: wrap;
 }
 
@@ -553,23 +553,23 @@
 .workday-container {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 16px;
+  gap: var(--space-4);
   align-items: stretch;
 }
 
 .workdaySetupColumn {
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: var(--space-4);
   min-width: 0;
   height: 100%;
 }
 
 .workdayWorkspacePanel {
-  padding: 18px;
+  padding: var(--space-4);
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: var(--space-3);
   min-height: 0;
   min-width: 0;
 }
@@ -577,13 +577,13 @@
 .workdayCreateTopGrid {
   display: grid;
   grid-template-columns: minmax(0, 1.5fr) minmax(320px, 1fr);
-  gap: 18px;
+  gap: var(--space-4);
 }
 
 .workdaySetupGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 18px;
+  gap: var(--space-4);
 }
 
 .workdayCreateTopGridSingle {
@@ -592,7 +592,7 @@
 
 .workdayComposerCard,
 .workdaySelectedSummaryCard {
-  padding: 18px;
+  padding: var(--space-4);
 }
 
 .workdayComposerCard {
@@ -604,7 +604,7 @@
 .workdaySelectedSummaryCard {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--space-3);
   min-height: 100%;
 }
 
@@ -636,7 +636,7 @@
 .workdayComposerForm {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--space-3);
   flex: 1;
 }
 
@@ -653,6 +653,7 @@
 .workdayNotesSection {
   display: flex;
   flex-direction: column;
+  gap: var(--space-2);
   flex: 1;
 }
 
@@ -665,7 +666,7 @@
   border: 1px solid var(--input-border);
   background: var(--surface-subtle);
   color: var(--text-primary);
-  padding: 14px;
+  padding: var(--space-3);
   box-sizing: border-box;
   font-size: 0.95rem;
   outline: none;
@@ -684,7 +685,7 @@
 .workdayComposerActions {
   display: flex;
   justify-content: flex-end;
-  gap: 12px;
+  gap: var(--space-3);
   margin-top: auto;
   padding-top: 4px;
 }
@@ -692,7 +693,7 @@
 .workdaySecondaryButton {
   border: 1px solid var(--card-border);
   border-radius: 12px;
-  padding: 12px 18px;
+  padding: 12px 16px;
   min-width: 120px;
   background: var(--surface-faint);
   color: var(--text-primary);
@@ -712,7 +713,7 @@
 
 .workdaySelectionPills {
   display: grid;
-  gap: 10px;
+  gap: var(--space-2);
   max-height: 480px;
   overflow-y: auto;
   padding-right: 6px;
@@ -778,7 +779,7 @@
 .workdayActionComposer,
 .action-input-row {
   display: flex;
-  gap: 8px;
+  gap: var(--space-2);
   align-items: center;
   flex-wrap: wrap;
 }
@@ -786,13 +787,13 @@
 .workdayWorkspaceHeader {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--space-2);
 }
 
 .workdayWorkspaceHeaderRow {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-3);
   min-width: 0;
 }
 
@@ -800,7 +801,7 @@
 .action-input-row {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
   flex: 1;
   min-width: 0;
   flex-wrap: wrap;
@@ -808,7 +809,7 @@
 
 .workdayWorkspaceSubtitle {
   display: block;
-  margin-top: 6px;
+  margin-top: var(--space-2);
 }
 
 .workdayWorkspaceInput,
@@ -816,14 +817,14 @@
   flex: 1;
   min-width: 150px;
   height: 44px;
-  padding: 0 12px;
+  padding: 0 var(--space-3);
 }
 
 .workdayActionAddButton {
   min-width: 140px;
   width: auto;
   height: 44px;
-  padding: 0 18px;
+  padding: 0 16px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -851,13 +852,13 @@
 .workdayWorkspaceChips {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: var(--space-2);
   align-items: flex-start;
 }
 
 .action-tags-container {
   --action-chip-row-height: 42px;
-  --action-chip-gap: 8px;
+  --action-chip-gap: var(--space-2);
   height: calc((var(--action-chip-row-height) * 2) + (var(--action-chip-gap) * 2) + (var(--action-chip-row-height) / 2));
   overflow-y: auto;
   padding-right: 4px;
@@ -873,10 +874,10 @@
 .workdayActionChip {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--space-2);
   min-height: 42px;
   max-width: 190px;
-  padding: 8px 10px 8px 14px;
+  padding: 8px 12px;
   border-radius: 999px;
   border: 1px solid var(--card-border);
   background: var(--surface-subtle);
@@ -942,18 +943,18 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 .workdayWorkspaceCowList {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: var(--space-2);
 }
 
 .cow-list-container {
   --cow-card-height: 104px;
-  --cow-list-gap: 10px;
+  --cow-list-gap: var(--space-2);
   height: calc((var(--cow-card-height) * 5) + (var(--cow-list-gap) * 4));
   display: flex;
   flex-direction: column;
@@ -970,9 +971,9 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  gap: var(--space-3);
   min-width: 0;
-  padding: 14px 18px;
+  padding: var(--space-3) var(--space-4);
   border-radius: 14px;
   border: 1px solid var(--card-border);
   background: var(--surface-subtle);
@@ -1016,7 +1017,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 18px;
+  gap: var(--space-4);
   width: 100%;
   min-width: 0;
   border: 1px solid var(--card-border);
@@ -1325,14 +1326,14 @@
 
 /* Device tuning: phone 390, tablet 768, desktop 1024 */
 .allCowsShell {
-  padding: 16px;
+  padding: var(--space-4);
 }
 
 .allCowsHeader {
   flex-direction: column;
   align-items: stretch;
-  gap: 12px;
-  margin-bottom: 16px;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
 }
 
 .pageTitle {
@@ -1354,14 +1355,14 @@
 .cowListCard,
 .workdayComposerCard,
 .workdaySelectedSummaryCard {
-  padding: 16px;
+  padding: var(--space-4);
 }
 
 .toolbarCard,
 .statsGrid,
 .dashboardQuickActions,
 .dashboardSplitGrid {
-  margin-bottom: 12px;
+  margin-bottom: var(--space-3);
 }
 
 .searchInput {
@@ -1377,7 +1378,7 @@
 }
 
 .cowListCard {
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 .sectionHeader {
@@ -1388,8 +1389,8 @@
 .cowRowCard {
   flex-direction: column;
   align-items: stretch;
-  gap: 12px;
-  padding: 16px;
+  gap: var(--space-3);
+  padding: var(--space-4);
 }
 
 .cowRowTitle {
@@ -1448,7 +1449,7 @@
 
 @media (max-width: 430px) {
   .allCowsShell {
-    padding: 14px;
+    padding: var(--space-3);
   }
 
   .pageTitle {
@@ -1464,15 +1465,15 @@
   .cowListCard,
   .workdayComposerCard,
   .workdaySelectedSummaryCard {
-    padding: 14px;
+    padding: var(--space-3);
   }
 
   .statsGrid {
-    gap: 10px;
+    gap: var(--space-2);
   }
 
   .cowRowCard {
-    padding: 14px;
+    padding: var(--space-3);
   }
 
   .cowRowDetailLabel {
@@ -1486,7 +1487,7 @@
 
 @media (min-width: 768px) {
   .allCowsShell {
-    padding: 20px;
+    padding: var(--space-5);
   }
 
   .pageTitle {
@@ -1527,15 +1528,15 @@
 
 @media (min-width: 1024px) {
   .allCowsShell {
-    padding: 24px;
+    padding: var(--space-5);
   }
 
   .allCowsHeader {
     flex-direction: row;
     align-items: flex-start;
     justify-content: space-between;
-    gap: 16px;
-    margin-bottom: 22px;
+    gap: var(--space-4);
+    margin-bottom: var(--space-5);
   }
 
   .pageTitle {
@@ -1551,7 +1552,7 @@
   .cowListCard,
   .workdayComposerCard,
   .workdaySelectedSummaryCard {
-    padding: 18px;
+    padding: var(--space-4);
   }
 
   .statsGrid {
@@ -1574,8 +1575,8 @@
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
-    gap: 18px;
-    padding: 20px;
+    gap: var(--space-4);
+    padding: var(--space-4);
   }
 
   .cowRowTitle {

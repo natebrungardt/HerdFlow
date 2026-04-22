@@ -1,5 +1,14 @@
 :root,
 :root[data-theme="dark"] {
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-7: 28px;
+  --space-8: 32px;
+  --content-max-width: 1200px;
   --color-bg: #0c0d0d;
   --color-surface: #151717;
   --color-surface-hover: #1d2020;
@@ -172,7 +181,7 @@ img {
 .app-container {
   max-width: var(--max-width);
   margin: 0 auto;
-  padding: var(--space-xl);
+  padding: var(--space-6);
 }
 
 /* Reusable card */
@@ -187,7 +196,7 @@ img {
 /* Reusable buttons */
 .btn {
   border-radius: 8px;
-  padding: 12px 18px;
+  padding: 12px 16px;
   font-weight: 600;
   font-size: 14px;
   cursor: pointer;
@@ -203,7 +212,7 @@ img {
 .btn-primary {
   background-color: #4caf50;
   color: #ffffff;
-  padding: 12px 18px;
+  padding: 12px 16px;
   font-weight: 600;
 }
 
@@ -223,11 +232,11 @@ img {
 .btn-outline {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--space-2);
   background-color: #ffffff;
   border: 1px solid #d1d5db;
   color: #374151;
-  padding: 10px 14px;
+  padding: 10px 12px;
   font-weight: 500;
   border-radius: 8px;
   transition: all 0.15s ease;
@@ -1545,9 +1554,9 @@ img {
 /* Shared layout containers */
 :is(.cowDetailPage, .allCowsPage) {
   width: 100%;
-  max-width: 1280px;
+  max-width: var(--content-max-width);
   margin: 0 auto;
-  padding: 28px 24px 40px;
+  padding: var(--space-6) var(--space-5) var(--space-8);
   box-sizing: border-box;
 }
 
@@ -1557,7 +1566,7 @@ img {
   background: var(--shell-bg);
   border: 1px solid var(--shell-border);
   border-radius: 24px;
-  padding: 24px;
+  padding: var(--space-5);
   box-shadow: var(--shell-shadow);
 }
 
