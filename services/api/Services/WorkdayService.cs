@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Npgsql;
 using System.Security.Claims;
 using HerdFlow.Api.Models.Enums;
+using System.Diagnostics;
 
 namespace HerdFlow.Api.Services;
 
@@ -14,11 +15,16 @@ public class WorkdayService
 {
     private readonly AppDbContext _context;
     private readonly IHttpContextAccessor _httpContextAccessor;
+    private readonly ILogger<WorkdayService> _logger;
 
-    public WorkdayService(AppDbContext context, IHttpContextAccessor httpContextAccessor)
+    public WorkdayService(
+        AppDbContext context,
+        IHttpContextAccessor httpContextAccessor,
+        ILogger<WorkdayService> logger)
     {
         _context = context;
         _httpContextAccessor = httpContextAccessor;
+        _logger = logger;
     }
 
     // CREATE
@@ -80,26 +86,36 @@ public class WorkdayService
     // READ - By Id (with cows + notes)
     public async Task<Workday> GetWorkdayById(Guid id)
     {
+        var stopwatch = Stopwatch.StartNew();
         var userId = GetCurrentUserId();
+        _logger.LogInformation("WorkdayService.GetWorkdayById loading workday {WorkdayId}", id);
         var workday = await _context.Workdays
             .Include(w => w.WorkdayCows)
                 .ThenInclude(wc => wc.Cow)
             .Include(w => w.WorkdayNotes)
             .Include(w => w.Actions)
-            .Include(w => w.Entries)
             .FirstOrDefaultAsync(w => w.Id == id && w.UserId == userId);
+        _logger.LogInformation(
+            "WorkdayService.GetWorkdayById loaded workday {WorkdayId} in {ElapsedMilliseconds}ms",
+            id,
+            stopwatch.ElapsedMilliseconds);
 
         return workday ?? throw new NotFoundException("Workday not found.");
     }
 
     public async Task AddCowsToWorkday(Guid id, List<Guid> cowIds)
     {
+        var stopwatch = Stopwatch.StartNew();
         if (cowIds == null)
         {
             throw new ValidationException("cowIds is required.");
         }
 
         var userId = GetCurrentUserId();
+        _logger.LogInformation(
+            "WorkdayService.AddCowsToWorkday starting for workday {WorkdayId} with {CowCount} cows",
+            id,
+            cowIds.Count);
         var workdayExists = await _context.Workdays
             .AnyAsync(w => w.Id == id && w.UserId == userId);
 
@@ -117,6 +133,7 @@ public class WorkdayService
             return;
         }
 
+        _logger.LogInformation("WorkdayService.AddCowsToWorkday loading existing cows for workday {WorkdayId}", id);
         var existingCowIds = await _context.WorkdayCows
             .Where(wc => wc.WorkdayId == id)
             .Select(wc => wc.CowId)
@@ -148,6 +165,7 @@ public class WorkdayService
 
         _context.WorkdayCows.AddRange(assignments);
 
+        _logger.LogInformation("WorkdayService.AddCowsToWorkday loading actions for workday {WorkdayId}", id);
         var actionIds = await _context.WorkdayActions
             .Where(action => action.WorkdayId == id)
             .Select(action => action.Id)
@@ -169,7 +187,12 @@ public class WorkdayService
 
         try
         {
+            _logger.LogInformation("WorkdayService.AddCowsToWorkday before SaveChangesAsync for workday {WorkdayId}", id);
             await _context.SaveChangesAsync();
+            _logger.LogInformation(
+                "WorkdayService.AddCowsToWorkday after SaveChangesAsync for workday {WorkdayId} in {ElapsedMilliseconds}ms",
+                id,
+                stopwatch.ElapsedMilliseconds);
         }
         catch (DbUpdateException ex)
         {
@@ -192,7 +215,12 @@ public class WorkdayService
 
     public async Task RemoveCowFromWorkday(Guid id, Guid cowId)
     {
+        var stopwatch = Stopwatch.StartNew();
         var userId = GetCurrentUserId();
+        _logger.LogInformation(
+            "WorkdayService.RemoveCowFromWorkday starting for workday {WorkdayId} and cow {CowId}",
+            id,
+            cowId);
         var workdayCow = await _context.WorkdayCows
             .Include(wc => wc.Workday)
             .FirstOrDefaultAsync(wc =>
@@ -217,7 +245,16 @@ public class WorkdayService
 
         _context.WorkdayEntries.RemoveRange(entries);
         _context.WorkdayCows.Remove(workdayCow);
+        _logger.LogInformation(
+            "WorkdayService.RemoveCowFromWorkday before SaveChangesAsync for workday {WorkdayId} and cow {CowId}",
+            id,
+            cowId);
         await _context.SaveChangesAsync();
+        _logger.LogInformation(
+            "WorkdayService.RemoveCowFromWorkday after SaveChangesAsync for workday {WorkdayId} and cow {CowId} in {ElapsedMilliseconds}ms",
+            id,
+            cowId,
+            stopwatch.ElapsedMilliseconds);
     }
 
     public async Task UpdateCowWorkdayStatus(Guid id, Guid cowId, bool isWorked)
@@ -241,14 +278,20 @@ public class WorkdayService
 
     public async Task<WorkdayAction> AddActionToWorkday(Guid workdayId, string actionName)
     {
+        var stopwatch = Stopwatch.StartNew();
         if (string.IsNullOrWhiteSpace(actionName))
         {
             throw new ValidationException("Action name is required.");
         }
 
+        _logger.LogInformation(
+            "WorkdayService.AddActionToWorkday starting for workday {WorkdayId} with action {ActionName}",
+            workdayId,
+            actionName);
         var workday = await FindWorkdayAsync(workdayId);
         var normalizedName = actionName.Trim();
 
+        _logger.LogInformation("WorkdayService.AddActionToWorkday checking duplicates for workday {WorkdayId}", workdayId);
         var exists = await _context.WorkdayActions
             .AnyAsync(a =>
                 a.WorkdayId == workdayId &&
@@ -267,6 +310,7 @@ public class WorkdayService
 
         _context.WorkdayActions.Add(action);
 
+        _logger.LogInformation("WorkdayService.AddActionToWorkday loading cows for workday {WorkdayId}", workdayId);
         var cowIds = await _context.WorkdayCows
             .Where(wc => wc.WorkdayId == workdayId)
             .Select(wc => wc.CowId)
@@ -285,13 +329,23 @@ public class WorkdayService
             _context.WorkdayEntries.AddRange(entries);
         }
 
+        _logger.LogInformation("WorkdayService.AddActionToWorkday before SaveChangesAsync for workday {WorkdayId}", workdayId);
         await _context.SaveChangesAsync();
+        _logger.LogInformation(
+            "WorkdayService.AddActionToWorkday after SaveChangesAsync for workday {WorkdayId} in {ElapsedMilliseconds}ms",
+            workdayId,
+            stopwatch.ElapsedMilliseconds);
         return action;
     }
 
     public async Task RemoveActionFromWorkday(Guid workdayId, Guid actionId)
     {
+        var stopwatch = Stopwatch.StartNew();
         var userId = GetCurrentUserId();
+        _logger.LogInformation(
+            "WorkdayService.RemoveActionFromWorkday starting for workday {WorkdayId} and action {ActionId}",
+            workdayId,
+            actionId);
         var action = await _context.WorkdayActions
             .Include(existingAction => existingAction.Workday)
             .FirstOrDefaultAsync(existingAction =>
@@ -313,7 +367,16 @@ public class WorkdayService
         }
 
         _context.WorkdayActions.Remove(action);
+        _logger.LogInformation(
+            "WorkdayService.RemoveActionFromWorkday before SaveChangesAsync for workday {WorkdayId} and action {ActionId}",
+            workdayId,
+            actionId);
         await _context.SaveChangesAsync();
+        _logger.LogInformation(
+            "WorkdayService.RemoveActionFromWorkday after SaveChangesAsync for workday {WorkdayId} and action {ActionId} in {ElapsedMilliseconds}ms",
+            workdayId,
+            actionId,
+            stopwatch.ElapsedMilliseconds);
     }
 
     public async Task ToggleEntry(Guid workdayId, Guid cowId, Guid actionId)

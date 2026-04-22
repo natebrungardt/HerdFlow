@@ -42,7 +42,7 @@ function WorkdayComposerCard({
   onCancel,
 }: WorkdayComposerCardProps) {
   return (
-    <div className="card workdayComposerCard">
+    <div className="card workdayComposerCard flex flex-col h-[580px] overflow-hidden">
       <div className="sectionHeader">
         <div>
           <h2 className="sectionTitle">{heading}</h2>

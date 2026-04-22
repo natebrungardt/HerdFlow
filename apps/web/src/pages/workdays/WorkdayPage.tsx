@@ -45,6 +45,10 @@ function normalizeWorkdayDetails(details: {
   };
 }
 
+function logWorkdayMutation(step: string, details: Record<string, unknown>) {
+  console.info(`[WorkdayPage] ${step}`, details);
+}
+
 function WorkdayPage() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -52,7 +56,6 @@ function WorkdayPage() {
   const [title, setTitle] = useState("");
   const [date, setDate] = useState("");
   const [summary, setSummary] = useState("");
-  const [actions, setActions] = useState<WorkdayAction[]>([]);
   const [actionName, setActionName] = useState("");
   const [allCows, setAllCows] = useState<Cow[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -105,7 +108,6 @@ function WorkdayPage() {
         ]);
 
         setWorkday(workdayData);
-        setActions(workdayData.actions ?? []);
         setTitle(workdayData.title);
         setDate(formatDateInput(workdayData.date));
         setSummary(workdayData.summary ?? "");
@@ -184,7 +186,7 @@ function WorkdayPage() {
   const canStartWorkday =
     workday?.status !== "Completed" &&
     (workday?.workdayCows?.length ?? 0) > 0 &&
-    actions.length > 0;
+    (workday?.actions?.length ?? 0) > 0;
   const hasUnsavedChanges = useMemo(() => {
     if (!workday) {
       return false;
@@ -232,13 +234,99 @@ function WorkdayPage() {
 
   async function refreshWorkday() {
     if (!id) return;
+    const startedAt = performance.now();
+    logWorkdayMutation("refresh:start", { workdayId: id });
     const data = await getWorkdayById(id);
+    logWorkdayMutation("refresh:response", {
+      workdayId: id,
+      elapsedMs: Math.round(performance.now() - startedAt),
+      actionCount: data.actions?.length ?? 0,
+      assignedCowCount: data.workdayCows?.length ?? 0,
+    });
     setWorkday(data);
-    setActions(data.actions ?? []);
     setTitle(data.title);
     setDate(formatDateInput(data.date));
     setSummary(data.summary ?? "");
     setSaveStatus("Saved");
+  }
+
+  function appendAssignedCow(cowId: string) {
+    const cow = allCows.find((candidate) => candidate.id === cowId);
+    if (!cow) {
+      return false;
+    }
+
+    setWorkday((current) => {
+      if (!current) {
+        return current;
+      }
+
+      if (current.workdayCows?.some((assignment) => assignment.cowId === cowId)) {
+        return current;
+      }
+
+      return {
+        ...current,
+        workdayCows: [
+          ...(current.workdayCows ?? []),
+          {
+            id: `temp-${cowId}`,
+            workdayId: current.id,
+            cowId,
+            status: null,
+            cow,
+          },
+        ],
+      };
+    });
+
+    return true;
+  }
+
+  function removeAssignedCow(cowId: string) {
+    setWorkday((current) => {
+      if (!current) {
+        return current;
+      }
+
+      return {
+        ...current,
+        workdayCows: (current.workdayCows ?? []).filter(
+          (assignment) => assignment.cowId !== cowId,
+        ),
+      };
+    });
+  }
+
+  function appendAction(action: WorkdayAction) {
+    setWorkday((current) => {
+      if (!current) {
+        return current;
+      }
+
+      const nextActions = [...(current.actions ?? []), action];
+      return {
+        ...current,
+        actions: nextActions,
+      };
+    });
+  }
+
+  function removeAction(actionId: string) {
+    setWorkday((current) => {
+      if (!current) {
+        return current;
+      }
+
+      const nextActions = (current.actions ?? []).filter(
+        (action) => action.id !== actionId,
+      );
+
+      return {
+        ...current,
+        actions: nextActions,
+      };
+    });
   }
 
   async function handleSaveDetails() {
@@ -309,12 +397,20 @@ function WorkdayPage() {
       return;
     }
 
+    const startedAt = performance.now();
+    logWorkdayMutation("addCow:start", { workdayId: workday.id, cowId });
     setAddingCowIds((current) => [...current, cowId]);
     setError("");
 
     try {
       await addCowsToWorkday(workday.id, [cowId]);
-      await refreshWorkday();
+      logWorkdayMutation("addCow:mutationResponse", {
+        workdayId: workday.id,
+        cowId,
+        elapsedMs: Math.round(performance.now() - startedAt),
+      });
+      appendAssignedCow(cowId);
+      void refreshWorkday();
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Failed to add cows to workday";
@@ -323,19 +419,32 @@ function WorkdayPage() {
       setAddingCowIds((current) =>
         current.filter((currentCowId) => currentCowId !== cowId),
       );
+      logWorkdayMutation("addCow:done", {
+        workdayId: workday.id,
+        cowId,
+        elapsedMs: Math.round(performance.now() - startedAt),
+      });
     }
   }
 
   async function handleRemoveCow(cowId: string) {
     if (!workday) return;
 
+    const startedAt = performance.now();
+    logWorkdayMutation("removeCow:start", { workdayId: workday.id, cowId });
     setError("");
     setRemoveSuccessMessage("");
     setRemovingAssignedCowId(cowId);
 
     try {
       await removeCowFromWorkday(workday.id, cowId);
-      await refreshWorkday();
+      logWorkdayMutation("removeCow:mutationResponse", {
+        workdayId: workday.id,
+        cowId,
+        elapsedMs: Math.round(performance.now() - startedAt),
+      });
+      removeAssignedCow(cowId);
+      void refreshWorkday();
       setRemoveSuccessMessage("Cow removed");
     } catch (err) {
       const message =
@@ -345,45 +454,79 @@ function WorkdayPage() {
       setError(message);
     } finally {
       setRemovingAssignedCowId(null);
+      logWorkdayMutation("removeCow:done", {
+        workdayId: workday.id,
+        cowId,
+        elapsedMs: Math.round(performance.now() - startedAt),
+      });
     }
   }
 
   async function handleAddAction() {
     if (!workday || actionName.trim().length === 0) return;
 
+    const startedAt = performance.now();
+    const trimmedActionName = actionName.trim();
+    logWorkdayMutation("addAction:start", {
+      workdayId: workday.id,
+      actionName: trimmedActionName,
+    });
     setAddingAction(true);
     setActionError("");
     setError("");
 
     try {
-      await addWorkdayAction(workday.id, { name: actionName.trim() });
+      const action = await addWorkdayAction(workday.id, { name: trimmedActionName });
+      logWorkdayMutation("addAction:mutationResponse", {
+        workdayId: workday.id,
+        actionId: action.id,
+        elapsedMs: Math.round(performance.now() - startedAt),
+      });
       setActionName("");
-      await refreshWorkday();
+      appendAction(action);
+      void refreshWorkday();
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Failed to add workday action";
       setActionError(message);
     } finally {
       setAddingAction(false);
+      logWorkdayMutation("addAction:done", {
+        workdayId: workday.id,
+        elapsedMs: Math.round(performance.now() - startedAt),
+      });
     }
   }
 
   async function handleRemoveAction(actionId: string) {
     if (!workday) return;
 
+    const startedAt = performance.now();
+    logWorkdayMutation("removeAction:start", { workdayId: workday.id, actionId });
     setRemovingActionId(actionId);
     setActionError("");
     setError("");
 
     try {
       await removeWorkdayAction(workday.id, actionId);
-      await refreshWorkday();
+      logWorkdayMutation("removeAction:mutationResponse", {
+        workdayId: workday.id,
+        actionId,
+        elapsedMs: Math.round(performance.now() - startedAt),
+      });
+      removeAction(actionId);
+      void refreshWorkday();
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Failed to remove workday action";
       setActionError(message);
     } finally {
       setRemovingActionId(null);
+      logWorkdayMutation("removeAction:done", {
+        workdayId: workday.id,
+        actionId,
+        elapsedMs: Math.round(performance.now() - startedAt),
+      });
     }
   }
 
@@ -503,7 +646,7 @@ function WorkdayPage() {
             </div>
           </div>
 
-          <div className="workdaySetupColumns workday-container">
+          <div className="workdaySetupColumns workday-container items-start">
             <div className="workdaySetupColumn">
               <WorkdayComposerCard
                 title={title}
@@ -529,7 +672,7 @@ function WorkdayPage() {
 
             <div className="workdaySetupColumn">
               <WorkdaySetupWorkspacePanel
-                actions={actions}
+                actions={workday.actions ?? []}
                 actionName={actionName}
                 addError={actionError}
                 addingAction={addingAction}

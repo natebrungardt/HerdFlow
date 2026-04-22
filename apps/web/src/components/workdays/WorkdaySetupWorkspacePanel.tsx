@@ -32,7 +32,7 @@ function WorkdaySetupWorkspacePanel({
   onRemoveCow,
 }: WorkdaySetupWorkspacePanelProps) {
   return (
-    <section className="card workdayWorkspacePanel">
+    <section className="card workdayWorkspacePanel workdayWorkspacePanelTall flex flex-col h-[730px] overflow-hidden">
       <div className="workdayWorkspaceHeader">
         <div className="workdayWorkspaceHeaderRow">
           <h2 className="sectionTitle">Workday Actions</h2>
@@ -69,7 +69,11 @@ function WorkdaySetupWorkspacePanel({
           <p className="emptyState">Add actions to shape this workday.</p>
         ) : (
           actions.map((action) => (
-            <div key={action.id} className="workdayActionChip" title={action.name}>
+            <div
+              key={action.id}
+              className="workdayActionChip"
+              title={action.name}
+            >
               <div className="workdayActionContent">
                 <span className="workdayActionName" title={action.name}>
                   {action.name}
@@ -102,27 +106,31 @@ function WorkdaySetupWorkspacePanel({
         <span className="sectionSubtle">{assignments.length} assigned</span>
       </div>
 
-      <div className="workdayWorkspaceCowListScroll cow-list-container">
+      <div className="workdayWorkspaceCowListViewport flex-1 overflow-y-auto pr-2">
         {assignments.length === 0 ? (
-          <p className="emptyState">No cows have been added to this workday yet.</p>
+          <p className="emptyState">
+            No cows have been added to this workday yet.
+          </p>
         ) : (
           <div className="workdayWorkspaceCowList">
             {assignments.map((assignment) => (
               <div
                 key={assignment.id}
-                className="workdayWorkspaceCowRow cow-card"
+                className="workdayWorkspaceCowRow cowRowCard cow-card"
               >
                 <Link
                   className="workdayWorkspaceCowLink"
                   to={`/cows/${assignment.cow.id}`}
                 >
-                  <span className="workdayWorkspaceCowTag">
-                    Tag #{assignment.cow.tagNumber}
-                  </span>
-                  <span className="workdaySelectionPillMeta">
-                    {assignment.cow.livestockGroup || "Uncategorized"} •{" "}
-                    {assignment.cow.healthStatus || "Unknown health status"}
-                  </span>
+                  <div className="cowRowMain cow-card-content">
+                    <div className="cowRowTitle">
+                      Tag #{assignment.cow.tagNumber}
+                    </div>
+                    <div className="cowRowMeta">
+                      {assignment.cow.livestockGroup || "Uncategorized"} •{" "}
+                      {assignment.cow.healthStatus || "Unknown health status"}
+                    </div>
+                  </div>
                 </Link>
 
                 <button

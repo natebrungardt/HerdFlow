@@ -3,6 +3,7 @@ using HerdFlow.Api.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace HerdFlow.Api.Tests.TestInfrastructure;
 
@@ -45,7 +46,8 @@ internal sealed class ServiceTestContext : IAsyncDisposable
         return new CowService(DbContext, activityLogService, changeLogService, HttpContextAccessor);
     }
 
-    public WorkdayService CreateWorkdayService() => new(DbContext, HttpContextAccessor);
+    public WorkdayService CreateWorkdayService() =>
+        new(DbContext, HttpContextAccessor, NullLogger<WorkdayService>.Instance);
 
     public NoteService CreateNoteService() => new(DbContext, HttpContextAccessor);
 

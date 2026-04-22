@@ -4,6 +4,7 @@ using HerdFlow.Api.DTOs;
 using HerdFlow.Api.Models;
 using HerdFlow.Api.Exceptions;
 using Microsoft.AspNetCore.Authorization;
+using System.Diagnostics;
 
 namespace HerdFlow.Api.Controllers;
 
@@ -13,10 +14,12 @@ namespace HerdFlow.Api.Controllers;
 public class WorkdayController : ControllerBase
 {
     private readonly WorkdayService _service;
+    private readonly ILogger<WorkdayController> _logger;
 
-    public WorkdayController(WorkdayService service)
+    public WorkdayController(WorkdayService service, ILogger<WorkdayController> logger)
     {
         _service = service;
+        _logger = logger;
     }
 
     // POST: api/workdays
@@ -47,7 +50,15 @@ public class WorkdayController : ControllerBase
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<Workday>> GetWorkdayById(Guid id)
     {
+        var stopwatch = Stopwatch.StartNew();
+        _logger.LogInformation("WorkdayController.GetWorkdayById started for workday {WorkdayId}", id);
+        _logger.LogInformation("WorkdayController.GetWorkdayById calling service for workday {WorkdayId}", id);
         var workday = await _service.GetWorkdayById(id);
+        _logger.LogInformation(
+            "WorkdayController.GetWorkdayById service returned for workday {WorkdayId} in {ElapsedMilliseconds}ms",
+            id,
+            stopwatch.ElapsedMilliseconds);
+        _logger.LogInformation("WorkdayController.GetWorkdayById returning response for workday {WorkdayId}", id);
         return Ok(workday);
     }
 
@@ -55,12 +66,20 @@ public class WorkdayController : ControllerBase
     [HttpPost("{id:guid}/cows")]
     public async Task<ActionResult> AddCowsToWorkday(Guid id, [FromBody] UpdateWorkdayCowsDto dto)
     {
+        var stopwatch = Stopwatch.StartNew();
+        _logger.LogInformation("WorkdayController.AddCowsToWorkday started for workday {WorkdayId}", id);
         if (dto == null || dto.CowIds == null)
         {
             throw new ValidationException("cowIds is required.");
         }
 
+        _logger.LogInformation("WorkdayController.AddCowsToWorkday calling service for workday {WorkdayId}", id);
         await _service.AddCowsToWorkday(id, dto.CowIds);
+        _logger.LogInformation(
+            "WorkdayController.AddCowsToWorkday service returned for workday {WorkdayId} in {ElapsedMilliseconds}ms",
+            id,
+            stopwatch.ElapsedMilliseconds);
+        _logger.LogInformation("WorkdayController.AddCowsToWorkday returning response for workday {WorkdayId}", id);
         return NoContent();
     }
 
@@ -70,12 +89,20 @@ public class WorkdayController : ControllerBase
         Guid id,
         [FromBody] CreateWorkdayActionDto dto)
     {
+        var stopwatch = Stopwatch.StartNew();
+        _logger.LogInformation("WorkdayController.AddActionToWorkday started for workday {WorkdayId}", id);
         if (dto == null || string.IsNullOrWhiteSpace(dto.Name))
         {
             throw new ValidationException("Action name is required.");
         }
 
+        _logger.LogInformation("WorkdayController.AddActionToWorkday calling service for workday {WorkdayId}", id);
         var action = await _service.AddActionToWorkday(id, dto.Name);
+        _logger.LogInformation(
+            "WorkdayController.AddActionToWorkday service returned for workday {WorkdayId} in {ElapsedMilliseconds}ms",
+            id,
+            stopwatch.ElapsedMilliseconds);
+        _logger.LogInformation("WorkdayController.AddActionToWorkday returning response for workday {WorkdayId}", id);
         return Ok(action);
     }
 
@@ -83,7 +110,25 @@ public class WorkdayController : ControllerBase
     [HttpDelete("{id:guid}/actions/{actionId:guid}")]
     public async Task<ActionResult> RemoveActionFromWorkday(Guid id, Guid actionId)
     {
+        var stopwatch = Stopwatch.StartNew();
+        _logger.LogInformation(
+            "WorkdayController.RemoveActionFromWorkday started for workday {WorkdayId} and action {ActionId}",
+            id,
+            actionId);
+        _logger.LogInformation(
+            "WorkdayController.RemoveActionFromWorkday calling service for workday {WorkdayId} and action {ActionId}",
+            id,
+            actionId);
         await _service.RemoveActionFromWorkday(id, actionId);
+        _logger.LogInformation(
+            "WorkdayController.RemoveActionFromWorkday service returned for workday {WorkdayId} and action {ActionId} in {ElapsedMilliseconds}ms",
+            id,
+            actionId,
+            stopwatch.ElapsedMilliseconds);
+        _logger.LogInformation(
+            "WorkdayController.RemoveActionFromWorkday returning response for workday {WorkdayId} and action {ActionId}",
+            id,
+            actionId);
         return NoContent();
     }
 
@@ -91,7 +136,25 @@ public class WorkdayController : ControllerBase
     [HttpDelete("{id:guid}/cows/{cowId:guid}")]
     public async Task<ActionResult> RemoveCowFromWorkday(Guid id, Guid cowId)
     {
+        var stopwatch = Stopwatch.StartNew();
+        _logger.LogInformation(
+            "WorkdayController.RemoveCowFromWorkday started for workday {WorkdayId} and cow {CowId}",
+            id,
+            cowId);
+        _logger.LogInformation(
+            "WorkdayController.RemoveCowFromWorkday calling service for workday {WorkdayId} and cow {CowId}",
+            id,
+            cowId);
         await _service.RemoveCowFromWorkday(id, cowId);
+        _logger.LogInformation(
+            "WorkdayController.RemoveCowFromWorkday service returned for workday {WorkdayId} and cow {CowId} in {ElapsedMilliseconds}ms",
+            id,
+            cowId,
+            stopwatch.ElapsedMilliseconds);
+        _logger.LogInformation(
+            "WorkdayController.RemoveCowFromWorkday returning response for workday {WorkdayId} and cow {CowId}",
+            id,
+            cowId);
         return NoContent();
     }
 
