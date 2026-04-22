@@ -5,8 +5,7 @@ type WorkdayCowSelectorProps = {
   loading: boolean;
   error: string;
   searchTerm: string;
-  addingCowIds?: string[];
-  selectedCowIds?: string[];
+  addingCowIds: string[];
   activeHealthStatuses: string[];
   activeLivestockGroups: string[];
   activeSexes: string[];
@@ -20,8 +19,7 @@ type WorkdayCowSelectorProps = {
   onToggleLivestockGroup: (value: string) => void;
   onToggleSex: (value: string) => void;
   onTogglePregnancyStatus: (value: string) => void;
-  onAddCow?: (cowId: string) => void;
-  onToggleCow?: (cowId: string) => void;
+  onAddCow: (cowId: string) => void;
 };
 
 function WorkdayCowSelector({
@@ -29,8 +27,7 @@ function WorkdayCowSelector({
   loading,
   error,
   searchTerm,
-  addingCowIds = [],
-  selectedCowIds = [],
+  addingCowIds,
   activeHealthStatuses,
   activeLivestockGroups,
   activeSexes,
@@ -45,19 +42,12 @@ function WorkdayCowSelector({
   onToggleSex,
   onTogglePregnancyStatus,
   onAddCow,
-  onToggleCow,
 }: WorkdayCowSelectorProps) {
-  const instantAddMode = typeof onAddCow === "function";
-
   return (
     <div className="cowListCard">
       <div className="sectionHeader">
         <h2 className="sectionTitle">Select Cows</h2>
-        <span className="sectionSubtle">
-          {instantAddMode
-            ? "Click any cow to add to workday"
-            : `${selectedCowIds.length} selected for this workday`}
-        </span>
+        <span className="sectionSubtle">Click any cow to add to workday</span>
       </div>
 
       <input
@@ -124,44 +114,23 @@ function WorkdayCowSelector({
         ) : (
           cows.map((cow) => {
             const isAdding = addingCowIds.includes(cow.id);
-            const isSelected = selectedCowIds.includes(cow.id);
             const rowClassName = `cowRowCard workdaySelectableRow cow-card ${
-              isAdding
-                ? "workdaySelectableRowPending"
-                : isSelected
-                  ? "selected"
-                  : ""
+              isAdding ? "workdaySelectableRowPending" : ""
             }`.trim();
 
             const badgeClassName = isAdding
               ? "statusPill"
-              : isSelected
-                ? "statusPill"
-                : "statusPill needsTreatment";
+              : "statusPill needsTreatment";
 
-            const badgeLabel = isAdding
-              ? "Adding..."
-              : isSelected
-                ? "Added"
-                : instantAddMode
-                  ? "Add"
-                  : "Available";
+            const badgeLabel = isAdding ? "Adding..." : "Add";
 
             return (
               <button
                 key={cow.id}
                 type="button"
                 className={rowClassName}
-                onClick={() => {
-                  if (instantAddMode) {
-                    onAddCow(cow.id);
-                    return;
-                  }
-
-                  onToggleCow?.(cow.id);
-                }}
+                onClick={() => onAddCow(cow.id)}
                 disabled={isAdding}
-                aria-pressed={!instantAddMode ? isSelected : undefined}
               >
                 <div className="cowRowMain cow-card-content">
                   <div className="cowRowTitle">Tag #{cow.tagNumber}</div>

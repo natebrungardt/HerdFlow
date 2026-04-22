@@ -7,6 +7,7 @@ import CowSummaryCard from "../../components/cows/CowSummaryCard";
 import HealthStatusToggle from "../../components/cows/HealthStatusToggle";
 import Modal from "../../components/shared/Modal";
 import { AuthContext } from "../../context/AuthContext";
+import { useUnsavedChangesGuard } from "../../context/UnsavedChangesContext";
 import {
   heatStatusOptions,
   livestockGroupOptions,
@@ -140,6 +141,15 @@ function AddCowPage() {
   );
   const [hasClearedNavigationState, setHasClearedNavigationState] =
     useState(false);
+  const initialUnsavedFormState: FormState = {
+    ...initialFormState,
+    ownerName: getUserDefaultOwnerName(user),
+  };
+  const hasUnsavedChanges =
+    JSON.stringify(formData) !== JSON.stringify(initialUnsavedFormState);
+  const { allowNavigation } = useUnsavedChangesGuard({
+    hasUnsavedChanges,
+  });
 
   useEffect(() => {
     async function loadExistingCows() {
@@ -202,9 +212,12 @@ function AddCowPage() {
       return;
     }
 
-    navigate(location.pathname, { replace: true, state: null });
+    allowNavigation(() =>
+      navigate(location.pathname, { replace: true, state: null }),
+    );
     setHasClearedNavigationState(true);
   }, [
+    allowNavigation,
     hasAppliedPresetParent,
     hasClearedNavigationState,
     location.pathname,
@@ -283,7 +296,7 @@ function AddCowPage() {
 
         if (wasCreated) {
           completed = true;
-          navigate("/cows");
+          allowNavigation(() => navigate("/cows"));
           return;
         }
       }
@@ -324,7 +337,7 @@ function AddCowPage() {
 
       if (!completed) {
         completed = true;
-        navigate("/cows");
+        allowNavigation(() => navigate("/cows"));
       }
     } catch (err) {
       if (completed) {

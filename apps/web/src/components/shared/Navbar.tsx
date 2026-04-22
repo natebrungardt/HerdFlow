@@ -3,13 +3,11 @@ import {
   useMemo,
   useRef,
   useState,
-  type MouseEvent,
   useContext,
+  type MouseEvent,
 } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { usePendingWorkdaySelection } from "../../context/usePendingWorkdaySelection";
 import { useTheme } from "../../context/useTheme";
-import Modal from "./Modal";
 import FeedbackModal from "./FeedbackModal";
 import { getUserDisplayName, getUserFarmName } from "../../lib/account";
 import { supabase } from "../../lib/supabase";
@@ -19,9 +17,7 @@ import { exportCowsCsv } from "../../services/cowService";
 function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { hasPendingSelections } = usePendingWorkdaySelection();
   const { theme, toggleTheme } = useTheme();
-  const [pendingPath, setPendingPath] = useState<string | null>(null);
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
   const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
@@ -124,29 +120,10 @@ function Navbar() {
     return location.pathname === targetPath;
   }
 
-  function handleNavbarNavigation(targetPath: string) {
-    return (event: MouseEvent<HTMLAnchorElement>) => {
-      if (
-        !hasPendingSelections ||
-        location.pathname === targetPath ||
-        !location.pathname.startsWith("/workdays/")
-      ) {
-        return;
-      }
-
-      event.preventDefault();
-      setPendingPath(targetPath);
-    };
-  }
-
   return (
     <>
       <div className="navbar">
-        <Link
-          className="navbar-left"
-          to="/"
-          onClick={handleNavbarNavigation("/")}
-        >
+        <Link className="navbar-left" to="/">
           <img
             className="navbar-logo"
             src="/herdflow-mark.svg"
@@ -158,21 +135,18 @@ function Navbar() {
           <Link
             className={isActivePath("/") ? "active" : undefined}
             to="/"
-            onClick={handleNavbarNavigation("/")}
           >
             Herd Summary
           </Link>
           <Link
             className={isActivePath("/cows") ? "active" : undefined}
             to="/cows"
-            onClick={handleNavbarNavigation("/cows")}
           >
             Herd
           </Link>
           <Link
             className={isActivePath("/workdays") ? "active" : undefined}
             to="/workdays"
-            onClick={handleNavbarNavigation("/workdays")}
           >
             Workdays
           </Link>
@@ -181,21 +155,18 @@ function Navbar() {
               isActivePath("/workdays/completed") ? "active" : undefined
             }
             to="/workdays/completed"
-            onClick={handleNavbarNavigation("/workdays/completed")}
           >
             Completed Workdays
           </Link>
           <Link
             className={isActivePath("/removed") ? "active" : undefined}
             to="/removed"
-            onClick={handleNavbarNavigation("/removed")}
           >
             Archived Cows
           </Link>
           <Link
             className={isActivePath("/finances") ? "active" : undefined}
             to="/finances"
-            onClick={handleNavbarNavigation("/finances")}
           >
             Finances
           </Link>
@@ -272,18 +243,6 @@ function Navbar() {
           )}
         </div>
       </div>
-      <Modal
-        isOpen={pendingPath !== null}
-        title="Pending Cows to Add"
-        message="You have cows pending to be added to this workday. Add them before leaving, or continue without adding them."
-        confirmText="Leave Page"
-        onCancel={() => setPendingPath(null)}
-        onConfirm={() => {
-          if (!pendingPath) return;
-          navigate(pendingPath);
-          setPendingPath(null);
-        }}
-      />
       <FeedbackModal
         isOpen={isFeedbackModalOpen}
         onClose={() => setIsFeedbackModalOpen(false)}

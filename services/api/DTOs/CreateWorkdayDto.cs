@@ -1,4 +1,3 @@
-
 using System.ComponentModel.DataAnnotations;
 
 namespace HerdFlow.Api.DTOs;
@@ -12,6 +11,4 @@ public class CreateWorkdayDto
     public DateOnly? Date { get; set; }
 
     public string? Summary { get; set; }
-
-    public List<Guid> CowIds { get; set; } = new();
 }

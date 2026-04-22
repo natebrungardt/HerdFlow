@@ -710,23 +710,6 @@
   font-size: 0.92rem;
 }
 
-.selectedCowsContainer {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-}
-
-.selectedCowsList {
-  height: 260px;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  flex-shrink: 0;
-  padding-right: 4px;
-  mask-image: linear-gradient(to bottom, black 85%, transparent);
-}
-
 .workdaySelectionPills {
   display: grid;
   gap: 10px;
@@ -1053,13 +1036,6 @@
 .workdaySelectableRow .cowRowActions,
 .workdaySelectableRow .statusPill {
   flex: 0 0 auto;
-}
-
-.workdaySelectableRow.selected {
-  border-color: var(--input-focus);
-  box-shadow:
-    inset 0 1px 0 var(--surface-subtle-hover),
-    0 0 0 1px rgba(76, 122, 91, 0.08);
 }
 
 .workdaySelectableRowPending {

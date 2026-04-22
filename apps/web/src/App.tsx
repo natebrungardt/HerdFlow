@@ -18,8 +18,8 @@ import ActiveWorkdayPage from "./pages/workdays/ActiveWorkdayPage";
 import CompletedWorkdays from "./pages/workdays/CompletedWorkdays";
 import WorkdayPage from "./pages/workdays/WorkdayPage";
 import Finances from "./pages/Finances";
-import { PendingWorkdaySelectionProvider } from "./context/PendingWorkdaySelectionContext";
 import { ThemeProvider } from "./context/ThemeContext";
+import { UnsavedChangesProvider } from "./context/UnsavedChangesContext";
 import AuthPage from "./pages/AuthPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 import AccountSettingsPage from "./pages/AccountSettingsPage";
@@ -29,10 +29,10 @@ import LandingPage from "./pages/LandingPage";
 
 function AuthenticatedAppLayout() {
   return (
-    <PendingWorkdaySelectionProvider>
+    <UnsavedChangesProvider>
       <Navbar />
       <Outlet />
-    </PendingWorkdaySelectionProvider>
+    </UnsavedChangesProvider>
   );
 }
 

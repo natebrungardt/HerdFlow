@@ -7,7 +7,6 @@ export type CreateWorkdayInput = {
   title: string;
   date: string | null;
   summary: string | null;
-  cowIds: string[];
 };
 
 export type UpdateWorkdayInput = {
@@ -44,7 +43,6 @@ export async function createWorkday(
       title: workdayData.title,
       date: workdayData.date,
       summary: workdayData.summary,
-      cowIds: workdayData.cowIds,
     }),
   });
 

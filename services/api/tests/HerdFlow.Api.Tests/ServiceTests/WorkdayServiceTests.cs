@@ -9,39 +9,16 @@ namespace HerdFlow.Api.Tests.ServiceTests;
 public class WorkdayServiceTests
 {
     [Fact]
-    public async Task CreateWorkday_defaults_date_and_deduplicates_cow_ids()
+    public async Task CreateWorkday_defaults_date_and_starts_with_no_assigned_cows()
     {
         await using var testContext = new ServiceTestContext();
-        var cow = TestData.Cow("test-user", "A-100");
-        testContext.DbContext.Cows.Add(cow);
-        await testContext.DbContext.SaveChangesAsync();
-
         var service = testContext.CreateWorkdayService();
         var before = DateOnly.FromDateTime(DateTime.UtcNow);
 
-        var workday = await service.CreateWorkday(
-            TestData.CreateWorkdayDto(cowIds: new List<Guid> { cow.Id, cow.Id }));
+        var workday = await service.CreateWorkday(TestData.CreateWorkdayDto());
 
         workday.Date.Should().Be(before);
-        workday.WorkdayCows.Should().ContainSingle(wc => wc.CowId == cow.Id);
-    }
-
-    [Fact]
-    public async Task CreateWorkday_rejects_foreign_or_removed_cows()
-    {
-        await using var testContext = new ServiceTestContext();
-        var foreignCow = TestData.Cow("other-user", "A-100");
-        var removedCow = TestData.Cow("test-user", "B-200", isRemoved: true);
-        testContext.DbContext.Cows.AddRange(foreignCow, removedCow);
-        await testContext.DbContext.SaveChangesAsync();
-
-        var service = testContext.CreateWorkdayService();
-        var dto = TestData.CreateWorkdayDto(cowIds: new List<Guid> { foreignCow.Id, removedCow.Id });
-
-        var action = () => service.CreateWorkday(dto);
-
-        await action.Should().ThrowAsync<ValidationException>()
-            .WithMessage("One or more selected cows could not be added to the workday.");
+        workday.WorkdayCows.Should().BeEmpty();
     }
 
     [Fact]
@@ -91,7 +68,7 @@ public class WorkdayServiceTests
         var action = () => service.AddCowsToWorkday(workday.Id, new List<Guid> { allowedCow.Id, invalidCow.Id });
 
         await action.Should().ThrowAsync<ValidationException>()
-            .WithMessage("One or more selected cows could not be added to the workday.");
+            .WithMessage("One or more cows could not be added to the workday.");
     }
 
     [Fact]
@@ -407,7 +384,7 @@ public class WorkdayServiceTests
 
         var service = testContext.CreateWorkdayService();
 
-        await service.AddCowToWorkday(workday.Id, cow.Id);
+        await service.AddCowsToWorkday(workday.Id, new List<Guid> { cow.Id });
 
         testContext.DbContext.WorkdayEntries.Should().HaveCount(2);
         testContext.DbContext.WorkdayEntries.Should().OnlyContain(entry =>

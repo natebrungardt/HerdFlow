@@ -1,10 +1,5 @@
 import { useEffect, useState } from "react";
-import {
-  useNavigate,
-  useParams,
-  useBlocker,
-  useLocation,
-} from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import CowDetailsSection from "../../components/cows/CowDetailsSection";
 import CowHeroCard from "../../components/cows/CowHeroCard";
 import CalfHistorySection from "../../components/cows/CalfHistorySection";
@@ -18,6 +13,7 @@ import {
   pregnancyStatusOptions,
   sexOptions,
 } from "../../constants/cowFormOptions";
+import { useUnsavedChangesGuard } from "../../context/UnsavedChangesContext";
 import { getActivities } from "../../services/activityService";
 import {
   type CreateCowInput,
@@ -167,7 +163,6 @@ function getAddCalfParentPreset(cow: Cow): {
 function CowDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const location = useLocation();
   const [cow, setCow] = useState<Cow | null>(null);
   const [originalCow, setOriginalCow] = useState<Cow | null>(null);
   const [formData, setFormData] = useState<Cow | null>(null);
@@ -182,14 +177,6 @@ function CowDetailPage() {
   const [showRestoreModal, setShowRestoreModal] = useState(false);
   const [showAddCalfModal, setShowAddCalfModal] = useState(false);
   const [creatingCalf, setCreatingCalf] = useState(false);
-  const [showUnsavedModal, setShowUnsavedModal] = useState(false);
-  const [pendingNavigation, setPendingNavigation] = useState<
-    (() => void) | null
-  >(null);
-  const [allowNavigation, setAllowNavigation] = useState(false);
-  const [confirmedNavigation, setConfirmedNavigation] = useState<
-    (() => void) | null
-  >(null);
 
   useEffect(() => {
     async function loadCow() {
@@ -251,50 +238,9 @@ function CowDetailPage() {
     formData !== null &&
     originalCow !== null &&
     JSON.stringify(formData) !== JSON.stringify(originalCow);
-  const blocker = useBlocker(isDirty && !allowNavigation);
-
-  useEffect(() => {
-    function handleBeforeUnload(event: BeforeUnloadEvent) {
-      if (!isDirty) {
-        return;
-      }
-
-      event.preventDefault();
-      event.returnValue = "";
-    }
-
-    window.addEventListener("beforeunload", handleBeforeUnload);
-
-    return () => {
-      window.removeEventListener("beforeunload", handleBeforeUnload);
-    };
-  }, [isDirty]);
-
-  useEffect(() => {
-    if (blocker.state !== "blocked") {
-      return;
-    }
-
-    setShowUnsavedModal(true);
-    setPendingNavigation(() => () => {
-      blocker.proceed();
-    });
-  }, [blocker]);
-
-  useEffect(() => {
-    if (!allowNavigation || !confirmedNavigation) {
-      return;
-    }
-
-    confirmedNavigation();
-    setConfirmedNavigation(null);
-  }, [allowNavigation, confirmedNavigation]);
-
-  useEffect(() => {
-    setAllowNavigation(false);
-    setConfirmedNavigation(null);
-    setPendingNavigation(null);
-  }, [location.key]);
+  const { allowNavigation } = useUnsavedChangesGuard({
+    hasUnsavedChanges: isDirty,
+  });
 
   async function refreshActivities() {
     if (!cow?.id) return;
@@ -370,41 +316,8 @@ function CowDetailPage() {
     setError("");
   }
 
-  function requestNavigation(next: () => void) {
-    if (isDirty) {
-      setPendingNavigation(() => () => {
-        setAllowNavigation(true);
-        next();
-      });
-      setShowUnsavedModal(true);
-      return;
-    }
-
-    next();
-  }
-
   function handleBackClick() {
-    requestNavigation(() => navigate("/cows"));
-  }
-
-  function handleConfirmLeave() {
-    setShowUnsavedModal(false);
-    setAllowNavigation(true);
-
-    if (pendingNavigation) {
-      setConfirmedNavigation(() => pendingNavigation);
-    }
-  }
-
-  function handleStay() {
-    setShowUnsavedModal(false);
-    setAllowNavigation(false);
-
-    if (blocker.state === "blocked") {
-      blocker.reset();
-    }
-
-    setPendingNavigation(null);
+    navigate("/cows");
   }
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -463,7 +376,7 @@ function CowDetailPage() {
 
     try {
       await archiveCow(cow.id);
-      navigate("/cows");
+      allowNavigation(() => navigate("/cows"));
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Failed to archive cow";
@@ -477,7 +390,7 @@ function CowDetailPage() {
     try {
       await restoreCow(cow.id);
       await refreshActivities();
-      navigate("/removed");
+      allowNavigation(() => navigate("/removed"));
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Failed to restore cow";
@@ -516,7 +429,7 @@ function CowDetailPage() {
     try {
       const newCalf = await createCalfForCow(cow);
       setShowAddCalfModal(false);
-      navigate(`/cows/${newCalf.id}`);
+      allowNavigation(() => navigate(`/cows/${newCalf.id}`));
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Failed to add calf to herd";
@@ -1019,16 +932,6 @@ function CowDetailPage() {
           if (creatingCalf) return;
           void handleConfirmAddCalfStart();
         }}
-      />
-
-      <Modal
-        isOpen={showUnsavedModal}
-        title="Unsaved Changes"
-        message="You have unsaved changes. Are you sure you want to leave without saving?"
-        confirmText="Leave Without Saving"
-        confirmVariant="danger"
-        onCancel={handleStay}
-        onConfirm={handleConfirmLeave}
       />
 
       <Modal

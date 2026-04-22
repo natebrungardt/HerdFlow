@@ -1,6 +1,7 @@
 import { useContext, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
+import { useUnsavedChangesGuard } from "../context/UnsavedChangesContext";
 import {
   getPasswordRequirementsMessage,
   getUserProfileDefaults,
@@ -47,15 +48,33 @@ function AccountSettingsPage() {
   const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [isSavingEmail, setIsSavingEmail] = useState(false);
   const [isSavingPassword, setIsSavingPassword] = useState(false);
+  const [savedProfileValues, setSavedProfileValues] = useState<ProfileFormState>(
+    () => getUserProfileDefaults(authenticatedUser),
+  );
+
+  const currentEmail = authenticatedUser?.email ?? "";
+  const normalizedCurrentEmail = currentEmail.trim().toLowerCase();
+  const normalizedNewEmail = emailValue.trim().toLowerCase();
+  const profileDirty =
+    JSON.stringify(profileValues) !== JSON.stringify(savedProfileValues);
+  const emailDirty =
+    authenticatedUser !== null &&
+    isEditingEmail &&
+    normalizedNewEmail !== normalizedCurrentEmail;
+  const passwordDirty =
+    passwordValue.trim().length > 0 || confirmPasswordValue.trim().length > 0;
+
+  useUnsavedChangesGuard({
+    hasUnsavedChanges:
+      authenticatedUser !== null &&
+      (profileDirty || emailDirty || passwordDirty),
+  });
 
   if (!authenticatedUser) {
     return null;
   }
 
   const currentUser = authenticatedUser;
-  const currentEmail = authenticatedUser.email ?? "";
-  const normalizedCurrentEmail = currentEmail.trim().toLowerCase();
-  const normalizedNewEmail = emailValue.trim().toLowerCase();
   const isNewEmailValid = isValidEmail(normalizedNewEmail);
   const canSubmitEmailUpdate =
     normalizedNewEmail.length > 0 &&
@@ -114,6 +133,7 @@ function AccountSettingsPage() {
     }
 
     setProfileValues(nextProfileValues);
+    setSavedProfileValues(nextProfileValues);
     setProfileMessage("Saved successfully.");
     setProfileMessageType("success");
     setIsSavingProfile(false);

@@ -124,15 +124,13 @@ internal static class TestData
 
     public static CreateWorkdayDto CreateWorkdayDto(
         string title = "Morning Checks",
-        DateOnly? date = null,
-        List<Guid>? cowIds = null)
+        DateOnly? date = null)
     {
         return new CreateWorkdayDto
         {
             Title = title,
             Date = date,
-            Summary = "Checked feed and water",
-            CowIds = cowIds ?? new List<Guid>()
+            Summary = "Checked feed and water"
         };
     }
 }

@@ -25,31 +25,12 @@ public class WorkdayService
     public async Task<Workday> CreateWorkday(CreateWorkdayDto dto)
     {
         var userId = GetCurrentUserId();
-        var distinctCowIds = dto.CowIds
-            .Distinct()
-            .ToList();
-
-        var cows = distinctCowIds.Count == 0
-            ? new List<Cow>()
-            : await _context.Cows
-                .Where(c => c.UserId == userId && distinctCowIds.Contains(c.Id) && !c.IsRemoved)
-                .ToListAsync();
-
-        if (cows.Count != distinctCowIds.Count)
-        {
-            throw new ValidationException("One or more selected cows could not be added to the workday.");
-        }
-
         var workday = new Workday
         {
             UserId = userId,
             Title = dto.Title.Trim(),
             Date = NormalizeWorkdayDate(dto.Date),
-            Summary = dto.Summary,
-            WorkdayCows = cows.Select(cow => new WorkdayCow
-            {
-                CowId = cow.Id
-            }).ToList()
+            Summary = dto.Summary
         };
 
         _context.Workdays.Add(workday);
@@ -156,7 +137,7 @@ public class WorkdayService
 
         if (cows.Count != newCowIds.Count)
         {
-            throw new ValidationException("One or more selected cows could not be added to the workday.");
+            throw new ValidationException("One or more cows could not be added to the workday.");
         }
 
         var assignments = newCowIds.Select(cowId => new WorkdayCow
@@ -207,11 +188,6 @@ public class WorkdayService
 
             throw;
         }
-    }
-
-    public Task AddCowToWorkday(Guid workdayId, Guid cowId)
-    {
-        return AddCowsToWorkday(workdayId, new List<Guid> { cowId });
     }
 
     public async Task RemoveCowFromWorkday(Guid id, Guid cowId)

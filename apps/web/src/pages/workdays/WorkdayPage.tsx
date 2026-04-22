@@ -9,6 +9,7 @@ import {
   pregnancyStatusOptions,
   sexOptions,
 } from "../../constants/cowFormOptions";
+import { useUnsavedChangesGuard } from "../../context/UnsavedChangesContext";
 import { getCows } from "../../services/cowService";
 import {
   addCowsToWorkday,
@@ -184,6 +185,27 @@ function WorkdayPage() {
     workday?.status !== "Completed" &&
     (workday?.workdayCows?.length ?? 0) > 0 &&
     actions.length > 0;
+  const hasUnsavedChanges = useMemo(() => {
+    if (!workday) {
+      return false;
+    }
+
+    const currentDetails = normalizeWorkdayDetails({
+      title,
+      date,
+      summary,
+    });
+    const savedDetails = normalizeWorkdayDetails({
+      title: workday.title,
+      date: formatDateInput(workday.date),
+      summary: workday.summary ?? "",
+    });
+
+    return JSON.stringify(currentDetails) !== JSON.stringify(savedDetails);
+  }, [date, summary, title, workday]);
+  const { allowNavigation } = useUnsavedChangesGuard({
+    hasUnsavedChanges,
+  });
 
   function toggleFilter(
     value: string,
@@ -383,7 +405,7 @@ function WorkdayPage() {
 
     try {
       await startWorkday(workday.id);
-      navigate(`/workdays/${workday.id}/active`);
+      allowNavigation(() => navigate(`/workdays/${workday.id}/active`));
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Failed to start workday";
@@ -398,7 +420,7 @@ function WorkdayPage() {
 
     try {
       await deleteWorkday(workday.id);
-      navigate("/workdays");
+      allowNavigation(() => navigate("/workdays"));
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Failed to delete workday";

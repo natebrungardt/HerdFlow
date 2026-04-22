@@ -12,7 +12,7 @@ namespace HerdFlow.Api.Tests.IntegrationTests;
 public class WorkdayApiIntegrationTests
 {
     [Fact]
-    public async Task CreateWorkday_and_get_by_id_return_expected_relationship_shape()
+    public async Task CreateWorkday_then_add_cow_and_get_by_id_return_expected_relationship_shape()
     {
         await using var factory = new HerdFlowApiFactory();
         var cow = TestData.Cow("user-a", "A-100");
@@ -26,13 +26,19 @@ public class WorkdayApiIntegrationTests
         var createResponse = await client.PostAsJsonAsync("/api/workdays", new
         {
             title = "Morning Checks",
-            summary = "Checked feed and water",
-            cowIds = new[] { cow.Id }
+            summary = "Checked feed and water"
         });
 
         createResponse.StatusCode.Should().Be(HttpStatusCode.Created);
         var createdWorkday = await createResponse.Content.ReadFromJsonAsync<Workday>(ApiJson.Options);
         createdWorkday.Should().NotBeNull();
+
+        var addCowResponse = await client.PostAsJsonAsync($"/api/workdays/{createdWorkday!.Id}/cows", new
+        {
+            cowIds = new[] { cow.Id }
+        });
+
+        addCowResponse.StatusCode.Should().Be(HttpStatusCode.NoContent);
 
         var fetchedWorkday = await client.GetFromJsonAsync<Workday>(
             $"/api/workdays/{createdWorkday!.Id}",
