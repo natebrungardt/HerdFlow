@@ -2,9 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import type { Dispatch, SetStateAction } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Modal from "../../components/shared/Modal";
-import AssignedWorkdayCows from "../../components/workdays/AssignedWorkdayCows";
-import SelectedCowsSummary from "../../components/workdays/SelectedCowsSummary";
-import WorkdayCowSelector from "../../components/workdays/WorkdayCowSelector";
+import WorkdayAddCowsPanel from "../../components/workdays/WorkdayAddCowsPanel";
+import WorkdaySetupWorkspacePanel from "../../components/workdays/WorkdaySetupWorkspacePanel";
 import {
   livestockGroupOptions,
   pregnancyStatusOptions,
@@ -13,15 +12,17 @@ import {
 import { getCows } from "../../services/cowService";
 import {
   addCowsToWorkday,
+  addWorkdayAction,
   archiveWorkday,
   getWorkdayById,
   removeCowFromWorkday,
+  removeWorkdayAction,
   restoreWorkday,
-  updateWorkdayCowStatus,
+  startWorkday,
   updateWorkday,
 } from "../../services/workdayService";
 import type { Cow } from "../../types/cow";
-import type { Workday } from "../../types/workday";
+import type { Workday, WorkdayAction } from "../../types/workday";
 import { usePendingWorkdaySelection } from "../../context/usePendingWorkdaySelection";
 import "../../styles/AllCows.css";
 import "../../styles/CowDetailPage.css";
@@ -59,6 +60,8 @@ function WorkdayPage() {
   const [title, setTitle] = useState("");
   const [date, setDate] = useState("");
   const [summary, setSummary] = useState("");
+  const [actions, setActions] = useState<WorkdayAction[]>([]);
+  const [actionName, setActionName] = useState("");
   const [allCows, setAllCows] = useState<Cow[]>([]);
   const [selectedCowIds, setSelectedCowIds] = useState<string[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -78,9 +81,10 @@ function WorkdayPage() {
   const [saving, setSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState("Saved");
   const [addingCows, setAddingCows] = useState(false);
-  const [updatingWorkedCowId, setUpdatingWorkedCowId] = useState<string | null>(
-    null,
-  );
+  const [addingAction, setAddingAction] = useState(false);
+  const [startingWorkday, setStartingWorkday] = useState(false);
+  const [removingActionId, setRemovingActionId] = useState<string | null>(null);
+  const [actionError, setActionError] = useState("");
   const [removingAssignedCowId, setRemovingAssignedCowId] = useState<
     string | null
   >(null);
@@ -116,6 +120,7 @@ function WorkdayPage() {
         ]);
 
         setWorkday(workdayData);
+        setActions(workdayData.actions ?? []);
         setTitle(workdayData.title);
         setDate(formatDateInput(workdayData.date));
         setSummary(workdayData.summary ?? "");
@@ -199,6 +204,10 @@ function WorkdayPage() {
     () => (workday?.workdayCows ?? []).map((assignment) => assignment.cow),
     [workday],
   );
+  const canStartWorkday =
+    !workday?.isRemoved &&
+    (workday?.workdayCows?.length ?? 0) > 0 &&
+    actions.length > 0;
 
   function toggleFilter(
     value: string,
@@ -243,6 +252,7 @@ function WorkdayPage() {
     if (!id) return;
     const data = await getWorkdayById(id);
     setWorkday(data);
+    setActions(data.actions ?? []);
     setTitle(data.title);
     setDate(formatDateInput(data.date));
     setSummary(data.summary ?? "");
@@ -285,6 +295,7 @@ function WorkdayPage() {
       setWorkday((current) => ({
         ...updated,
         workdayCows: current?.workdayCows ?? updated.workdayCows,
+        actions: current?.actions ?? updated.actions,
       }));
       setTitle(updated.title);
       setDate(formatDateInput(updated.date));
@@ -396,48 +407,70 @@ function WorkdayPage() {
     }
   }
 
-  async function handleToggleWorked(cowId: string, isWorked: boolean) {
-    if (!workday) return;
+  async function handleAddAction() {
+    if (!workday || actionName.trim().length === 0) return;
 
-    const previousAssignments = workday.workdayCows ?? [];
-    const nextAssignments = previousAssignments.map((assignment) =>
-      assignment.cowId === cowId
-        ? {
-            ...assignment,
-            status: isWorked ? "Worked" : null,
-          }
-        : assignment,
-    );
-
+    setAddingAction(true);
+    setActionError("");
     setError("");
-    setUpdatingWorkedCowId(cowId);
-    setWorkday((current) =>
-      current
-        ? {
-            ...current,
-            workdayCows: nextAssignments,
-          }
-        : current,
-    );
 
     try {
-      await updateWorkdayCowStatus(workday.id, cowId, isWorked);
+      await addWorkdayAction(workday.id, { name: actionName.trim() });
+      setActionName("");
+      await refreshWorkday();
     } catch (err) {
-      setWorkday((current) =>
-        current
-          ? {
-              ...current,
-              workdayCows: previousAssignments,
-            }
-          : current,
-      );
       const message =
-        err instanceof Error
-          ? err.message
-          : "Failed to update worked status";
+        err instanceof Error ? err.message : "Failed to add workday action";
+      setActionError(message);
+    } finally {
+      setAddingAction(false);
+    }
+  }
+
+  async function handleRemoveAction(actionId: string) {
+    if (!workday) return;
+
+    setRemovingActionId(actionId);
+    setActionError("");
+    setError("");
+
+    try {
+      await removeWorkdayAction(workday.id, actionId);
+      await refreshWorkday();
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to remove workday action";
+      setActionError(message);
+    } finally {
+      setRemovingActionId(null);
+    }
+  }
+
+  function handleActionInputKeyDown(event: React.KeyboardEvent<HTMLInputElement>) {
+    if (event.key !== "Enter") {
+      return;
+    }
+
+    event.preventDefault();
+    void handleAddAction();
+  }
+
+  async function handleStartWorkday() {
+    if (!workday || !canStartWorkday) return;
+
+    setStartingWorkday(true);
+    setError("");
+    setActionError("");
+
+    try {
+      await startWorkday(workday.id);
+      navigate(`/workdays/${workday.id}/active`);
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to start workday";
       setError(message);
     } finally {
-      setUpdatingWorkedCowId(null);
+      setStartingWorkday(false);
     }
   }
 
@@ -511,12 +544,22 @@ function WorkdayPage() {
 
       <div className="allCowsShell">
         <div className="allCowsContent">
+          <div className="cow-header">
+            <button
+              type="button"
+              className="btn btn-outline"
+              onClick={handleBackClick}
+            >
+              ← Back to Workdays
+            </button>
+          </div>
+
           <div className="allCowsHeader">
             <div className="titleBlock">
               <h1 className="pageTitle">Workday Details</h1>
               <p className="pageSubtitle">
-                Update scheduling details, maintain assigned cows, and manage
-                this workday from one place.
+                Plan this workday by confirming assigned cows, setting actions,
+                and launching when everything is ready.
               </p>
             </div>
 
@@ -529,18 +572,28 @@ function WorkdayPage() {
                 Restore Workday
               </button>
             ) : (
-              <button
-                type="button"
-                className="btn btn-danger"
-                onClick={handleArchiveClick}
-              >
-                Archive Workday
-              </button>
+              <div className="workdayHeaderActions">
+                <button
+                  type="button"
+                  className="addCowButton workdayStartButton"
+                  onClick={handleStartWorkday}
+                  disabled={!canStartWorkday || startingWorkday}
+                >
+                  {startingWorkday ? "Starting..." : "Start Workday"}
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-danger"
+                  onClick={handleArchiveClick}
+                >
+                  Delete Workday
+                </button>
+              </div>
             )}
           </div>
 
-          <div className="workdayCreateLayout">
-            <div className="workdayCreateTopGrid">
+          <div className="workdaySetupColumns">
+            <div className="workdaySetupColumn">
               <WorkdayComposerCard
                 title={title}
                 date={date}
@@ -549,9 +602,7 @@ function WorkdayPage() {
                 saving={saving}
                 saveStatus={saveStatus}
                 heading="Workday Details"
-                subtle="Edits save automatically when you press Enter or click away"
-                cancelLabel="Back to Workdays"
-                cancelButtonClassName="addCowButton"
+                subtle="Update the basics for this workday before the crew heads out."
                 onChange={(event) => {
                   const { name, value } = event.target;
                   setError("");
@@ -562,81 +613,65 @@ function WorkdayPage() {
                 }}
                 onCommit={handleSaveDetails}
                 onKeyDown={handleWorkdayFieldKeyDown}
-                onCancel={handleBackClick}
-              />
-
-              <AssignedWorkdayCows
-                assignments={workday.workdayCows ?? []}
-                removingCowId={removingAssignedCowId}
-                updatingCowId={updatingWorkedCowId}
-                onRemove={promptAssignedCowRemoval}
-                onToggleWorked={handleToggleWorked}
               />
             </div>
 
-            <section className="dashboardCard workdayAddCowsCard">
-              <div className="dataCardHeader">
-                <h2 className="cardTitle">Add More Cows</h2>
-                <span className="cardSubtle">Search the active herd</span>
-              </div>
-
-              <div className="workdayCreateLayout">
-                <SelectedCowsSummary
-                  selectedCows={selectedCows}
-                  onRemove={promptSelectedCowRemoval}
-                  title="Selected Cows"
-                  emptyMessage="Select cows from the list below to add them to this workday."
-                />
-
-                <div className="workdayDetailActionRow">
-                  <button
-                    type="button"
-                    className="addCowButton"
-                    onClick={handleAddSelectedCows}
-                    disabled={addingCows || selectedCowIds.length === 0}
-                  >
-                    {addingCows ? "Adding..." : "Add Selected Cows"}
-                  </button>
-                </div>
-
-                <WorkdayCowSelector
-                  cows={filteredAvailableCows}
-                  loading={cowLoading}
-                  error=""
-                  searchTerm={searchTerm}
-                  selectedCowIds={selectedCowIds}
-                  activeHealthStatuses={activeHealthStatuses}
-                  activeLivestockGroups={activeLivestockGroups}
-                  activeSexes={activeSexes}
-                  activePregnancyStatuses={activePregnancyStatuses}
-                  healthStatusFilters={healthStatusFilters}
-                  livestockGroupFilters={livestockGroupFilters}
-                  sexFilters={sexFilters}
-                  pregnancyStatusFilters={pregnancyStatusFilters}
-                  onSearchChange={setSearchTerm}
-                  onToggleHealthStatus={(value) =>
-                    toggleFilter(value, setActiveHealthStatuses)
-                  }
-                  onToggleLivestockGroup={(value) =>
-                    toggleFilter(value, setActiveLivestockGroups)
-                  }
-                  onToggleSex={(value) => toggleFilter(value, setActiveSexes)}
-                  onTogglePregnancyStatus={(value) =>
-                    toggleFilter(value, setActivePregnancyStatuses)
-                  }
-                  onToggleCow={toggleCow}
-                />
-              </div>
-            </section>
+            <div className="workdaySetupColumn">
+              <WorkdaySetupWorkspacePanel
+                actions={actions}
+                actionName={actionName}
+                addError={actionError}
+                addingAction={addingAction}
+                removingActionId={removingActionId}
+                assignments={workday.workdayCows ?? []}
+                removingCowId={removingAssignedCowId}
+                onActionNameChange={setActionName}
+                onAddAction={handleAddAction}
+                onRemoveAction={handleRemoveAction}
+                onActionInputKeyDown={handleActionInputKeyDown}
+                onRemoveCow={promptAssignedCowRemoval}
+              />
+            </div>
           </div>
+
+          <WorkdayAddCowsPanel
+            selectedCows={selectedCows}
+            filteredAvailableCows={filteredAvailableCows}
+            loading={cowLoading}
+            searchTerm={searchTerm}
+            selectedCowIds={selectedCowIds}
+            activeHealthStatuses={activeHealthStatuses}
+            activeLivestockGroups={activeLivestockGroups}
+            activeSexes={activeSexes}
+            activePregnancyStatuses={activePregnancyStatuses}
+            healthStatusFilters={healthStatusFilters}
+            livestockGroupFilters={livestockGroupFilters}
+            sexFilters={sexFilters}
+            pregnancyStatusFilters={pregnancyStatusFilters}
+            addingCows={addingCows}
+            onRemoveSelectedCow={promptSelectedCowRemoval}
+            onAddSelectedCows={handleAddSelectedCows}
+            onSearchChange={setSearchTerm}
+            onToggleHealthStatus={(value) =>
+              toggleFilter(value, setActiveHealthStatuses)
+            }
+            onToggleLivestockGroup={(value) =>
+              toggleFilter(value, setActiveLivestockGroups)
+            }
+            onToggleSex={(value) => toggleFilter(value, setActiveSexes)}
+            onTogglePregnancyStatus={(value) =>
+              toggleFilter(value, setActivePregnancyStatuses)
+            }
+            onToggleCow={toggleCow}
+          />
         </div>
       </div>
 
       <Modal
         isOpen={showArchiveModal}
-        title="Archive Workday"
-        message={`Are you sure you want to archive ${workday.title}?`}
-        confirmText="Archive Workday"
+        title="Delete Workday"
+        message={`Are you sure you want to delete this workday?\n\nAll assigned cows and actions will be permanently removed.\nThis action cannot be undone.`}
+        confirmText="Delete Workday"
         onCancel={() => setShowArchiveModal(false)}
         onConfirm={async () => {
           setShowArchiveModal(false);

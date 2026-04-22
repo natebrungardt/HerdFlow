@@ -19,7 +19,7 @@ type WorkdayComposerCardProps = {
     event: KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => void;
   onSubmit?: (event: FormEvent<HTMLFormElement>) => void | Promise<void>;
-  onCancel: () => void;
+  onCancel?: () => void;
 };
 
 function WorkdayComposerCard({
@@ -88,32 +88,36 @@ function WorkdayComposerCard({
           onKeyDown={onKeyDown}
         />
 
-        <label className="workdayFieldLabel" htmlFor="summary">
-          General Notes
-        </label>
-        <textarea
-          id="summary"
-          name="summary"
-          className="workdayNotesInput"
-          value={summary}
-          onChange={onChange}
-          onBlur={onCommit}
-          onKeyDown={onKeyDown}
-          placeholder="General notes for the workday..."
-          rows={5}
-        />
+        <div className="workdayNotesSection">
+          <label className="workdayFieldLabel" htmlFor="summary">
+            General Notes
+          </label>
+          <textarea
+            id="summary"
+            name="summary"
+            className="workdayNotesInput"
+            value={summary}
+            onChange={onChange}
+            onBlur={onCommit}
+            onKeyDown={onKeyDown}
+            placeholder="General notes for the workday..."
+            rows={5}
+          />
+        </div>
 
         {error ? <p className="workdayInlineError">{error}</p> : null}
 
         <div className="workdayComposerActions">
           {extraAction}
-          <button
-            type="button"
-            className={cancelButtonClassName}
-            onClick={onCancel}
-          >
-            {cancelLabel}
-          </button>
+          {onCancel ? (
+            <button
+              type="button"
+              className={cancelButtonClassName}
+              onClick={onCancel}
+            >
+              {cancelLabel}
+            </button>
+          ) : null}
           {onSubmit ? (
             <button type="submit" className="addCowButton" disabled={saving}>
               {saving ? "Saving..." : submitLabel}

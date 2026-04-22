@@ -1,4 +1,4 @@
-import type { Workday } from "../types/workday";
+import type { Workday, WorkdayAction } from "../types/workday";
 import { apiFetch } from "../lib/api";
 
 const WORKDAY_API_BASE_PATH = "/workdays";
@@ -14,6 +14,10 @@ export type UpdateWorkdayInput = {
   title: string;
   date: string;
   summary: string | null;
+};
+
+export type CreateWorkdayActionInput = {
+  name: string;
 };
 
 export async function getActiveWorkdays(): Promise<Workday[]> {
@@ -90,13 +94,29 @@ export async function removeCowFromWorkday(
   });
 }
 
-export async function updateWorkdayCowStatus(
+export async function addWorkdayAction(
   id: string,
-  cowId: string,
-  isWorked: boolean,
+  action: CreateWorkdayActionInput,
+): Promise<WorkdayAction> {
+  const response = await apiFetch(`${WORKDAY_API_BASE_PATH}/${id}/actions`, {
+    method: "POST",
+    body: JSON.stringify(action),
+  });
+
+  return response.json();
+}
+
+export async function removeWorkdayAction(
+  id: string,
+  actionId: string,
 ): Promise<void> {
-  await apiFetch(`${WORKDAY_API_BASE_PATH}/${id}/cows/${cowId}/status`, {
-    method: "PUT",
-    body: JSON.stringify({ isWorked }),
+  await apiFetch(`${WORKDAY_API_BASE_PATH}/${id}/actions/${actionId}`, {
+    method: "DELETE",
+  });
+}
+
+export async function startWorkday(id: string): Promise<void> {
+  await apiFetch(`${WORKDAY_API_BASE_PATH}/${id}/start`, {
+    method: "POST",
   });
 }

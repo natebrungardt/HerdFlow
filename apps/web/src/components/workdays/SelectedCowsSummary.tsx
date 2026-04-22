@@ -17,7 +17,7 @@ function SelectedCowsSummary({
   countLabel = "selected",
 }: SelectedCowsSummaryProps) {
   return (
-    <div className="card workdaySelectedSummaryCard">
+    <div className="card workdaySelectedSummaryCard selectedCowsContainer">
       <div className="sectionHeader">
         <div>
           <h2 className="sectionTitle">{title}</h2>
@@ -31,7 +31,7 @@ function SelectedCowsSummary({
       {selectedCows.length === 0 ? (
         <p className="emptyState">{emptyMessage}</p>
       ) : (
-        <div className="workdaySelectionPills">
+        <div className="selectedCowsList">
           {selectedCows.map((cow) => (
             <div key={cow.id} className="workdaySelectionPill">
               <Link className="workdaySelectionPillLink" to={`/cows/${cow.id}`}>

@@ -64,6 +64,29 @@ public class WorkdayController : ControllerBase
         return NoContent();
     }
 
+    // POST: api/workdays/{id}/actions
+    [HttpPost("{id:guid}/actions")]
+    public async Task<ActionResult<WorkdayAction>> AddActionToWorkday(
+        Guid id,
+        [FromBody] CreateWorkdayActionDto dto)
+    {
+        if (dto == null || string.IsNullOrWhiteSpace(dto.Name))
+        {
+            throw new ValidationException("Action name is required.");
+        }
+
+        var action = await _service.AddActionToWorkday(id, dto.Name);
+        return Ok(action);
+    }
+
+    // DELETE: api/workdays/{id}/actions/{actionId}
+    [HttpDelete("{id:guid}/actions/{actionId:guid}")]
+    public async Task<ActionResult> RemoveActionFromWorkday(Guid id, Guid actionId)
+    {
+        await _service.RemoveActionFromWorkday(id, actionId);
+        return NoContent();
+    }
+
     // DELETE: api/workdays/{id}/cows/{cowId}
     [HttpDelete("{id:guid}/cows/{cowId:guid}")]
     public async Task<ActionResult> RemoveCowFromWorkday(Guid id, Guid cowId)
@@ -102,6 +125,14 @@ public class WorkdayController : ControllerBase
     {
         await _service.RestoreWorkday(id);
         return Ok();
+    }
+
+    // POST: api/workdays/{id}/start
+    [HttpPost("{id:guid}/start")]
+    public async Task<ActionResult> StartWorkday(Guid id)
+    {
+        await _service.StartWorkday(id);
+        return NoContent();
     }
 
     // DELETE: api/workdays/{id}

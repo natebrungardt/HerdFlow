@@ -314,6 +314,33 @@ public class WorkdayService
         return action;
     }
 
+    public async Task RemoveActionFromWorkday(Guid workdayId, Guid actionId)
+    {
+        var userId = GetCurrentUserId();
+        var action = await _context.WorkdayActions
+            .Include(existingAction => existingAction.Workday)
+            .FirstOrDefaultAsync(existingAction =>
+                existingAction.Id == actionId &&
+                existingAction.WorkdayId == workdayId &&
+                existingAction.Workday.UserId == userId);
+
+        if (action == null)
+        {
+            var workdayExists = await _context.Workdays
+                .AnyAsync(workday => workday.Id == workdayId && workday.UserId == userId);
+
+            if (!workdayExists)
+            {
+                throw new NotFoundException("Workday not found.");
+            }
+
+            return;
+        }
+
+        _context.WorkdayActions.Remove(action);
+        await _context.SaveChangesAsync();
+    }
+
     public async Task ToggleEntry(Guid workdayId, Guid cowId, Guid actionId)
     {
         var userId = GetCurrentUserId();

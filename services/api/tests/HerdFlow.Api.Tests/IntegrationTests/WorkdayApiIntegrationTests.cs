@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using FluentAssertions;
 using HerdFlow.Api.Models;
+using HerdFlow.Api.Models.Enums;
 using HerdFlow.Api.Tests.TestInfrastructure;
 
 namespace HerdFlow.Api.Tests.IntegrationTests;
@@ -155,5 +156,52 @@ public class WorkdayApiIntegrationTests
             olderRemovedWorkday.Id,
             legacyRemovedWorkday.Id);
         removedWorkdays[0].RemovedAt.Should().NotBeNull();
+    }
+
+    [Fact]
+    public async Task AddAction_and_start_endpoints_support_workday_setup_flow()
+    {
+        await using var factory = new HerdFlowApiFactory();
+        var cow = TestData.Cow("user-a", "A-100");
+        var workday = new Workday
+        {
+            UserId = "user-a",
+            Title = "Morning Checks",
+            WorkdayCows = new List<WorkdayCow>
+            {
+                new() { CowId = cow.Id }
+            }
+        };
+
+        await factory.SeedAsync(dbContext =>
+        {
+            dbContext.Cows.Add(cow);
+            dbContext.Workdays.Add(workday);
+            return Task.CompletedTask;
+        });
+        using var client = factory.CreateClientForUser("user-a");
+
+        var addActionResponse = await client.PostAsJsonAsync(
+            $"/api/workdays/{workday.Id}/actions",
+            new { name = "Vaccinate" });
+
+        addActionResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var fetchedWorkday = await client.GetFromJsonAsync<Workday>(
+            $"/api/workdays/{workday.Id}",
+            ApiJson.Options);
+
+        fetchedWorkday.Should().NotBeNull();
+        fetchedWorkday!.Actions.Should().ContainSingle(action => action.Name == "Vaccinate");
+
+        var startResponse = await client.PostAsync($"/api/workdays/{workday.Id}/start", null);
+        startResponse.StatusCode.Should().Be(HttpStatusCode.NoContent);
+
+        var startedWorkday = await client.GetFromJsonAsync<Workday>(
+            $"/api/workdays/{workday.Id}",
+            ApiJson.Options);
+
+        startedWorkday.Should().NotBeNull();
+        startedWorkday!.Status.Should().Be(WorkdayStatus.InProgress);
     }
 }

@@ -113,42 +113,44 @@ function WorkdayCowSelector({
       ) : cows.length === 0 ? (
         <p className="emptyState">No cows match your search.</p>
       ) : (
-        cows.map((cow) => {
-          const isSelected = selectedCowIds.includes(cow.id);
+        <div className="workdaySelectableListScroll">
+          {cows.map((cow) => {
+            const isSelected = selectedCowIds.includes(cow.id);
 
-          return (
-            <button
-              key={cow.id}
-              type="button"
-              className={`cowRowCard workdaySelectableRow ${isSelected ? "selected" : ""}`.trim()}
-              onClick={() => onToggleCow(cow.id)}
-              aria-pressed={isSelected}
-            >
-              <div className="cowRowMain">
-                <div className="cowRowTitle">Tag #{cow.tagNumber}</div>
-                <div className="cowRowMeta">
-                  {cow.livestockGroup || "Unassigned"} •{" "}
-                  {cow.healthStatus || "Unknown health status"} •{" "}
-                  {cow.sex || "Unknown sex"} •{" "}
-                  {cow.pregnancyStatus || "No pregnancy status"}
+            return (
+              <button
+                key={cow.id}
+                type="button"
+                className={`cowRowCard workdaySelectableRow ${isSelected ? "selected" : ""}`.trim()}
+                onClick={() => onToggleCow(cow.id)}
+                aria-pressed={isSelected}
+              >
+                <div className="cowRowMain">
+                  <div className="cowRowTitle">Tag #{cow.tagNumber}</div>
+                  <div className="cowRowMeta">
+                    {cow.livestockGroup || "Unassigned"} •{" "}
+                    {cow.healthStatus || "Unknown health status"} •{" "}
+                    {cow.sex || "Unknown sex"} •{" "}
+                    {cow.pregnancyStatus || "No pregnancy status"}
+                  </div>
+                  <div className="cowRowOwner">
+                    Owner: {cow.ownerName || "Unknown owner"}
+                  </div>
                 </div>
-                <div className="cowRowOwner">
-                  Owner: {cow.ownerName || "Unknown owner"}
-                </div>
-              </div>
 
-              <div className="cowRowActions">
-                <div
-                  className={
-                    isSelected ? "statusPill" : "statusPill needsTreatment"
-                  }
-                >
-                  {isSelected ? "Added" : "Available"}
+                <div className="cowRowActions">
+                  <div
+                    className={
+                      isSelected ? "statusPill" : "statusPill needsTreatment"
+                    }
+                  >
+                    {isSelected ? "Added" : "Available"}
+                  </div>
                 </div>
-              </div>
-            </button>
-          );
-        })
+              </button>
+            );
+          })}
+        </div>
       )}
     </div>
   );

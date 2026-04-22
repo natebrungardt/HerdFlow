@@ -438,6 +438,30 @@ public class WorkdayServiceTests
     }
 
     [Fact]
+    public async Task RemoveActionFromWorkday_removes_action()
+    {
+        await using var testContext = new ServiceTestContext();
+        var workday = new Workday
+        {
+            UserId = "test-user",
+            Title = "Morning Checks",
+            Actions = new List<WorkdayAction>
+            {
+                new() { Name = "Vaccinate" }
+            }
+        };
+
+        testContext.DbContext.Workdays.Add(workday);
+        await testContext.DbContext.SaveChangesAsync();
+
+        var service = testContext.CreateWorkdayService();
+
+        await service.RemoveActionFromWorkday(workday.Id, workday.Actions[0].Id);
+
+        testContext.DbContext.WorkdayActions.Should().BeEmpty();
+    }
+
+    [Fact]
     public async Task ToggleEntry_flips_completion_state()
     {
         await using var testContext = new ServiceTestContext();
