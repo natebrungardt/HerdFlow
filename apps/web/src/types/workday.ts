@@ -22,8 +22,6 @@ export type Workday = {
   summary?: string | null;
   status: "Draft" | "InProgress" | "Completed";
   createdAt: string;
-  removedAt?: string | null;
-  isRemoved: boolean;
   workdayCows?: WorkdayCowAssignment[];
   actions?: WorkdayAction[];
 };

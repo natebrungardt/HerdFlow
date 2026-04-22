@@ -116,8 +116,8 @@ function Navbar() {
       return (
         location.pathname === "/workdays" ||
         location.pathname === "/workdays/new" ||
-        (/^\/workdays\/[^/]+$/.test(location.pathname) &&
-          location.pathname !== "/workdays/removed")
+        (/^\/workdays\/[^/]+(?:\/active)?$/.test(location.pathname) &&
+          location.pathname !== "/workdays/completed")
       );
     }
 
@@ -177,18 +177,20 @@ function Navbar() {
             Workdays
           </Link>
           <Link
+            className={
+              isActivePath("/workdays/completed") ? "active" : undefined
+            }
+            to="/workdays/completed"
+            onClick={handleNavbarNavigation("/workdays/completed")}
+          >
+            Completed Workdays
+          </Link>
+          <Link
             className={isActivePath("/removed") ? "active" : undefined}
             to="/removed"
             onClick={handleNavbarNavigation("/removed")}
           >
             Archived Cows
-          </Link>
-          <Link
-            className={isActivePath("/workdays/removed") ? "active" : undefined}
-            to="/workdays/removed"
-            onClick={handleNavbarNavigation("/workdays/removed")}
-          >
-            Archived Workdays
           </Link>
           <Link
             className={isActivePath("/finances") ? "active" : undefined}

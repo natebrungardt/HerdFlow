@@ -1077,6 +1077,22 @@
   box-shadow: 0 10px 24px rgba(155, 123, 255, 0.2);
 }
 
+.statusPill.workdayStatusPill.draft {
+  color: #435068;
+  background: linear-gradient(180deg, #eef2f7 0%, #dde5ef 100%);
+  box-shadow: 0 10px 24px rgba(87, 103, 129, 0.14);
+}
+
+.statusPill.workdayStatusPill.inProgress {
+  background: linear-gradient(180deg, #4d94ff 0%, #2f6ed0 100%);
+  box-shadow: 0 10px 24px rgba(77, 148, 255, 0.2);
+}
+
+.statusPill.workdayStatusPill.completed {
+  background: linear-gradient(180deg, #44c767 0%, #2eaa53 100%);
+  box-shadow: 0 10px 24px rgba(68, 199, 103, 0.2);
+}
+
 .emptyState {
   color: var(--text-note);
   padding: 6px 2px;

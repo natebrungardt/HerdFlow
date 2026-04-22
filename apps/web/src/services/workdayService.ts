@@ -25,8 +25,8 @@ export async function getActiveWorkdays(): Promise<Workday[]> {
   return response.json();
 }
 
-export async function getArchivedWorkdays(): Promise<Workday[]> {
-  const response = await apiFetch(`${WORKDAY_API_BASE_PATH}/archived`);
+export async function getCompletedWorkdays(): Promise<Workday[]> {
+  const response = await apiFetch(`${WORKDAY_API_BASE_PATH}/completed`);
   return response.json();
 }
 
@@ -63,15 +63,9 @@ export async function updateWorkday(
   return response.json();
 }
 
-export async function archiveWorkday(id: string): Promise<void> {
-  await apiFetch(`${WORKDAY_API_BASE_PATH}/${id}/archive`, {
-    method: "PUT",
-  });
-}
-
-export async function restoreWorkday(id: string): Promise<void> {
-  await apiFetch(`${WORKDAY_API_BASE_PATH}/${id}/restore`, {
-    method: "PUT",
+export async function deleteWorkday(id: string): Promise<void> {
+  await apiFetch(`${WORKDAY_API_BASE_PATH}/${id}`, {
+    method: "DELETE",
   });
 }
 
@@ -117,6 +111,12 @@ export async function removeWorkdayAction(
 
 export async function startWorkday(id: string): Promise<void> {
   await apiFetch(`${WORKDAY_API_BASE_PATH}/${id}/start`, {
+    method: "POST",
+  });
+}
+
+export async function completeWorkday(id: string): Promise<void> {
+  await apiFetch(`${WORKDAY_API_BASE_PATH}/${id}/complete`, {
     method: "POST",
   });
 }

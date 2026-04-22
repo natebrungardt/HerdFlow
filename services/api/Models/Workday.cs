@@ -19,8 +19,7 @@ public class Workday
     public WorkdayStatus Status { get; set; } = WorkdayStatus.Draft;
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-    public bool IsRemoved { get; set; } = false;
-    public DateTime? RemovedAt { get; set; }
+    public DateTime? CompletedAt { get; set; }
     // Relationships
     public List<WorkdayCow> WorkdayCows { get; set; } = new();
     public List<WorkdayNote> WorkdayNotes { get; set; } = new();

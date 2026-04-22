@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import WorkdayListView from "../../components/workdays/WorkdayListView";
-import { getArchivedWorkdays } from "../../services/workdayService";
+import { getCompletedWorkdays } from "../../services/workdayService";
 import type { Workday } from "../../types/workday";
 import "../../styles/AllCows.css";
 
-function formatRemovedDate(dateValue: string | null | undefined) {
+function formatCompletedDate(dateValue: string) {
   if (!dateValue) {
     return null;
   }
@@ -22,16 +22,16 @@ function formatRemovedDate(dateValue: string | null | undefined) {
   }).format(date);
 }
 
-function RemovedWorkdays() {
+function CompletedWorkdays() {
   const [workdays, setWorkdays] = useState<Workday[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    async function loadArchivedWorkdays() {
+    async function loadCompletedWorkdays() {
       try {
         setError("");
-        const data = await getArchivedWorkdays();
+        const data = await getCompletedWorkdays();
         setWorkdays(data);
       } catch (err) {
         const message =
@@ -42,7 +42,7 @@ function RemovedWorkdays() {
       }
     }
 
-    loadArchivedWorkdays();
+    void loadCompletedWorkdays();
   }, []);
 
   return (
@@ -50,17 +50,17 @@ function RemovedWorkdays() {
       workdays={workdays}
       loading={loading}
       error={error}
-      title="Archived Workdays"
-      subtitle="Review archived workdays and jump back into individual records."
+      title="Completed Workdays"
+      subtitle="Review completed workdays and revisit the plans your crew finished."
       getWorkdayHref={(workday) => `/workdays/${workday.id}`}
-      emptyMessage="No archived workdays found."
+      emptyMessage="No completed workdays found."
       showScheduledDateLabel={false}
       getWorkdaySupplementaryMeta={(workday) => {
-        const formattedDate = formatRemovedDate(workday.removedAt);
-        return formattedDate ? `Date Removed: ${formattedDate}` : null;
+        const formattedDate = formatCompletedDate(workday.date);
+        return formattedDate ? `Completed For: ${formattedDate}` : null;
       }}
     />
   );
 }
 
-export default RemovedWorkdays;
+export default CompletedWorkdays;

@@ -5,7 +5,7 @@ import { getDashboardFarmLabel, getUserFarmName } from "../lib/account";
 import { getCows, getRemovedCows } from "../services/cowService";
 import {
   getActiveWorkdays,
-  getArchivedWorkdays,
+  getCompletedWorkdays,
 } from "../services/workdayService";
 import type { Cow } from "../types/cow";
 import type { Workday } from "../types/workday";
@@ -46,7 +46,7 @@ function Dashboard() {
   const [cows, setCows] = useState<Cow[]>([]);
   const [archivedCows, setArchivedCows] = useState<Cow[]>([]);
   const [workdays, setWorkdays] = useState<Workday[]>([]);
-  const [archivedWorkdays, setArchivedWorkdays] = useState<Workday[]>([]);
+  const [completedWorkdays, setCompletedWorkdays] = useState<Workday[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const farmLabel = getDashboardFarmLabel(user);
@@ -56,18 +56,18 @@ function Dashboard() {
     async function loadDashboard() {
       try {
         setError("");
-        const [activeCows, removedCows, activeWorkdays, removedWorkdays] =
+        const [activeCows, removedCows, activeWorkdays, finishedWorkdays] =
           await Promise.all([
             getCows(),
             getRemovedCows(),
             getActiveWorkdays(),
-            getArchivedWorkdays(),
+            getCompletedWorkdays(),
           ]);
 
         setCows(activeCows);
         setArchivedCows(removedCows);
         setWorkdays(activeWorkdays);
-        setArchivedWorkdays(removedWorkdays);
+        setCompletedWorkdays(finishedWorkdays);
       } catch (err) {
         const message =
           err instanceof Error ? err.message : "Failed to load dashboard";
@@ -142,14 +142,14 @@ function Dashboard() {
     return cows.filter((cow) => cow.healthStatus !== "Healthy");
   }, [cows]);
 
-  const recentArchivedWorkdays = useMemo(() => {
-    return [...archivedWorkdays].sort((leftWorkday, rightWorkday) => {
+  const recentCompletedWorkdays = useMemo(() => {
+    return [...completedWorkdays].sort((leftWorkday, rightWorkday) => {
       return (
         new Date(rightWorkday.date).getTime() -
         new Date(leftWorkday.date).getTime()
       );
     });
-  }, [archivedWorkdays]);
+  }, [completedWorkdays]);
 
   const recentArchivedCows = useMemo(() => {
     return [...archivedCows].sort((leftCow, rightCow) => {
@@ -312,17 +312,17 @@ function Dashboard() {
               <div className="dashboardSplitGrid">
                 <section className="dashboardCard">
                   <div className="dataCardHeader">
-                    <h2 className="cardTitle">Archived Workdays</h2>
+                    <h2 className="cardTitle">Completed Workdays</h2>
                     <span className="cardSubtle">
-                      {archivedWorkdays.length} archived
+                      {completedWorkdays.length} completed
                     </span>
                   </div>
 
-                  {recentArchivedWorkdays.length === 0 ? (
-                    <p className="emptyState">No archived workdays found.</p>
+                  {recentCompletedWorkdays.length === 0 ? (
+                    <p className="emptyState">No completed workdays found.</p>
                   ) : (
                     <div className="dashboardList dashboardListScrollable">
-                      {recentArchivedWorkdays.map((workday) => (
+                      {recentCompletedWorkdays.map((workday) => (
                         <Link
                           key={workday.id}
                           className="cowRowCard"
@@ -334,12 +334,12 @@ function Dashboard() {
                               {workday.summary?.trim() || "No summary yet."}
                             </div>
                             <div className="cowRowOwner">
-                              Archived workday record
+                              Completed workday record
                             </div>
                           </div>
 
                           <div className="cowRowActions">
-                            <div className="statusPill">Archived</div>
+                            <div className="statusPill">Completed</div>
                           </div>
                         </Link>
                       ))}

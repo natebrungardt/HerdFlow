@@ -81,19 +81,18 @@ public class WorkdayService
     {
         var userId = GetCurrentUserId();
         return await _context.Workdays
-            .Where(w => w.UserId == userId && !w.IsRemoved)
+            .Where(w => w.UserId == userId && w.Status != WorkdayStatus.Completed)
             .OrderByDescending(w => w.CreatedAt)
             .ToListAsync();
     }
 
-    // READ - Archived Workdays
-    public async Task<List<Workday>> GetArchivedWorkdays()
+    // READ - Completed Workdays
+    public async Task<List<Workday>> GetCompletedWorkdays()
     {
         var userId = GetCurrentUserId();
         return await _context.Workdays
-            .Where(w => w.UserId == userId && w.IsRemoved)
-            .OrderByDescending(w => w.RemovedAt.HasValue)
-            .ThenByDescending(w => w.RemovedAt)
+            .Where(w => w.UserId == userId && w.Status == WorkdayStatus.Completed)
+            .OrderByDescending(w => w.CompletedAt ?? w.CreatedAt)
             .ToListAsync();
     }
 
@@ -386,30 +385,10 @@ public class WorkdayService
     {
         var workday = await FindWorkdayAsync(workdayId);
         workday.Status = WorkdayStatus.Completed;
+        workday.CompletedAt = DateTime.UtcNow;
         await _context.SaveChangesAsync();
     }
 
-    // UPDATE - Archive Workday
-    public async Task ArchiveWorkday(Guid id)
-    {
-        var workday = await FindWorkdayAsync(id);
-
-        workday.IsRemoved = true;
-        workday.RemovedAt = DateTime.UtcNow;
-        await _context.SaveChangesAsync();
-    }
-
-    // UPDATE - Restore Workday
-    public async Task RestoreWorkday(Guid id)
-    {
-        var workday = await FindWorkdayAsync(id);
-
-        workday.IsRemoved = false;
-        workday.RemovedAt = null;
-        await _context.SaveChangesAsync();
-    }
-
-    // DELETE (optional hard delete)
     public async Task DeleteWorkday(Guid id)
     {
         var workday = await FindWorkdayAsync(id);

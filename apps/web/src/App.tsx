@@ -15,8 +15,8 @@ import RemovedCows from "./pages/cows/RemovedCows";
 import AllWorkdayPage from "./pages/workdays/AllWorkdayPage";
 import AddWorkdayPage from "./pages/workdays/AddWorkdayPage";
 import ActiveWorkdayPage from "./pages/workdays/ActiveWorkdayPage";
+import CompletedWorkdays from "./pages/workdays/CompletedWorkdays";
 import WorkdayPage from "./pages/workdays/WorkdayPage";
-import RemovedWorkdays from "./pages/workdays/RemovedWorkdays";
 import Finances from "./pages/Finances";
 import { PendingWorkdaySelectionProvider } from "./context/PendingWorkdaySelectionContext";
 import { ThemeProvider } from "./context/ThemeContext";
@@ -93,7 +93,7 @@ function App() {
             <Route path="/workdays/new" element={<AddWorkdayPage />} />
             <Route path="/workdays/:id" element={<WorkdayPage />} />
             <Route path="/workdays/:id/active" element={<ActiveWorkdayPage />} />
-            <Route path="/workdays/removed" element={<RemovedWorkdays />} />
+            <Route path="/workdays/completed" element={<CompletedWorkdays />} />
             <Route path="/finances" element={<Finances />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Route>,

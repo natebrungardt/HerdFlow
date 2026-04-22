@@ -31,6 +31,28 @@ function formatWorkdayDate(dateValue: string) {
   }).format(date);
 }
 
+function getWorkdayStatusLabel(status: Workday["status"]) {
+  switch (status) {
+    case "InProgress":
+      return "In Progress";
+    case "Completed":
+      return "Completed";
+    default:
+      return "Draft";
+  }
+}
+
+function getWorkdayStatusPillClassName(status: Workday["status"]) {
+  switch (status) {
+    case "InProgress":
+      return "statusPill workdayStatusPill inProgress";
+    case "Completed":
+      return "statusPill workdayStatusPill completed";
+    default:
+      return "statusPill workdayStatusPill draft";
+  }
+}
+
 function WorkdayListView({
   workdays,
   loading,
@@ -127,8 +149,8 @@ function WorkdayListView({
                     </div>
 
                     <div className="cowRowActions">
-                      <div className="statusPill">
-                        {formatWorkdayDate(workday.date)}
+                      <div className={getWorkdayStatusPillClassName(workday.status)}>
+                        {getWorkdayStatusLabel(workday.status)}
                       </div>
                     </div>
                   </>

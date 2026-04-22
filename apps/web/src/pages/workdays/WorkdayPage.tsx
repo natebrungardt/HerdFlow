@@ -13,11 +13,10 @@ import { getCows } from "../../services/cowService";
 import {
   addCowsToWorkday,
   addWorkdayAction,
-  archiveWorkday,
+  deleteWorkday,
   getWorkdayById,
   removeCowFromWorkday,
   removeWorkdayAction,
-  restoreWorkday,
   startWorkday,
   updateWorkday,
 } from "../../services/workdayService";
@@ -92,10 +91,9 @@ function WorkdayPage() {
     useState<Cow | null>(null);
   const [pendingCowRemoval, setPendingCowRemoval] = useState<Cow | null>(null);
   const [pendingPageAction, setPendingPageAction] = useState<
-    "archive" | "back" | null
+    "delete" | "back" | null
   >(null);
-  const [showArchiveModal, setShowArchiveModal] = useState(false);
-  const [showRestoreModal, setShowRestoreModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   const healthStatusFilters = ["Healthy", "Needs Treatment"];
   const livestockGroupFilters = livestockGroupOptions.map(
@@ -205,7 +203,7 @@ function WorkdayPage() {
     [workday],
   );
   const canStartWorkday =
-    !workday?.isRemoved &&
+    workday?.status !== "Completed" &&
     (workday?.workdayCows?.length ?? 0) > 0 &&
     actions.length > 0;
 
@@ -474,28 +472,15 @@ function WorkdayPage() {
     }
   }
 
-  async function handleArchive() {
+  async function handleDelete() {
     if (!workday) return;
 
     try {
-      await archiveWorkday(workday.id);
+      await deleteWorkday(workday.id);
       navigate("/workdays");
     } catch (err) {
       const message =
-        err instanceof Error ? err.message : "Failed to archive workday";
-      setError(message);
-    }
-  }
-
-  async function handleRestore() {
-    if (!workday) return;
-
-    try {
-      await restoreWorkday(workday.id);
-      navigate("/workdays");
-    } catch (err) {
-      const message =
-        err instanceof Error ? err.message : "Failed to restore workday";
+        err instanceof Error ? err.message : "Failed to delete workday";
       setError(message);
     }
   }
@@ -509,13 +494,13 @@ function WorkdayPage() {
     navigate("/workdays");
   }
 
-  function handleArchiveClick() {
+  function handleDeleteClick() {
     if (hasPendingSelectedCows) {
-      setPendingPageAction("archive");
+      setPendingPageAction("delete");
       return;
     }
 
-    setShowArchiveModal(true);
+    setShowDeleteModal(true);
   }
 
   if (loading) {
@@ -563,33 +548,23 @@ function WorkdayPage() {
               </p>
             </div>
 
-            {workday.isRemoved ? (
+            <div className="workdayHeaderActions">
               <button
                 type="button"
-                className="restoreButton"
-                onClick={() => setShowRestoreModal(true)}
+                className="addCowButton workdayStartButton"
+                onClick={handleStartWorkday}
+                disabled={!canStartWorkday || startingWorkday}
               >
-                Restore Workday
+                {startingWorkday ? "Starting..." : "Start Workday"}
               </button>
-            ) : (
-              <div className="workdayHeaderActions">
-                <button
-                  type="button"
-                  className="addCowButton workdayStartButton"
-                  onClick={handleStartWorkday}
-                  disabled={!canStartWorkday || startingWorkday}
-                >
-                  {startingWorkday ? "Starting..." : "Start Workday"}
-                </button>
-                <button
-                  type="button"
-                  className="btn btn-danger"
-                  onClick={handleArchiveClick}
-                >
-                  Delete Workday
-                </button>
-              </div>
-            )}
+              <button
+                type="button"
+                className="btn btn-danger"
+                onClick={handleDeleteClick}
+              >
+                Delete Workday
+              </button>
+            </div>
           </div>
 
           <div className="workdaySetupColumns">
@@ -668,27 +643,14 @@ function WorkdayPage() {
       </div>
 
       <Modal
-        isOpen={showArchiveModal}
+        isOpen={showDeleteModal}
         title="Delete Workday"
         message={`Are you sure you want to delete this workday?\n\nAll assigned cows and actions will be permanently removed.\nThis action cannot be undone.`}
         confirmText="Delete Workday"
-        onCancel={() => setShowArchiveModal(false)}
+        onCancel={() => setShowDeleteModal(false)}
         onConfirm={async () => {
-          setShowArchiveModal(false);
-          await handleArchive();
-        }}
-      />
-
-      <Modal
-        isOpen={showRestoreModal}
-        title="Restore Workday"
-        message={`Are you sure you want to restore ${workday.title}?`}
-        confirmText="Restore Workday"
-        confirmVariant="success"
-        onCancel={() => setShowRestoreModal(false)}
-        onConfirm={async () => {
-          setShowRestoreModal(false);
-          await handleRestore();
+          setShowDeleteModal(false);
+          await handleDelete();
         }}
       />
 
@@ -709,7 +671,7 @@ function WorkdayPage() {
             return;
           }
 
-          setShowArchiveModal(true);
+          setShowDeleteModal(true);
         }}
       />
 

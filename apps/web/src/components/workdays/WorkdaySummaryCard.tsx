@@ -2,7 +2,7 @@ type WorkdaySummaryCardProps = {
   scheduledDate: string;
   createdAt: string;
   cowCount: number;
-  isRemoved: boolean;
+  status: "Draft" | "InProgress" | "Completed";
 };
 
 function formatDate(dateValue: string) {
@@ -23,7 +23,7 @@ function WorkdaySummaryCard({
   scheduledDate,
   createdAt,
   cowCount,
-  isRemoved,
+  status,
 }: WorkdaySummaryCardProps) {
   return (
     <div className="dashboardCard">
@@ -47,7 +47,7 @@ function WorkdaySummaryCard({
         </div>
         <div className="infoTile">
           <div className="infoLabel">Status</div>
-          <div className="infoValue">{isRemoved ? "Archived" : "Active"}</div>
+          <div className="infoValue">{status}</div>
         </div>
       </div>
     </div>

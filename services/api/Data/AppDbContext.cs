@@ -63,7 +63,8 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<WorkdayCow>()
             .HasOne(wc => wc.Workday)
             .WithMany(w => w.WorkdayCows)
-            .HasForeignKey(wc => wc.WorkdayId);
+            .HasForeignKey(wc => wc.WorkdayId)
+            .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<WorkdayCow>()
             .HasOne(wc => wc.Cow)
@@ -82,7 +83,8 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<WorkdayAction>()
             .HasOne(a => a.Workday)
             .WithMany(w => w.Actions)
-            .HasForeignKey(a => a.WorkdayId);
+            .HasForeignKey(a => a.WorkdayId)
+            .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<WorkdayEntry>()
             .HasKey(e => new { e.WorkdayId, e.CowId, e.ActionId });

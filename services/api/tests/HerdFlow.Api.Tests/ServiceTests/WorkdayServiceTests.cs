@@ -269,7 +269,7 @@ public class WorkdayServiceTests
     }
 
     [Fact]
-    public async Task Archive_and_restore_workday_updates_removed_state_and_timestamp()
+    public async Task CompleteWorkday_moves_workday_into_completed_results()
     {
         await using var testContext = new ServiceTestContext();
         var workday = new Workday
@@ -283,58 +283,95 @@ public class WorkdayServiceTests
 
         var service = testContext.CreateWorkdayService();
 
-        await service.ArchiveWorkday(workday.Id);
-        var removedWorkdays = await service.GetArchivedWorkdays();
-        removedWorkdays.Should().ContainSingle(w => w.Id == workday.Id);
-        removedWorkdays[0].RemovedAt.Should().NotBeNull();
+        await service.CompleteWorkday(workday.Id);
 
-        await service.RestoreWorkday(workday.Id);
-        (await service.GetArchivedWorkdays()).Should().BeEmpty();
+        var activeWorkdays = await service.GetActiveWorkdays();
+        var completedWorkdays = await service.GetCompletedWorkdays();
+        var updatedWorkday = await service.GetWorkdayById(workday.Id);
 
-        var restoredWorkday = await service.GetWorkdayById(workday.Id);
-        restoredWorkday.IsRemoved.Should().BeFalse();
-        restoredWorkday.RemovedAt.Should().BeNull();
+        activeWorkdays.Should().BeEmpty();
+        completedWorkdays.Should().ContainSingle(w => w.Id == workday.Id);
+        updatedWorkday.Status.Should().Be(WorkdayStatus.Completed);
+        updatedWorkday.CompletedAt.Should().NotBeNull();
     }
 
     [Fact]
-    public async Task GetArchivedWorkdays_returns_most_recently_removed_first()
+    public async Task GetCompletedWorkdays_returns_most_recent_first()
     {
         await using var testContext = new ServiceTestContext();
-        var olderRemovedWorkday = new Workday
+        var olderCompletedWorkday = new Workday
         {
             UserId = "test-user",
-            Title = "Older Removed Workday",
-            IsRemoved = true,
-            RemovedAt = new DateTime(2026, 4, 5, 13, 0, 0, DateTimeKind.Utc)
+            Title = "Older Completed Workday",
+            Status = WorkdayStatus.Completed,
+            Date = new DateOnly(2026, 4, 6),
+            CreatedAt = new DateTime(2026, 4, 5, 13, 0, 0, DateTimeKind.Utc),
+            CompletedAt = new DateTime(2026, 4, 5, 14, 0, 0, DateTimeKind.Utc)
         };
-        var newerRemovedWorkday = new Workday
+        var newerCompletedWorkday = new Workday
         {
             UserId = "test-user",
-            Title = "Newer Removed Workday",
-            IsRemoved = true,
-            RemovedAt = new DateTime(2026, 4, 6, 13, 0, 0, DateTimeKind.Utc)
+            Title = "Newer Completed Workday",
+            Status = WorkdayStatus.Completed,
+            Date = new DateOnly(2026, 4, 5),
+            CreatedAt = new DateTime(2026, 4, 6, 13, 0, 0, DateTimeKind.Utc),
+            CompletedAt = new DateTime(2026, 4, 6, 14, 0, 0, DateTimeKind.Utc)
         };
-        var legacyRemovedWorkday = new Workday
+        var draftWorkday = new Workday
         {
             UserId = "test-user",
-            Title = "Legacy Removed Workday",
-            IsRemoved = true
+            Title = "Draft Workday",
+            Status = WorkdayStatus.Draft,
+            Date = new DateOnly(2026, 4, 7),
+            CreatedAt = new DateTime(2026, 4, 7, 13, 0, 0, DateTimeKind.Utc)
         };
 
         testContext.DbContext.Workdays.AddRange(
-            olderRemovedWorkday,
-            newerRemovedWorkday,
-            legacyRemovedWorkday);
+            olderCompletedWorkday,
+            newerCompletedWorkday,
+            draftWorkday);
         await testContext.DbContext.SaveChangesAsync();
 
         var service = testContext.CreateWorkdayService();
 
-        var removedWorkdays = await service.GetArchivedWorkdays();
+        var completedWorkdays = await service.GetCompletedWorkdays();
 
-        removedWorkdays.Select(workday => workday.Id).Should().ContainInOrder(
-            newerRemovedWorkday.Id,
-            olderRemovedWorkday.Id,
-            legacyRemovedWorkday.Id);
+        completedWorkdays.Select(workday => workday.Id).Should().ContainInOrder(
+            newerCompletedWorkday.Id,
+            olderCompletedWorkday.Id);
+    }
+
+    [Fact]
+    public async Task GetCompletedWorkdays_falls_back_to_created_at_when_completed_at_is_missing()
+    {
+        await using var testContext = new ServiceTestContext();
+        var legacyCompletedWorkday = new Workday
+        {
+            UserId = "test-user",
+            Title = "Legacy Completed Workday",
+            Status = WorkdayStatus.Completed,
+            CreatedAt = new DateTime(2026, 4, 5, 13, 0, 0, DateTimeKind.Utc)
+        };
+        var newerLegacyCompletedWorkday = new Workday
+        {
+            UserId = "test-user",
+            Title = "Newer Legacy Completed Workday",
+            Status = WorkdayStatus.Completed,
+            CreatedAt = new DateTime(2026, 4, 6, 13, 0, 0, DateTimeKind.Utc)
+        };
+
+        testContext.DbContext.Workdays.AddRange(
+            legacyCompletedWorkday,
+            newerLegacyCompletedWorkday);
+        await testContext.DbContext.SaveChangesAsync();
+
+        var service = testContext.CreateWorkdayService();
+
+        var completedWorkdays = await service.GetCompletedWorkdays();
+
+        completedWorkdays.Select(workday => workday.Id).Should().ContainInOrder(
+            newerLegacyCompletedWorkday.Id,
+            legacyCompletedWorkday.Id);
     }
 
     [Fact]

@@ -1,9 +1,11 @@
 using System.Net;
 using System.Net.Http.Json;
 using FluentAssertions;
+using HerdFlow.Api.Data;
 using HerdFlow.Api.Models;
 using HerdFlow.Api.Models.Enums;
 using HerdFlow.Api.Tests.TestInfrastructure;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace HerdFlow.Api.Tests.IntegrationTests;
 
@@ -71,91 +73,103 @@ public class WorkdayApiIntegrationTests
     }
 
     [Fact]
-    public async Task Archive_and_restore_endpoints_update_removed_visibility_and_timestamp()
+    public async Task Delete_endpoint_hard_deletes_workday_and_related_records()
     {
         await using var factory = new HerdFlowApiFactory();
+        var cow = TestData.Cow("user-a", "A-100");
+        var action = new WorkdayAction
+        {
+            Name = "Vaccinate"
+        };
         var workday = new Workday
         {
             UserId = "user-a",
-            Title = "Morning Checks"
+            Title = "Morning Checks",
+            WorkdayCows = new List<WorkdayCow>
+            {
+                new() { CowId = cow.Id }
+            },
+            Actions = new List<WorkdayAction>
+            {
+                action
+            }
         };
         await factory.SeedAsync(dbContext =>
         {
+            dbContext.Cows.Add(cow);
             dbContext.Workdays.Add(workday);
+            dbContext.WorkdayEntries.Add(new WorkdayEntry
+            {
+                WorkdayId = workday.Id,
+                CowId = cow.Id,
+                ActionId = action.Id,
+                IsCompleted = false
+            });
             return Task.CompletedTask;
         });
         using var client = factory.CreateClientForUser("user-a");
 
-        var archiveResponse = await client.PutAsync($"/api/workdays/{workday.Id}/archive", null);
-        archiveResponse.StatusCode.Should().Be(HttpStatusCode.NoContent);
+        var deleteResponse = await client.DeleteAsync($"/api/workdays/{workday.Id}");
+        deleteResponse.StatusCode.Should().Be(HttpStatusCode.NoContent);
 
-        var removedWorkdays = await client.GetFromJsonAsync<List<Workday>>(
-            "/api/workdays/archived",
-            ApiJson.Options);
-        removedWorkdays.Should().ContainSingle(w => w.Id == workday.Id);
-        removedWorkdays![0].RemovedAt.Should().NotBeNull();
+        var fetchResponse = await client.GetAsync($"/api/workdays/{workday.Id}");
+        fetchResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
 
-        var restoreResponse = await client.PutAsync($"/api/workdays/{workday.Id}/restore", null);
-        restoreResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-
-        var activeWorkdays = await client.GetFromJsonAsync<List<Workday>>(
-            "/api/workdays",
-            ApiJson.Options);
-        activeWorkdays.Should().ContainSingle(w => w.Id == workday.Id);
-
-        var restoredWorkday = await client.GetFromJsonAsync<Workday>(
-            $"/api/workdays/{workday.Id}",
-            ApiJson.Options);
-        restoredWorkday.Should().NotBeNull();
-        restoredWorkday!.RemovedAt.Should().BeNull();
-        restoredWorkday.IsRemoved.Should().BeFalse();
+        using var scope = factory.Services.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        (await dbContext.Workdays.FindAsync(workday.Id)).Should().BeNull();
+        dbContext.WorkdayCows.Should().BeEmpty();
+        dbContext.WorkdayActions.Should().BeEmpty();
+        dbContext.WorkdayEntries.Should().BeEmpty();
     }
 
     [Fact]
-    public async Task GetArchivedWorkdays_returns_most_recently_removed_first_with_removed_at()
+    public async Task GetCompletedWorkdays_returns_most_recent_first()
     {
         await using var factory = new HerdFlowApiFactory();
-        var olderRemovedWorkday = new Workday
+        var olderCompletedWorkday = new Workday
         {
             UserId = "user-a",
-            Title = "Older Removed Workday",
-            IsRemoved = true,
-            RemovedAt = new DateTime(2026, 4, 5, 13, 0, 0, DateTimeKind.Utc)
+            Title = "Older Completed Workday",
+            Status = WorkdayStatus.Completed,
+            Date = new DateOnly(2026, 4, 6),
+            CreatedAt = new DateTime(2026, 4, 5, 13, 0, 0, DateTimeKind.Utc)
         };
-        var newerRemovedWorkday = new Workday
+        var newerCompletedWorkday = new Workday
         {
             UserId = "user-a",
-            Title = "Newer Removed Workday",
-            IsRemoved = true,
-            RemovedAt = new DateTime(2026, 4, 6, 13, 0, 0, DateTimeKind.Utc)
+            Title = "Newer Completed Workday",
+            Status = WorkdayStatus.Completed,
+            Date = new DateOnly(2026, 4, 5),
+            CreatedAt = new DateTime(2026, 4, 6, 13, 0, 0, DateTimeKind.Utc)
         };
-        var legacyRemovedWorkday = new Workday
+        var draftWorkday = new Workday
         {
             UserId = "user-a",
-            Title = "Legacy Removed Workday",
-            IsRemoved = true
+            Title = "Draft Workday",
+            Status = WorkdayStatus.Draft,
+            Date = new DateOnly(2026, 4, 7),
+            CreatedAt = new DateTime(2026, 4, 7, 13, 0, 0, DateTimeKind.Utc)
         };
 
         await factory.SeedAsync(dbContext =>
         {
             dbContext.Workdays.AddRange(
-                olderRemovedWorkday,
-                newerRemovedWorkday,
-                legacyRemovedWorkday);
+                olderCompletedWorkday,
+                newerCompletedWorkday,
+                draftWorkday);
             return Task.CompletedTask;
         });
         using var client = factory.CreateClientForUser("user-a");
 
-        var removedWorkdays = await client.GetFromJsonAsync<List<Workday>>(
-            "/api/workdays/archived",
+        var completedWorkdays = await client.GetFromJsonAsync<List<Workday>>(
+            "/api/workdays/completed",
             ApiJson.Options);
 
-        removedWorkdays.Should().NotBeNull();
-        removedWorkdays!.Select(workday => workday.Id).Should().ContainInOrder(
-            newerRemovedWorkday.Id,
-            olderRemovedWorkday.Id,
-            legacyRemovedWorkday.Id);
-        removedWorkdays[0].RemovedAt.Should().NotBeNull();
+        completedWorkdays.Should().NotBeNull();
+        completedWorkdays!.Select(workday => workday.Id).Should().ContainInOrder(
+            newerCompletedWorkday.Id,
+            olderCompletedWorkday.Id);
     }
 
     [Fact]
@@ -203,5 +217,43 @@ public class WorkdayApiIntegrationTests
 
         startedWorkday.Should().NotBeNull();
         startedWorkday!.Status.Should().Be(WorkdayStatus.InProgress);
+    }
+
+    [Fact]
+    public async Task Complete_endpoint_moves_workday_to_completed()
+    {
+        await using var factory = new HerdFlowApiFactory();
+        var workday = new Workday
+        {
+            UserId = "user-a",
+            Title = "Morning Checks",
+            Status = WorkdayStatus.InProgress
+        };
+
+        await factory.SeedAsync(dbContext =>
+        {
+            dbContext.Workdays.Add(workday);
+            return Task.CompletedTask;
+        });
+        using var client = factory.CreateClientForUser("user-a");
+
+        var completeResponse = await client.PostAsync($"/api/workdays/{workday.Id}/complete", null);
+        completeResponse.StatusCode.Should().Be(HttpStatusCode.NoContent);
+
+        var activeWorkdays = await client.GetFromJsonAsync<List<Workday>>(
+            "/api/workdays",
+            ApiJson.Options);
+        activeWorkdays.Should().NotContain(w => w.Id == workday.Id);
+
+        var completedWorkdays = await client.GetFromJsonAsync<List<Workday>>(
+            "/api/workdays/completed",
+            ApiJson.Options);
+        completedWorkdays.Should().Contain(w => w.Id == workday.Id);
+
+        var completedWorkday = await client.GetFromJsonAsync<Workday>(
+            $"/api/workdays/{workday.Id}",
+            ApiJson.Options);
+        completedWorkday.Should().NotBeNull();
+        completedWorkday!.CompletedAt.Should().NotBeNull();
     }
 }

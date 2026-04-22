@@ -35,11 +35,11 @@ public class WorkdayController : ControllerBase
         return Ok(workdays);
     }
 
-    // GET: api/workdays/archived
-    [HttpGet("archived")]
-    public async Task<ActionResult<List<Workday>>> GetArchivedWorkdays()
+    // GET: api/workdays/completed
+    [HttpGet("completed")]
+    public async Task<ActionResult<List<Workday>>> GetCompletedWorkdays()
     {
-        var workdays = await _service.GetArchivedWorkdays();
+        var workdays = await _service.GetCompletedWorkdays();
         return Ok(workdays);
     }
 
@@ -111,27 +111,19 @@ public class WorkdayController : ControllerBase
         return NoContent();
     }
 
-    // PUT: api/workdays/{id}/archive
-    [HttpPut("{id:guid}/archive")]
-    public async Task<ActionResult> ArchiveWorkday(Guid id)
-    {
-        await _service.ArchiveWorkday(id);
-        return NoContent();
-    }
-
-    // PUT: api/workdays/{id}/restore
-    [HttpPut("{id:guid}/restore")]
-    public async Task<ActionResult> RestoreWorkday(Guid id)
-    {
-        await _service.RestoreWorkday(id);
-        return Ok();
-    }
-
     // POST: api/workdays/{id}/start
     [HttpPost("{id:guid}/start")]
     public async Task<ActionResult> StartWorkday(Guid id)
     {
         await _service.StartWorkday(id);
+        return NoContent();
+    }
+
+    // POST: api/workdays/{id}/complete
+    [HttpPost("{id:guid}/complete")]
+    public async Task<ActionResult> CompleteWorkday(Guid id)
+    {
+        await _service.CompleteWorkday(id);
         return NoContent();
     }
 
