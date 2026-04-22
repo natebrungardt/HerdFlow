@@ -5,7 +5,8 @@ type WorkdayCowSelectorProps = {
   loading: boolean;
   error: string;
   searchTerm: string;
-  selectedCowIds: string[];
+  addingCowIds?: string[];
+  selectedCowIds?: string[];
   activeHealthStatuses: string[];
   activeLivestockGroups: string[];
   activeSexes: string[];
@@ -19,7 +20,8 @@ type WorkdayCowSelectorProps = {
   onToggleLivestockGroup: (value: string) => void;
   onToggleSex: (value: string) => void;
   onTogglePregnancyStatus: (value: string) => void;
-  onToggleCow: (cowId: string) => void;
+  onAddCow?: (cowId: string) => void;
+  onToggleCow?: (cowId: string) => void;
 };
 
 function WorkdayCowSelector({
@@ -27,7 +29,8 @@ function WorkdayCowSelector({
   loading,
   error,
   searchTerm,
-  selectedCowIds,
+  addingCowIds = [],
+  selectedCowIds = [],
   activeHealthStatuses,
   activeLivestockGroups,
   activeSexes,
@@ -41,14 +44,19 @@ function WorkdayCowSelector({
   onToggleLivestockGroup,
   onToggleSex,
   onTogglePregnancyStatus,
+  onAddCow,
   onToggleCow,
 }: WorkdayCowSelectorProps) {
+  const instantAddMode = typeof onAddCow === "function";
+
   return (
     <div className="cowListCard">
       <div className="sectionHeader">
         <h2 className="sectionTitle">Select Cows</h2>
         <span className="sectionSubtle">
-          {selectedCowIds.length} selected for this workday
+          {instantAddMode
+            ? "Click any cow to add to workday"
+            : `${selectedCowIds.length} selected for this workday`}
         </span>
       </div>
 
@@ -106,26 +114,56 @@ function WorkdayCowSelector({
         ))}
       </div>
 
-      {loading ? (
-        <p className="emptyState">Loading cows...</p>
-      ) : error ? (
-        <p className="emptyState">{error}</p>
-      ) : cows.length === 0 ? (
-        <p className="emptyState">No cows match your search.</p>
-      ) : (
-        <div className="workdaySelectableListScroll">
-          {cows.map((cow) => {
+      <div className="workdaySelectableListScroll cow-list-container">
+        {loading ? (
+          <p className="emptyState">Loading cows...</p>
+        ) : error ? (
+          <p className="emptyState">{error}</p>
+        ) : cows.length === 0 ? (
+          <p className="emptyState">No cows match your search.</p>
+        ) : (
+          cows.map((cow) => {
+            const isAdding = addingCowIds.includes(cow.id);
             const isSelected = selectedCowIds.includes(cow.id);
+            const rowClassName = `cowRowCard workdaySelectableRow cow-card ${
+              isAdding
+                ? "workdaySelectableRowPending"
+                : isSelected
+                  ? "selected"
+                  : ""
+            }`.trim();
+
+            const badgeClassName = isAdding
+              ? "statusPill"
+              : isSelected
+                ? "statusPill"
+                : "statusPill needsTreatment";
+
+            const badgeLabel = isAdding
+              ? "Adding..."
+              : isSelected
+                ? "Added"
+                : instantAddMode
+                  ? "Add"
+                  : "Available";
 
             return (
               <button
                 key={cow.id}
                 type="button"
-                className={`cowRowCard workdaySelectableRow ${isSelected ? "selected" : ""}`.trim()}
-                onClick={() => onToggleCow(cow.id)}
-                aria-pressed={isSelected}
+                className={rowClassName}
+                onClick={() => {
+                  if (instantAddMode) {
+                    onAddCow(cow.id);
+                    return;
+                  }
+
+                  onToggleCow?.(cow.id);
+                }}
+                disabled={isAdding}
+                aria-pressed={!instantAddMode ? isSelected : undefined}
               >
-                <div className="cowRowMain">
+                <div className="cowRowMain cow-card-content">
                   <div className="cowRowTitle">Tag #{cow.tagNumber}</div>
                   <div className="cowRowMeta">
                     {cow.livestockGroup || "Unassigned"} •{" "}
@@ -139,19 +177,13 @@ function WorkdayCowSelector({
                 </div>
 
                 <div className="cowRowActions">
-                  <div
-                    className={
-                      isSelected ? "statusPill" : "statusPill needsTreatment"
-                    }
-                  >
-                    {isSelected ? "Added" : "Available"}
-                  </div>
+                  <div className={badgeClassName}>{badgeLabel}</div>
                 </div>
               </button>
             );
-          })}
-        </div>
-      )}
+          })
+        )}
+      </div>
     </div>
   );
 }

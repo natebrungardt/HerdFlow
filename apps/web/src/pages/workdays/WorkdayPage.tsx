@@ -22,7 +22,6 @@ import {
 } from "../../services/workdayService";
 import type { Cow } from "../../types/cow";
 import type { Workday, WorkdayAction } from "../../types/workday";
-import { usePendingWorkdaySelection } from "../../context/usePendingWorkdaySelection";
 import "../../styles/AllCows.css";
 import "../../styles/CowDetailPage.css";
 import WorkdayComposerCard from "../../components/workdays/WorkdayComposerCard";
@@ -45,16 +44,9 @@ function normalizeWorkdayDetails(details: {
   };
 }
 
-function delay(ms: number) {
-  return new Promise((resolve) => {
-    window.setTimeout(resolve, ms);
-  });
-}
-
 function WorkdayPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { setHasPendingSelections } = usePendingWorkdaySelection();
   const [workday, setWorkday] = useState<Workday | null>(null);
   const [title, setTitle] = useState("");
   const [date, setDate] = useState("");
@@ -62,7 +54,6 @@ function WorkdayPage() {
   const [actions, setActions] = useState<WorkdayAction[]>([]);
   const [actionName, setActionName] = useState("");
   const [allCows, setAllCows] = useState<Cow[]>([]);
-  const [selectedCowIds, setSelectedCowIds] = useState<string[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [activeHealthStatuses, setActiveHealthStatuses] = useState<string[]>(
     [],
@@ -79,7 +70,7 @@ function WorkdayPage() {
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState("Saved");
-  const [addingCows, setAddingCows] = useState(false);
+  const [addingCowIds, setAddingCowIds] = useState<string[]>([]);
   const [addingAction, setAddingAction] = useState(false);
   const [startingWorkday, setStartingWorkday] = useState(false);
   const [removingActionId, setRemovingActionId] = useState<string | null>(null);
@@ -87,12 +78,7 @@ function WorkdayPage() {
   const [removingAssignedCowId, setRemovingAssignedCowId] = useState<
     string | null
   >(null);
-  const [pendingAssignedCowRemoval, setPendingAssignedCowRemoval] =
-    useState<Cow | null>(null);
-  const [pendingCowRemoval, setPendingCowRemoval] = useState<Cow | null>(null);
-  const [pendingPageAction, setPendingPageAction] = useState<
-    "delete" | "back" | null
-  >(null);
+  const [removeSuccessMessage, setRemoveSuccessMessage] = useState("");
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   const healthStatusFilters = ["Healthy", "Needs Treatment"];
@@ -194,14 +180,6 @@ function WorkdayPage() {
     activePregnancyStatuses,
   ]);
 
-  const selectedCows = useMemo(
-    () => availableCows.filter((cow) => selectedCowIds.includes(cow.id)),
-    [availableCows, selectedCowIds],
-  );
-  const assignedCows = useMemo(
-    () => (workday?.workdayCows ?? []).map((assignment) => assignment.cow),
-    [workday],
-  );
   const canStartWorkday =
     workday?.status !== "Completed" &&
     (workday?.workdayCows?.length ?? 0) > 0 &&
@@ -218,33 +196,17 @@ function WorkdayPage() {
     );
   }
 
-  function toggleCow(cowId: string) {
-    setSelectedCowIds((current) =>
-      current.includes(cowId)
-        ? current.filter((idValue) => idValue !== cowId)
-        : [...current, cowId],
-    );
-  }
-
-  function promptSelectedCowRemoval(cowId: string) {
-    const cowToRemove = selectedCows.find((cow) => cow.id === cowId) ?? null;
-    setPendingCowRemoval(cowToRemove);
-  }
-
-  function promptAssignedCowRemoval(cowId: string) {
-    const cowToRemove = assignedCows.find((cow) => cow.id === cowId) ?? null;
-    setPendingAssignedCowRemoval(cowToRemove);
-  }
-
-  const hasPendingSelectedCows = selectedCowIds.length > 0;
-
   useEffect(() => {
-    setHasPendingSelections(hasPendingSelectedCows);
+    if (!removeSuccessMessage) return undefined;
+
+    const timeoutId = window.setTimeout(() => {
+      setRemoveSuccessMessage("");
+    }, 2200);
 
     return () => {
-      setHasPendingSelections(false);
+      window.clearTimeout(timeoutId);
     };
-  }, [hasPendingSelectedCows, setHasPendingSelections]);
+  }, [removeSuccessMessage]);
 
   async function refreshWorkday() {
     if (!id) return;
@@ -320,68 +282,25 @@ function WorkdayPage() {
     event.currentTarget.blur();
   }
 
-  async function handleAddSelectedCows() {
-    if (!workday || selectedCowIds.length === 0) return;
+  async function handleAddCow(cowId: string) {
+    if (!workday || addingCowIds.includes(cowId) || assignedCowIds.has(cowId)) {
+      return;
+    }
 
-    setAddingCows(true);
+    setAddingCowIds((current) => [...current, cowId]);
     setError("");
 
-    const pendingCowIds = [...selectedCowIds];
-    let stopped = false;
-    let completed = false;
-
-    const monitorAssignedCows = async () => {
-      for (let attempt = 0; attempt < 6; attempt += 1) {
-        await delay(attempt === 0 ? 4000 : 2500);
-
-        if (stopped || completed) {
-          return;
-        }
-
-        const refreshedWorkday = await getWorkdayById(workday.id);
-        const assignedCowIds = new Set(
-          (refreshedWorkday.workdayCows ?? []).map(
-            (assignment) => assignment.cowId,
-          ),
-        );
-        const allAssigned = pendingCowIds.every((cowId) =>
-          assignedCowIds.has(cowId),
-        );
-
-        if (allAssigned) {
-          completed = true;
-          setWorkday(refreshedWorkday);
-          setTitle(refreshedWorkday.title);
-          setDate(formatDateInput(refreshedWorkday.date));
-          setSummary(refreshedWorkday.summary ?? "");
-          setSelectedCowIds([]);
-          return;
-        }
-      }
-    };
-
-    const monitorPromise = monitorAssignedCows().catch(() => {
-      // Ignore polling errors and let the main save result drive the fallback message.
-    });
-
     try {
-      await addCowsToWorkday(workday.id, pendingCowIds);
-
-      if (!completed) {
-        setSelectedCowIds([]);
-        await refreshWorkday();
-        completed = true;
-      }
+      await addCowsToWorkday(workday.id, [cowId]);
+      await refreshWorkday();
     } catch (err) {
-      if (!completed) {
-        const message =
-          err instanceof Error ? err.message : "Failed to add cows to workday";
-        setError(message);
-      }
+      const message =
+        err instanceof Error ? err.message : "Failed to add cows to workday";
+      setError(message);
     } finally {
-      stopped = true;
-      await monitorPromise;
-      setAddingCows(false);
+      setAddingCowIds((current) =>
+        current.filter((currentCowId) => currentCowId !== cowId),
+      );
     }
   }
 
@@ -389,11 +308,13 @@ function WorkdayPage() {
     if (!workday) return;
 
     setError("");
+    setRemoveSuccessMessage("");
     setRemovingAssignedCowId(cowId);
 
     try {
       await removeCowFromWorkday(workday.id, cowId);
       await refreshWorkday();
+      setRemoveSuccessMessage("Cow removed");
     } catch (err) {
       const message =
         err instanceof Error
@@ -486,20 +407,10 @@ function WorkdayPage() {
   }
 
   function handleBackClick() {
-    if (hasPendingSelectedCows) {
-      setPendingPageAction("back");
-      return;
-    }
-
     navigate("/workdays");
   }
 
   function handleDeleteClick() {
-    if (hasPendingSelectedCows) {
-      setPendingPageAction("delete");
-      return;
-    }
-
     setShowDeleteModal(true);
   }
 
@@ -526,6 +437,9 @@ function WorkdayPage() {
   return (
     <div className="allCowsPage">
       {error ? <div className="pageErrorBanner">{error}</div> : null}
+      {removeSuccessMessage ? (
+        <div className="pageSuccessBanner">{removeSuccessMessage}</div>
+      ) : null}
 
       <div className="allCowsShell">
         <div className="allCowsContent">
@@ -604,17 +518,16 @@ function WorkdayPage() {
                 onAddAction={handleAddAction}
                 onRemoveAction={handleRemoveAction}
                 onActionInputKeyDown={handleActionInputKeyDown}
-                onRemoveCow={promptAssignedCowRemoval}
+                onRemoveCow={handleRemoveCow}
               />
             </div>
           </div>
 
           <WorkdayAddCowsPanel
-            selectedCows={selectedCows}
             filteredAvailableCows={filteredAvailableCows}
             loading={cowLoading}
             searchTerm={searchTerm}
-            selectedCowIds={selectedCowIds}
+            addingCowIds={addingCowIds}
             activeHealthStatuses={activeHealthStatuses}
             activeLivestockGroups={activeLivestockGroups}
             activeSexes={activeSexes}
@@ -623,9 +536,6 @@ function WorkdayPage() {
             livestockGroupFilters={livestockGroupFilters}
             sexFilters={sexFilters}
             pregnancyStatusFilters={pregnancyStatusFilters}
-            addingCows={addingCows}
-            onRemoveSelectedCow={promptSelectedCowRemoval}
-            onAddSelectedCows={handleAddSelectedCows}
             onSearchChange={setSearchTerm}
             onToggleHealthStatus={(value) =>
               toggleFilter(value, setActiveHealthStatuses)
@@ -637,7 +547,7 @@ function WorkdayPage() {
             onTogglePregnancyStatus={(value) =>
               toggleFilter(value, setActivePregnancyStatuses)
             }
-            onToggleCow={toggleCow}
+            onAddCow={handleAddCow}
           />
         </div>
       </div>
@@ -651,54 +561,6 @@ function WorkdayPage() {
         onConfirm={async () => {
           setShowDeleteModal(false);
           await handleDelete();
-        }}
-      />
-
-      <Modal
-        isOpen={pendingPageAction !== null}
-        title="Pending Cows to Add"
-        message="You have cows pending to be added to this workday. Add them before leaving, or continue without adding them."
-        confirmText="Continue"
-        onCancel={() => setPendingPageAction(null)}
-        onConfirm={() => {
-          if (!pendingPageAction) return;
-
-          const nextAction = pendingPageAction;
-          setPendingPageAction(null);
-
-          if (nextAction === "back") {
-            navigate("/workdays");
-            return;
-          }
-
-          setShowDeleteModal(true);
-        }}
-      />
-
-      <Modal
-        isOpen={pendingCowRemoval !== null}
-        title="Remove Selected Cow"
-        message={`Are you sure you want to remove cow #${pendingCowRemoval?.tagNumber ?? ""} from this workday selection?`}
-        confirmText="Remove Cow"
-        onCancel={() => setPendingCowRemoval(null)}
-        onConfirm={() => {
-          if (!pendingCowRemoval) return;
-          toggleCow(pendingCowRemoval.id);
-          setPendingCowRemoval(null);
-        }}
-      />
-
-      <Modal
-        isOpen={pendingAssignedCowRemoval !== null}
-        title="Remove Assigned Cow"
-        message={`Are you sure you want to remove cow #${pendingAssignedCowRemoval?.tagNumber ?? ""} from this workday?`}
-        confirmText="Remove Cow"
-        onCancel={() => setPendingAssignedCowRemoval(null)}
-        onConfirm={async () => {
-          if (!pendingAssignedCowRemoval) return;
-          const cowId = pendingAssignedCowRemoval.id;
-          setPendingAssignedCowRemoval(null);
-          await handleRemoveCow(cowId);
         }}
       />
     </div>

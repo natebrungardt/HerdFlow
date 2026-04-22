@@ -89,6 +89,16 @@
   border: 1px solid rgba(255, 0, 0, 0.2);
 }
 
+.pageSuccessBanner {
+  color: #2f6b3f;
+  background: rgba(76, 175, 80, 0.12);
+  padding: 10px 14px;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  font-size: 0.96rem;
+  border: 1px solid rgba(76, 175, 80, 0.24);
+}
+
 .cowDetailPage .btn {
   min-width: 120px;
 }

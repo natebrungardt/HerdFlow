@@ -64,7 +64,7 @@ function WorkdaySetupWorkspacePanel({
 
       {addError ? <p className="workdayInlineError">{addError}</p> : null}
 
-      <div className="workdayWorkspaceChips">
+      <div className="workdayWorkspaceChips action-tags-container">
         {actions.length === 0 ? (
           <p className="emptyState">Add actions to shape this workday.</p>
         ) : (
@@ -102,13 +102,16 @@ function WorkdaySetupWorkspacePanel({
         <span className="sectionSubtle">{assignments.length} assigned</span>
       </div>
 
-      {assignments.length === 0 ? (
-        <p className="emptyState">No cows have been added to this workday yet.</p>
-      ) : (
-        <div className="workdayWorkspaceCowListScroll">
+      <div className="workdayWorkspaceCowListScroll cow-list-container">
+        {assignments.length === 0 ? (
+          <p className="emptyState">No cows have been added to this workday yet.</p>
+        ) : (
           <div className="workdayWorkspaceCowList">
             {assignments.map((assignment) => (
-              <div key={assignment.id} className="workdayWorkspaceCowRow">
+              <div
+                key={assignment.id}
+                className="workdayWorkspaceCowRow cow-card"
+              >
                 <Link
                   className="workdayWorkspaceCowLink"
                   to={`/cows/${assignment.cow.id}`}
@@ -135,8 +138,8 @@ function WorkdaySetupWorkspacePanel({
               </div>
             ))}
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </section>
   );
 }

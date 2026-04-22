@@ -1,13 +1,11 @@
 import type { Cow } from "../../types/cow";
-import SelectedCowsSummary from "./SelectedCowsSummary";
 import WorkdayCowSelector from "./WorkdayCowSelector";
 
 type WorkdayAddCowsPanelProps = {
-  selectedCows: Cow[];
   filteredAvailableCows: Cow[];
   loading: boolean;
   searchTerm: string;
-  selectedCowIds: string[];
+  addingCowIds: string[];
   activeHealthStatuses: string[];
   activeLivestockGroups: string[];
   activeSexes: string[];
@@ -16,23 +14,19 @@ type WorkdayAddCowsPanelProps = {
   livestockGroupFilters: string[];
   sexFilters: string[];
   pregnancyStatusFilters: string[];
-  addingCows: boolean;
-  onRemoveSelectedCow: (cowId: string) => void;
-  onAddSelectedCows: () => void;
   onSearchChange: (value: string) => void;
   onToggleHealthStatus: (value: string) => void;
   onToggleLivestockGroup: (value: string) => void;
   onToggleSex: (value: string) => void;
   onTogglePregnancyStatus: (value: string) => void;
-  onToggleCow: (cowId: string) => void;
+  onAddCow: (cowId: string) => void;
 };
 
 function WorkdayAddCowsPanel({
-  selectedCows,
   filteredAvailableCows,
   loading,
   searchTerm,
-  selectedCowIds,
+  addingCowIds,
   activeHealthStatuses,
   activeLivestockGroups,
   activeSexes,
@@ -41,15 +35,12 @@ function WorkdayAddCowsPanel({
   livestockGroupFilters,
   sexFilters,
   pregnancyStatusFilters,
-  addingCows,
-  onRemoveSelectedCow,
-  onAddSelectedCows,
   onSearchChange,
   onToggleHealthStatus,
   onToggleLivestockGroup,
   onToggleSex,
   onTogglePregnancyStatus,
-  onToggleCow,
+  onAddCow,
 }: WorkdayAddCowsPanelProps) {
   return (
     <section className="dashboardCard workdayAddCowsCard">
@@ -59,30 +50,12 @@ function WorkdayAddCowsPanel({
       </div>
 
       <div className="workdayCreateLayout">
-        <SelectedCowsSummary
-          selectedCows={selectedCows}
-          onRemove={onRemoveSelectedCow}
-          title="Selected Cows"
-          emptyMessage="Select cows from the list below to add them to this workday."
-        />
-
-        <div className="workdayDetailActionRow">
-          <button
-            type="button"
-            className="addCowButton"
-            onClick={onAddSelectedCows}
-            disabled={addingCows || selectedCowIds.length === 0}
-          >
-            {addingCows ? "Adding..." : "Add Selected Cows"}
-          </button>
-        </div>
-
         <WorkdayCowSelector
           cows={filteredAvailableCows}
           loading={loading}
           error=""
           searchTerm={searchTerm}
-          selectedCowIds={selectedCowIds}
+          addingCowIds={addingCowIds}
           activeHealthStatuses={activeHealthStatuses}
           activeLivestockGroups={activeLivestockGroups}
           activeSexes={activeSexes}
@@ -96,7 +69,7 @@ function WorkdayAddCowsPanel({
           onToggleLivestockGroup={onToggleLivestockGroup}
           onToggleSex={onToggleSex}
           onTogglePregnancyStatus={onTogglePregnancyStatus}
-          onToggleCow={onToggleCow}
+          onAddCow={onAddCow}
         />
       </div>
     </section>
