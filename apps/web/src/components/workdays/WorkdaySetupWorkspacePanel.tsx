@@ -36,7 +36,7 @@ function WorkdaySetupWorkspacePanel({
       <div className="workdayWorkspaceHeader">
         <div className="workdayWorkspaceHeaderRow">
           <h2 className="sectionTitle">Workday Actions</h2>
-          <div className="workdayWorkspaceToolbar">
+          <div className="workdayWorkspaceToolbar action-input-row">
             <input
               type="text"
               className="searchInput workdayWorkspaceInput"

@@ -548,7 +548,7 @@ function WorkdayPage() {
               </p>
             </div>
 
-            <div className="workdayHeaderActions">
+            <div className="workdayHeaderActions workday-actions">
               <button
                 type="button"
                 className="addCowButton workdayStartButton"
@@ -567,7 +567,7 @@ function WorkdayPage() {
             </div>
           </div>
 
-          <div className="workdaySetupColumns">
+          <div className="workdaySetupColumns workday-container">
             <div className="workdaySetupColumn">
               <WorkdayComposerCard
                 title={title}
