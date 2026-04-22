@@ -8,6 +8,8 @@ using Npgsql;
 using System.Security.Claims;
 using HerdFlow.Api.Models.Enums;
 using System.Diagnostics;
+using System.Data;
+using NpgsqlTypes;
 
 namespace HerdFlow.Api.Services;
 
@@ -116,14 +118,6 @@ public class WorkdayService
             "WorkdayService.AddCowsToWorkday starting for workday {WorkdayId} with {CowCount} cows",
             id,
             cowIds.Count);
-        var workdayExists = await _context.Workdays
-            .AnyAsync(w => w.Id == id && w.UserId == userId);
-
-        if (!workdayExists)
-        {
-            throw new NotFoundException("Workday not found.");
-        }
-
         var distinctCowIds = cowIds
             .Distinct()
             .ToList();
@@ -133,84 +127,30 @@ public class WorkdayService
             return;
         }
 
-        _logger.LogInformation("WorkdayService.AddCowsToWorkday loading existing cows for workday {WorkdayId}", id);
-        var existingCowIds = await _context.WorkdayCows
-            .Where(wc => wc.WorkdayId == id)
-            .Select(wc => wc.CowId)
-            .ToHashSetAsync();
-
-        var newCowIds = distinctCowIds
-            .Where(cowId => !existingCowIds.Contains(cowId))
-            .ToList();
-
-        if (newCowIds.Count == 0)
+        if (!_context.Database.IsNpgsql())
         {
+            await AddCowsToWorkdayFallback(id, userId, distinctCowIds, stopwatch);
             return;
         }
 
-        var cows = await _context.Cows
-            .Where(c => c.UserId == userId && newCowIds.Contains(c.Id) && !c.IsRemoved)
-            .ToListAsync();
+        var assignmentIds = distinctCowIds.Select(_ => Guid.NewGuid()).ToArray();
+        var result = await ExecuteAddCowsMutationAsync(id, userId, distinctCowIds.ToArray(), assignmentIds);
 
-        if (cows.Count != newCowIds.Count)
+        if (!result.WorkdayFound)
+        {
+            throw new NotFoundException("Workday not found.");
+        }
+
+        if (result.ValidCowCount != distinctCowIds.Count)
         {
             throw new ValidationException("One or more cows could not be added to the workday.");
         }
 
-        var assignments = newCowIds.Select(cowId => new WorkdayCow
-        {
-            WorkdayId = id,
-            CowId = cowId
-        }).ToList();
-
-        _context.WorkdayCows.AddRange(assignments);
-
-        _logger.LogInformation("WorkdayService.AddCowsToWorkday loading actions for workday {WorkdayId}", id);
-        var actionIds = await _context.WorkdayActions
-            .Where(action => action.WorkdayId == id)
-            .Select(action => action.Id)
-            .ToListAsync();
-
-        if (actionIds.Count > 0)
-        {
-            var entries = newCowIds.SelectMany(cowId =>
-                actionIds.Select(actionId => new WorkdayEntry
-                {
-                    WorkdayId = id,
-                    CowId = cowId,
-                    ActionId = actionId,
-                    IsCompleted = false
-                }));
-
-            _context.WorkdayEntries.AddRange(entries);
-        }
-
-        try
-        {
-            _logger.LogInformation("WorkdayService.AddCowsToWorkday before SaveChangesAsync for workday {WorkdayId}", id);
-            await _context.SaveChangesAsync();
-            _logger.LogInformation(
-                "WorkdayService.AddCowsToWorkday after SaveChangesAsync for workday {WorkdayId} in {ElapsedMilliseconds}ms",
-                id,
-                stopwatch.ElapsedMilliseconds);
-        }
-        catch (DbUpdateException ex)
-        {
-            if (WasDuplicateWorkdayCowInsert(ex))
-            {
-                var refreshedWorkday = await _context.Workdays
-                    .Include(w => w.WorkdayCows)
-                    .FirstOrDefaultAsync(w => w.Id == id && w.UserId == userId);
-
-                if (refreshedWorkday is not null &&
-                    distinctCowIds.All(cowId => refreshedWorkday.WorkdayCows.Any(wc => wc.CowId == cowId)))
-                {
-                    return;
-                }
-            }
-
-            throw;
-        }
+        _logger.LogInformation(
+            "WorkdayService.AddCowsToWorkday completed for workday {WorkdayId} in {ElapsedMilliseconds}ms with {InsertedAssignments} assignments",
+            id,
+            stopwatch.ElapsedMilliseconds,
+            result.InsertedAssignmentCount);
     }
 
     public async Task RemoveCowFromWorkday(Guid id, Guid cowId)
@@ -221,14 +161,21 @@ public class WorkdayService
             "WorkdayService.RemoveCowFromWorkday starting for workday {WorkdayId} and cow {CowId}",
             id,
             cowId);
-        var workdayCow = await _context.WorkdayCows
-            .Include(wc => wc.Workday)
-            .FirstOrDefaultAsync(wc =>
+        var deletedEntries = await _context.WorkdayEntries
+            .Where(e =>
+                e.WorkdayId == id &&
+                e.CowId == cowId &&
+                _context.Workdays.Any(w => w.Id == e.WorkdayId && w.UserId == userId))
+            .ExecuteDeleteAsync();
+
+        var deletedAssignments = await _context.WorkdayCows
+            .Where(wc =>
                 wc.WorkdayId == id &&
                 wc.CowId == cowId &&
-                wc.Workday.UserId == userId);
+                _context.Workdays.Any(w => w.Id == wc.WorkdayId && w.UserId == userId))
+            .ExecuteDeleteAsync();
 
-        if (workdayCow == null)
+        if (deletedAssignments == 0)
         {
             var workdayExists = await _context.Workdays.AnyAsync(w => w.Id == id && w.UserId == userId);
 
@@ -240,18 +187,10 @@ public class WorkdayService
             return;
         }
 
-        var entries = _context.WorkdayEntries
-            .Where(e => e.WorkdayId == id && e.CowId == cowId);
-
-        _context.WorkdayEntries.RemoveRange(entries);
-        _context.WorkdayCows.Remove(workdayCow);
         _logger.LogInformation(
-            "WorkdayService.RemoveCowFromWorkday before SaveChangesAsync for workday {WorkdayId} and cow {CowId}",
-            id,
-            cowId);
-        await _context.SaveChangesAsync();
-        _logger.LogInformation(
-            "WorkdayService.RemoveCowFromWorkday after SaveChangesAsync for workday {WorkdayId} and cow {CowId} in {ElapsedMilliseconds}ms",
+            "WorkdayService.RemoveCowFromWorkday removed {EntryCount} entries and {AssignmentCount} assignments for workday {WorkdayId} and cow {CowId} in {ElapsedMilliseconds}ms",
+            deletedEntries,
+            deletedAssignments,
             id,
             cowId,
             stopwatch.ElapsedMilliseconds);
@@ -288,53 +227,39 @@ public class WorkdayService
             "WorkdayService.AddActionToWorkday starting for workday {WorkdayId} with action {ActionName}",
             workdayId,
             actionName);
-        var workday = await FindWorkdayAsync(workdayId);
         var normalizedName = actionName.Trim();
+        var userId = GetCurrentUserId();
 
-        _logger.LogInformation("WorkdayService.AddActionToWorkday checking duplicates for workday {WorkdayId}", workdayId);
-        var exists = await _context.WorkdayActions
-            .AnyAsync(a =>
-                a.WorkdayId == workdayId &&
-                a.Name.ToLower() == normalizedName.ToLower());
-
-        if (exists)
+        if (!_context.Database.IsNpgsql())
         {
-            throw new ValidationException("Action already exists.");
+            return await AddActionToWorkdayFallback(workdayId, userId, normalizedName, stopwatch);
         }
 
         var action = new WorkdayAction
         {
-            WorkdayId = workday.Id,
-            Name = normalizedName
+            Id = Guid.NewGuid(),
+            WorkdayId = workdayId,
+            Name = normalizedName,
+            CreatedAt = DateTime.UtcNow
         };
 
-        _context.WorkdayActions.Add(action);
+        var result = await ExecuteAddActionMutationAsync(action, userId);
 
-        _logger.LogInformation("WorkdayService.AddActionToWorkday loading cows for workday {WorkdayId}", workdayId);
-        var cowIds = await _context.WorkdayCows
-            .Where(wc => wc.WorkdayId == workdayId)
-            .Select(wc => wc.CowId)
-            .ToListAsync();
-
-        if (cowIds.Count > 0)
+        if (!result.WorkdayFound)
         {
-            var entries = cowIds.Select(cowId => new WorkdayEntry
-            {
-                WorkdayId = workdayId,
-                CowId = cowId,
-                ActionId = action.Id,
-                IsCompleted = false
-            });
-
-            _context.WorkdayEntries.AddRange(entries);
+            throw new NotFoundException("Workday not found.");
         }
 
-        _logger.LogInformation("WorkdayService.AddActionToWorkday before SaveChangesAsync for workday {WorkdayId}", workdayId);
-        await _context.SaveChangesAsync();
+        if (!result.ActionInserted)
+        {
+            throw new ValidationException("Action already exists.");
+        }
+
         _logger.LogInformation(
-            "WorkdayService.AddActionToWorkday after SaveChangesAsync for workday {WorkdayId} in {ElapsedMilliseconds}ms",
+            "WorkdayService.AddActionToWorkday completed for workday {WorkdayId} in {ElapsedMilliseconds}ms",
             workdayId,
             stopwatch.ElapsedMilliseconds);
+
         return action;
     }
 
@@ -346,14 +271,16 @@ public class WorkdayService
             "WorkdayService.RemoveActionFromWorkday starting for workday {WorkdayId} and action {ActionId}",
             workdayId,
             actionId);
-        var action = await _context.WorkdayActions
-            .Include(existingAction => existingAction.Workday)
-            .FirstOrDefaultAsync(existingAction =>
+        var deletedActions = await _context.WorkdayActions
+            .Where(existingAction =>
                 existingAction.Id == actionId &&
                 existingAction.WorkdayId == workdayId &&
-                existingAction.Workday.UserId == userId);
+                _context.Workdays.Any(workday =>
+                    workday.Id == existingAction.WorkdayId &&
+                    workday.UserId == userId))
+            .ExecuteDeleteAsync();
 
-        if (action == null)
+        if (deletedActions == 0)
         {
             var workdayExists = await _context.Workdays
                 .AnyAsync(workday => workday.Id == workdayId && workday.UserId == userId);
@@ -366,14 +293,9 @@ public class WorkdayService
             return;
         }
 
-        _context.WorkdayActions.Remove(action);
         _logger.LogInformation(
-            "WorkdayService.RemoveActionFromWorkday before SaveChangesAsync for workday {WorkdayId} and action {ActionId}",
-            workdayId,
-            actionId);
-        await _context.SaveChangesAsync();
-        _logger.LogInformation(
-            "WorkdayService.RemoveActionFromWorkday after SaveChangesAsync for workday {WorkdayId} and action {ActionId} in {ElapsedMilliseconds}ms",
+            "WorkdayService.RemoveActionFromWorkday removed {ActionCount} actions for workday {WorkdayId} and action {ActionId} in {ElapsedMilliseconds}ms",
+            deletedActions,
             workdayId,
             actionId,
             stopwatch.ElapsedMilliseconds);
@@ -488,4 +410,328 @@ public class WorkdayService
             && postgresException.SqlState == PostgresErrorCodes.UniqueViolation
             && postgresException.ConstraintName == "IX_WorkdayCows_WorkdayId_CowId";
     }
+
+    private async Task AddCowsToWorkdayFallback(
+        Guid id,
+        string userId,
+        List<Guid> distinctCowIds,
+        Stopwatch stopwatch)
+    {
+        var workdaySnapshot = await _context.Workdays
+            .AsNoTracking()
+            .Where(w => w.Id == id && w.UserId == userId)
+            .Select(w => new
+            {
+                ExistingCowIds = w.WorkdayCows.Select(wc => wc.CowId).ToList(),
+                ActionIds = w.Actions.Select(action => action.Id).ToList()
+            })
+            .FirstOrDefaultAsync();
+
+        if (workdaySnapshot == null)
+        {
+            throw new NotFoundException("Workday not found.");
+        }
+
+        var existingCowIds = workdaySnapshot.ExistingCowIds.ToHashSet();
+        var newCowIds = distinctCowIds
+            .Where(cowId => !existingCowIds.Contains(cowId))
+            .ToList();
+
+        if (newCowIds.Count == 0)
+        {
+            return;
+        }
+
+        var validCowIds = await _context.Cows
+            .AsNoTracking()
+            .Where(c => c.UserId == userId && newCowIds.Contains(c.Id) && !c.IsRemoved)
+            .Select(c => c.Id)
+            .ToListAsync();
+
+        if (validCowIds.Count != newCowIds.Count)
+        {
+            throw new ValidationException("One or more cows could not be added to the workday.");
+        }
+
+        var assignments = newCowIds.Select(cowId => new WorkdayCow
+        {
+            WorkdayId = id,
+            CowId = cowId
+        }).ToList();
+
+        _context.WorkdayCows.AddRange(assignments);
+
+        if (workdaySnapshot.ActionIds.Count > 0)
+        {
+            var entries = newCowIds.SelectMany(cowId =>
+                workdaySnapshot.ActionIds.Select(actionId => new WorkdayEntry
+                {
+                    WorkdayId = id,
+                    CowId = cowId,
+                    ActionId = actionId,
+                    IsCompleted = false
+                }));
+
+            _context.WorkdayEntries.AddRange(entries);
+        }
+
+        try
+        {
+            _logger.LogInformation("WorkdayService.AddCowsToWorkday before SaveChangesAsync for workday {WorkdayId}", id);
+            await _context.SaveChangesAsync();
+            _logger.LogInformation(
+                "WorkdayService.AddCowsToWorkday after SaveChangesAsync for workday {WorkdayId} in {ElapsedMilliseconds}ms",
+                id,
+                stopwatch.ElapsedMilliseconds);
+        }
+        catch (DbUpdateException ex)
+        {
+            if (WasDuplicateWorkdayCowInsert(ex))
+            {
+                var persistedCowIds = await _context.WorkdayCows
+                    .AsNoTracking()
+                    .Where(wc => wc.WorkdayId == id && distinctCowIds.Contains(wc.CowId))
+                    .Select(wc => wc.CowId)
+                    .ToListAsync();
+
+                if (distinctCowIds.All(cowId => persistedCowIds.Contains(cowId)))
+                {
+                    return;
+                }
+            }
+
+            throw;
+        }
+    }
+
+    private async Task<WorkdayAction> AddActionToWorkdayFallback(
+        Guid workdayId,
+        string userId,
+        string normalizedName,
+        Stopwatch stopwatch)
+    {
+        var workdaySnapshot = await _context.Workdays
+            .AsNoTracking()
+            .Where(w => w.Id == workdayId && w.UserId == userId)
+            .Select(w => new
+            {
+                WorkdayId = w.Id,
+                ExistingActionNames = w.Actions.Select(action => action.Name).ToList(),
+                CowIds = w.WorkdayCows.Select(wc => wc.CowId).ToList()
+            })
+            .FirstOrDefaultAsync();
+
+        if (workdaySnapshot == null)
+        {
+            throw new NotFoundException("Workday not found.");
+        }
+
+        if (workdaySnapshot.ExistingActionNames.Any(name =>
+                string.Equals(name, normalizedName, StringComparison.OrdinalIgnoreCase)))
+        {
+            throw new ValidationException("Action already exists.");
+        }
+
+        var action = new WorkdayAction
+        {
+            WorkdayId = workdaySnapshot.WorkdayId,
+            Name = normalizedName
+        };
+
+        _context.WorkdayActions.Add(action);
+
+        if (workdaySnapshot.CowIds.Count > 0)
+        {
+            var entries = workdaySnapshot.CowIds.Select(cowId => new WorkdayEntry
+            {
+                WorkdayId = workdayId,
+                CowId = cowId,
+                ActionId = action.Id,
+                IsCompleted = false
+            });
+
+            _context.WorkdayEntries.AddRange(entries);
+        }
+
+        _logger.LogInformation("WorkdayService.AddActionToWorkday before SaveChangesAsync for workday {WorkdayId}", workdayId);
+        await _context.SaveChangesAsync();
+        _logger.LogInformation(
+            "WorkdayService.AddActionToWorkday after SaveChangesAsync for workday {WorkdayId} in {ElapsedMilliseconds}ms",
+            workdayId,
+            stopwatch.ElapsedMilliseconds);
+
+        return action;
+    }
+
+    private async Task<AddCowsMutationResult> ExecuteAddCowsMutationAsync(
+        Guid workdayId,
+        string userId,
+        Guid[] cowIds,
+        Guid[] assignmentIds)
+    {
+        const string sql = """
+            WITH input_rows AS (
+                SELECT *
+                FROM unnest(@assignment_ids, @cow_ids) AS input_row(assignment_id, cow_id)
+            ),
+            distinct_rows AS (
+                SELECT DISTINCT ON (cow_id) assignment_id, cow_id
+                FROM input_rows
+                ORDER BY cow_id, assignment_id
+            ),
+            target_workday AS (
+                SELECT "Id"
+                FROM "Workdays"
+                WHERE "Id" = @workday_id AND "UserId" = @user_id
+            ),
+            valid_rows AS (
+                SELECT dr.assignment_id, dr.cow_id
+                FROM distinct_rows dr
+                JOIN "Cows" c
+                    ON c."Id" = dr.cow_id
+                   AND c."UserId" = @user_id
+                   AND NOT c."IsRemoved"
+                JOIN target_workday tw
+                    ON TRUE
+            ),
+            inserted_assignments AS (
+                INSERT INTO "WorkdayCows" ("Id", "WorkdayId", "CowId", "Status")
+                SELECT vr.assignment_id, @workday_id, vr.cow_id, NULL
+                FROM valid_rows vr
+                ON CONFLICT ("WorkdayId", "CowId") DO NOTHING
+                RETURNING "WorkdayId", "CowId"
+            ),
+            inserted_entries AS (
+                INSERT INTO "WorkdayEntries" ("WorkdayId", "CowId", "ActionId", "IsCompleted")
+                SELECT ia."WorkdayId", ia."CowId", wa."Id", FALSE
+                FROM inserted_assignments ia
+                JOIN "WorkdayActions" wa
+                    ON wa."WorkdayId" = ia."WorkdayId"
+                ON CONFLICT DO NOTHING
+                RETURNING 1
+            )
+            SELECT
+                EXISTS(SELECT 1 FROM target_workday) AS workday_found,
+                (SELECT COUNT(*) FROM valid_rows) AS valid_cow_count,
+                (SELECT COUNT(*) FROM inserted_assignments) AS inserted_assignment_count;
+            """;
+
+        var connection = (NpgsqlConnection)_context.Database.GetDbConnection();
+        var shouldClose = connection.State != ConnectionState.Open;
+
+        if (shouldClose)
+        {
+            await connection.OpenAsync();
+        }
+
+        try
+        {
+            await using var command = new NpgsqlCommand(sql, connection);
+            command.Parameters.AddWithValue("assignment_ids", NpgsqlDbType.Array | NpgsqlDbType.Uuid, assignmentIds);
+            command.Parameters.AddWithValue("cow_ids", NpgsqlDbType.Array | NpgsqlDbType.Uuid, cowIds);
+            command.Parameters.AddWithValue("workday_id", workdayId);
+            command.Parameters.AddWithValue("user_id", userId);
+
+            await using var reader = await command.ExecuteReaderAsync();
+
+            if (!await reader.ReadAsync())
+            {
+                throw new InvalidOperationException("Add cows mutation returned no result.");
+            }
+
+            return new AddCowsMutationResult(
+                reader.GetBoolean(0),
+                reader.GetInt32(1),
+                reader.GetInt32(2));
+        }
+        finally
+        {
+            if (shouldClose)
+            {
+                await connection.CloseAsync();
+            }
+        }
+    }
+
+    private async Task<AddActionMutationResult> ExecuteAddActionMutationAsync(
+        WorkdayAction action,
+        string userId)
+    {
+        const string sql = """
+            WITH target_workday AS (
+                SELECT "Id"
+                FROM "Workdays"
+                WHERE "Id" = @workday_id AND "UserId" = @user_id
+            ),
+            inserted_action AS (
+                INSERT INTO "WorkdayActions" ("Id", "WorkdayId", "Name", "CreatedAt")
+                SELECT @action_id, @workday_id, @action_name, @created_at
+                FROM target_workday
+                WHERE NOT EXISTS (
+                    SELECT 1
+                    FROM "WorkdayActions" existing_action
+                    WHERE existing_action."WorkdayId" = @workday_id
+                      AND lower(existing_action."Name") = lower(@action_name)
+                )
+                RETURNING 1
+            ),
+            inserted_entries AS (
+                INSERT INTO "WorkdayEntries" ("WorkdayId", "CowId", "ActionId", "IsCompleted")
+                SELECT @workday_id, wc."CowId", @action_id, FALSE
+                FROM inserted_action
+                JOIN "WorkdayCows" wc
+                    ON wc."WorkdayId" = @workday_id
+                ON CONFLICT DO NOTHING
+                RETURNING 1
+            )
+            SELECT
+                EXISTS(SELECT 1 FROM target_workday) AS workday_found,
+                EXISTS(SELECT 1 FROM inserted_action) AS action_inserted;
+            """;
+
+        var connection = (NpgsqlConnection)_context.Database.GetDbConnection();
+        var shouldClose = connection.State != ConnectionState.Open;
+
+        if (shouldClose)
+        {
+            await connection.OpenAsync();
+        }
+
+        try
+        {
+            await using var command = new NpgsqlCommand(sql, connection);
+            command.Parameters.AddWithValue("workday_id", action.WorkdayId);
+            command.Parameters.AddWithValue("user_id", userId);
+            command.Parameters.AddWithValue("action_id", action.Id);
+            command.Parameters.AddWithValue("action_name", action.Name);
+            command.Parameters.AddWithValue("created_at", action.CreatedAt);
+
+            await using var reader = await command.ExecuteReaderAsync();
+
+            if (!await reader.ReadAsync())
+            {
+                throw new InvalidOperationException("Add action mutation returned no result.");
+            }
+
+            return new AddActionMutationResult(
+                reader.GetBoolean(0),
+                reader.GetBoolean(1));
+        }
+        finally
+        {
+            if (shouldClose)
+            {
+                await connection.CloseAsync();
+            }
+        }
+    }
+
+    private sealed record AddCowsMutationResult(
+        bool WorkdayFound,
+        int ValidCowCount,
+        int InsertedAssignmentCount);
+
+    private sealed record AddActionMutationResult(
+        bool WorkdayFound,
+        bool ActionInserted);
 }
