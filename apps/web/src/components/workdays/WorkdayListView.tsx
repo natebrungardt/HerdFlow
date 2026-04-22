@@ -38,7 +38,7 @@ function getWorkdayStatusLabel(status: Workday["status"]) {
     case "Completed":
       return "Completed";
     default:
-      return "Draft";
+      return "Planned";
   }
 }
 

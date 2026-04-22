@@ -41,6 +41,28 @@ function formatLabel(value: string) {
   return value.replace(/([a-z])([A-Z])/g, "$1 $2");
 }
 
+function getWorkdayStatusLabel(status: Workday["status"]) {
+  switch (status) {
+    case "InProgress":
+      return "In Progress";
+    case "Completed":
+      return "Completed";
+    default:
+      return "Planned";
+  }
+}
+
+function getWorkdayStatusPillClassName(status: Workday["status"]) {
+  switch (status) {
+    case "InProgress":
+      return "statusPill workdayStatusPill inProgress";
+    case "Completed":
+      return "statusPill workdayStatusPill completed";
+    default:
+      return "statusPill workdayStatusPill draft";
+  }
+}
+
 function Dashboard() {
   const { user } = useContext(AuthContext);
   const [cows, setCows] = useState<Cow[]>([]);
@@ -252,8 +274,12 @@ function Dashboard() {
                           </div>
 
                           <div className="cowRowActions">
-                            <div className="statusPill">
-                              {formatDateLabel(workday.date)}
+                            <div
+                              className={getWorkdayStatusPillClassName(
+                                workday.status,
+                              )}
+                            >
+                              {getWorkdayStatusLabel(workday.status)}
                             </div>
                           </div>
                         </Link>

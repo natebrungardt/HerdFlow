@@ -19,6 +19,17 @@ function formatDate(dateValue: string) {
   }).format(date);
 }
 
+function getWorkdayStatusLabel(status: WorkdaySummaryCardProps["status"]) {
+  switch (status) {
+    case "InProgress":
+      return "In Progress";
+    case "Completed":
+      return "Completed";
+    default:
+      return "Planned";
+  }
+}
+
 function WorkdaySummaryCard({
   scheduledDate,
   createdAt,
@@ -47,7 +58,7 @@ function WorkdaySummaryCard({
         </div>
         <div className="infoTile">
           <div className="infoLabel">Status</div>
-          <div className="infoValue">{status}</div>
+          <div className="infoValue">{getWorkdayStatusLabel(status)}</div>
         </div>
       </div>
     </div>
