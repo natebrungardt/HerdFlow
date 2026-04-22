@@ -2,7 +2,7 @@
   background: var(--modal-bg);
   border: 1px solid var(--card-border);
   border-radius: 16px;
-  padding: 24px;
+  padding: 20px;
   width: 400px;
   max-width: 90%;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
@@ -10,7 +10,7 @@
 }
 
 .modalActions {
-  margin-top: 20px;
+  margin-top: 16px;
   display: flex;
   justify-content: flex-end;
   gap: 12px;

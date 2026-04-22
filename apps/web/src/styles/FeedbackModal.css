@@ -1,7 +1,7 @@
 .feedbackModalCard {
   width: min(620px, calc(100% - 32px));
   max-width: 100%;
-  padding: 32px;
+  padding: 28px;
   border-radius: 22px;
   box-shadow:
     0 20px 45px rgba(18, 36, 68, 0.16),
@@ -12,8 +12,8 @@
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 18px;
-  margin-bottom: 28px;
+  gap: 16px;
+  margin-bottom: 24px;
 }
 
 .feedbackModalHeader h3 {
@@ -51,13 +51,13 @@
 .feedbackModalForm {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px;
 }
 
 .feedbackModalGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 20px;
+  gap: 16px;
 }
 
 .feedbackField {
@@ -160,7 +160,7 @@
 
 @media (max-width: 640px) {
   .feedbackModalCard {
-    padding: 24px;
+    padding: 20px;
   }
 
   .feedbackModalHeader {

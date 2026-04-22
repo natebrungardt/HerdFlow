@@ -12,7 +12,7 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: var(--space-4);
-  margin-bottom: var(--space-5);
+  margin-bottom: var(--space-4);
 }
 
 .titleBlock {
@@ -87,7 +87,7 @@
 }
 
 .toolbarCard {
-  margin-bottom: var(--space-4);
+  margin-bottom: var(--space-3);
 }
 
 .searchInput {
@@ -121,7 +121,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-3);
-  margin-top: var(--space-4);
+  margin-top: var(--space-3);
 }
 
 .workdayFilterRow {

@@ -1,7 +1,7 @@
 .cowDashboardGrid {
   display: grid;
   grid-template-columns: minmax(0, 1.85fr) minmax(290px, 0.95fr);
-  gap: 20px;
+  gap: 16px;
   align-items: stretch;
 }
 
@@ -9,17 +9,17 @@
 .rightColumn {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px;
   height: 100%;
   align-items: stretch;
 }
 
 .dashboardCard {
-  padding: 18px;
+  padding: 16px;
 }
 
 .heroCard {
-  padding: 22px;
+  padding: 20px;
 }
 
 .eyebrow {
@@ -35,7 +35,7 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
-  margin-bottom: 22px;
+  margin-bottom: 20px;
 }
 
 .cow-header {
@@ -84,7 +84,7 @@
   background: rgba(255, 0, 0, 0.08);
   padding: 10px 14px;
   border-radius: 8px;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
   font-size: 0.96rem;
   border: 1px solid rgba(255, 0, 0, 0.2);
 }
@@ -94,7 +94,7 @@
   background: rgba(76, 175, 80, 0.12);
   padding: 10px 14px;
   border-radius: 8px;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
   font-size: 0.96rem;
   border: 1px solid rgba(76, 175, 80, 0.24);
 }
@@ -110,7 +110,7 @@
 .metricsGrid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 14px;
+  gap: 12px;
 }
 
 .metricCard {
