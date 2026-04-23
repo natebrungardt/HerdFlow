@@ -514,6 +514,55 @@ public class WorkdayServiceTests
     }
 
     [Fact]
+    public async Task GetWorkdayById_backfills_missing_entries_for_existing_grid()
+    {
+        await using var testContext = new ServiceTestContext();
+        var cowOne = TestData.Cow("test-user", "A-100");
+        var cowTwo = TestData.Cow("test-user", "A-101");
+        var workday = new Workday
+        {
+            UserId = "test-user",
+            Title = "Morning Checks",
+            WorkdayCows = new List<WorkdayCow>
+            {
+                new() { CowId = cowOne.Id },
+                new() { CowId = cowTwo.Id }
+            },
+            Actions = new List<WorkdayAction>
+            {
+                new() { Name = "Vaccinate" },
+                new() { Name = "Tag" }
+            }
+        };
+
+        testContext.DbContext.Cows.AddRange(cowOne, cowTwo);
+        testContext.DbContext.Workdays.Add(workday);
+        await testContext.DbContext.SaveChangesAsync();
+
+        testContext.DbContext.WorkdayEntries.Add(new WorkdayEntry
+        {
+            WorkdayId = workday.Id,
+            CowId = cowOne.Id,
+            ActionId = workday.Actions[0].Id,
+            IsCompleted = true
+        });
+        await testContext.DbContext.SaveChangesAsync();
+
+        var service = testContext.CreateWorkdayService();
+
+        var loadedWorkday = await service.GetWorkdayById(workday.Id);
+
+        loadedWorkday.Entries.Should().HaveCount(4);
+        testContext.DbContext.WorkdayEntries.Should().HaveCount(4);
+        testContext.DbContext.WorkdayEntries.Should().Contain(entry =>
+            entry.WorkdayId == workday.Id &&
+            entry.CowId == cowOne.Id &&
+            entry.ActionId == workday.Actions[0].Id &&
+            entry.IsCompleted);
+        testContext.DbContext.WorkdayEntries.Count(entry => !entry.IsCompleted).Should().Be(3);
+    }
+
+    [Fact]
     public async Task StartAndCompleteWorkday_update_status()
     {
         await using var testContext = new ServiceTestContext();
@@ -543,6 +592,52 @@ public class WorkdayServiceTests
 
         await service.CompleteWorkday(workday.Id);
         testContext.DbContext.Workdays.Single().Status.Should().Be(WorkdayStatus.Completed);
+    }
+
+    [Fact]
+    public async Task ResetWorkdayAsync_clears_entry_completions_and_worked_statuses()
+    {
+        await using var testContext = new ServiceTestContext();
+        var cow = TestData.Cow("test-user", "A-100");
+        var workday = new Workday
+        {
+            UserId = "test-user",
+            Title = "Morning Checks",
+            WorkdayCows = new List<WorkdayCow>
+            {
+                new() { CowId = cow.Id, Status = "Worked" }
+            },
+            Actions = new List<WorkdayAction>
+            {
+                new() { Name = "Vaccinate" }
+            }
+        };
+
+        testContext.DbContext.Cows.Add(cow);
+        testContext.DbContext.Workdays.Add(workday);
+        await testContext.DbContext.SaveChangesAsync();
+
+        testContext.DbContext.WorkdayEntries.Add(new WorkdayEntry
+        {
+            WorkdayId = workday.Id,
+            CowId = cow.Id,
+            ActionId = workday.Actions.Single().Id,
+            IsCompleted = true
+        });
+        await testContext.DbContext.SaveChangesAsync();
+
+        var service = testContext.CreateWorkdayService();
+
+        await service.ResetWorkdayAsync(workday.Id);
+
+        testContext.DbContext.WorkdayEntries.Should()
+            .ContainSingle(entry =>
+                entry.WorkdayId == workday.Id &&
+                entry.CowId == cow.Id &&
+                entry.ActionId == workday.Actions.Single().Id &&
+                entry.IsCompleted == false);
+        testContext.DbContext.WorkdayCows.Should()
+            .ContainSingle(wc => wc.WorkdayId == workday.Id && wc.CowId == cow.Id && wc.Status == null);
     }
 
     [Fact]

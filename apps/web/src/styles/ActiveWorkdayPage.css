@@ -43,7 +43,7 @@
   --active-grid-complete: var(--color-primary);
 
   width: 100%;
-  overflow-x: scroll;
+  overflow-x: auto;
   overflow-y: hidden;
   scrollbar-gutter: stable;
   scrollbar-width: thin;
@@ -100,6 +100,10 @@
   font-size: 13px;
   color: var(--text-primary);
   box-sizing: border-box;
+}
+
+.active-grid-header > .active-grid-header-cell:last-child {
+  border-right: 1px solid var(--color-border);
 }
 
 .active-grid-header-cell span {
@@ -178,6 +182,68 @@
   background: var(--active-grid-row-stripe);
 }
 
+.completed-row {
+  background-color: #f3f4f6;
+}
+
+.completed-row > div {
+  opacity: 0.95;
+}
+
+:root[data-theme="dark"] .completed-row {
+  background-color: #0f1f17 !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+:root[data-theme="dark"] .completed-row {
+  --active-grid-sticky-bg: #0f1f17;
+}
+
+:root[data-theme="dark"] .completed-row:nth-child(even),
+:root[data-theme="dark"] .completed-row:nth-child(odd) {
+  background-color: #0f1f17 !important;
+}
+
+:root[data-theme="dark"] .completed-row > div,
+:root[data-theme="dark"] .completed-row .active-grid-cell,
+:root[data-theme="dark"] .completed-row .active-grid-cow,
+:root[data-theme="dark"] .completed-row .active-grid-done,
+:root[data-theme="dark"] .completed-row .active-grid-all-actions {
+  background-color: #0f1f17 !important;
+  opacity: 0.9;
+}
+
+:root[data-theme="dark"] .active-grid-row.completed-row .active-grid-done,
+:root[data-theme="dark"]
+  .active-grid-row.completed-row
+  .active-grid-all-actions,
+:root[data-theme="dark"] .active-grid-row.completed-row .active-grid-cow {
+  background-color: #0f1f17 !important;
+}
+
+:root[data-theme="dark"] .completed-row:hover {
+  background-color: #13261d !important;
+}
+:root[data-theme="dark"] .completed-row:hover {
+  --active-grid-sticky-bg: #13261d;
+}
+
+:root[data-theme="dark"] .completed-row:hover > div,
+:root[data-theme="dark"] .completed-row:hover .active-grid-cell,
+:root[data-theme="dark"] .completed-row:hover .active-grid-cow,
+:root[data-theme="dark"] .completed-row:hover .active-grid-done,
+:root[data-theme="dark"] .completed-row:hover .active-grid-all-actions {
+  background-color: #13261d !important;
+}
+
+:root[data-theme="dark"] .active-grid-row.completed-row:hover .active-grid-done,
+:root[data-theme="dark"]
+  .active-grid-row.completed-row:hover
+  .active-grid-all-actions,
+:root[data-theme="dark"] .active-grid-row.completed-row:hover .active-grid-cow {
+  background-color: #13261d !important;
+}
+
 .active-grid-row:hover {
   background: rgba(34, 197, 94, 0.08);
 }
@@ -237,11 +303,23 @@
   align-items: stretch;
   min-width: max-content;
   height: 30px;
-  border-top: 1px solid var(--color-border);
-  border-bottom: 1px solid var(--color-border);
+  border-top: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   background: rgba(0, 0, 0, 0.06);
   position: relative;
   z-index: 5;
+}
+
+:root[data-theme="dark"] .active-grid-divider-row {
+  background-color: #0c1a13 !important;
+}
+
+:root[data-theme="dark"] .active-grid-divider-sticky {
+  background-color: #0c1a13 !important;
+}
+
+:root[data-theme="dark"] .active-grid-divider-row > div {
+  background-color: #0c1a13 !important;
 }
 
 .active-grid-divider-row > div {
@@ -265,6 +343,8 @@
   font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;
+  opacity: 0.85;
+  letter-spacing: 0.06em;
   color: var(--text-secondary);
   letter-spacing: 0.04em;
   display: flex;
@@ -326,6 +406,10 @@
   display: flex;
   justify-content: center;
   align-items: center;
+}
+
+.active-grid-row > .active-grid-cell:last-child {
+  border-right: 1px solid var(--color-border);
 }
 
 .active-grid-circle {
@@ -396,4 +480,13 @@
     max-width: none;
     width: 100%;
   }
+}
+.btn-ghost {
+  background: none;
+  border: none;
+}
+
+.danger-text {
+  color: #b45309;
+  font-size: 0.9rem;
 }

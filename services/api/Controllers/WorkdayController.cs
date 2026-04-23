@@ -212,6 +212,14 @@ public class WorkdayController : ControllerBase
         return NoContent();
     }
 
+    // POST: api/workdays/{id}/reset
+    [HttpPost("{id:guid}/reset")]
+    public async Task<IActionResult> ResetWorkday(Guid id)
+    {
+        await _service.ResetWorkdayAsync(id);
+        return NoContent();
+    }
+
     // DELETE: api/workdays/{id}
     [HttpDelete("{id:guid}")]
     public async Task<ActionResult> DeleteWorkday(Guid id)

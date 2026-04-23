@@ -130,6 +130,12 @@ export async function completeWorkday(id: string): Promise<void> {
   });
 }
 
+export async function resetWorkday(workdayId: string): Promise<void> {
+  await apiFetch(`${WORKDAY_API_BASE_PATH}/${workdayId}/reset`, {
+    method: "POST",
+  });
+}
+
 export async function updateCowWorkdayStatus(
   id: string,
   input: UpdateWorkdayCowStatusInput,
@@ -147,5 +153,18 @@ export async function toggleWorkdayEntry(
   await apiFetch(`${WORKDAY_API_BASE_PATH}/${id}/toggle`, {
     method: "POST",
     body: JSON.stringify(entry),
+  });
+}
+
+export async function setEntryCompletion(
+  workdayId: string,
+  cowId: string,
+  actionId: string,
+  completed: boolean,
+): Promise<void> {
+  await toggleWorkdayEntry(workdayId, {
+    cowId,
+    actionId,
+    completed,
   });
 }

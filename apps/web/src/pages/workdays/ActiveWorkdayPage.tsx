@@ -1,10 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { MouseEvent as ReactMouseEvent } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
+import Modal from "../../components/shared/Modal";
 import {
   completeWorkday,
   getWorkdayById,
-  toggleWorkdayEntry,
+  resetWorkday,
+  setEntryCompletion,
   updateCowWorkdayStatus,
 } from "../../services/workdayService";
 import type {
@@ -24,6 +26,7 @@ type HeaderBarProps = {
   searchTerm: string;
   onSearchChange: (value: string) => void;
   backHref: string;
+  onResetProgress: () => void;
   completing: boolean;
   onCompleteWorkday: () => void;
 };
@@ -34,6 +37,7 @@ type GridContainerProps = {
   completedCows: WorkdayCowAssignment[];
   completions: CompletionMap;
   onToggle: (cowId: string, actionId: string) => void;
+  onSelectAllActions: (cowId: string, markDone: boolean) => void;
   onDoneToggle: (cowId: string, nextDone: boolean) => void;
   hoveredActionId: string | null;
   onColumnHover: (actionId: string) => void;
@@ -52,6 +56,7 @@ type GridBodyProps = {
   actions: WorkdayAction[];
   completions: CompletionMap;
   onToggle: (cowId: string, actionId: string) => void;
+  onSelectAllActions: (cowId: string, markDone: boolean) => void;
   onDoneToggle: (cowId: string, nextDone: boolean) => void;
   hoveredActionId: string | null;
   onColumnHover: (actionId: string) => void;
@@ -62,6 +67,7 @@ type RowProps = {
   actions: WorkdayAction[];
   completions: CompletionMap;
   onToggle: (cowId: string, actionId: string) => void;
+  onSelectAllActions: (cowId: string, markDone: boolean) => void;
   onDoneToggle: (cowId: string, nextDone: boolean) => void;
   isDone: boolean;
   hoveredActionId: string | null;
@@ -114,12 +120,16 @@ function HeaderBar({
   searchTerm,
   onSearchChange,
   backHref,
+  onResetProgress,
   completing,
   onCompleteWorkday,
 }: HeaderBarProps) {
   return (
     <div className="header-bar">
       <div className="header-left">
+        <Link className="btn btn-outline" to={backHref}>
+          Back to Edit
+        </Link>
         <input
           aria-label="Search cows by tag"
           className="searchInput active-grid-search"
@@ -129,12 +139,14 @@ function HeaderBar({
           onChange={(event) => onSearchChange(event.target.value)}
         />
       </div>
-      <div className="header-center">
-        <Link className="btn btn-outline" to={backHref}>
-          Back to Edit
-        </Link>
-      </div>
       <div className="header-right">
+        <button
+          type="button"
+          className="btn btn-ghost danger-text"
+          onClick={onResetProgress}
+        >
+          Reset Progress
+        </button>
         <button
           type="button"
           className="addCowButton"
@@ -212,29 +224,34 @@ function Row({
   actions,
   completions,
   onToggle,
+  onSelectAllActions,
   onDoneToggle,
   isDone,
   hoveredActionId,
   onColumnHover,
 }: RowProps) {
+  const actionIds = actions.map((action) => action.id);
+  const completedCount = actionIds.filter(
+    (actionId) => completions[cow.cowId]?.[actionId],
+  ).length;
+  const totalCount = actionIds.length;
+  const isAll = totalCount > 0 && completedCount === totalCount;
+
   function handleDoneToggle() {
     onDoneToggle(cow.cowId, !isDone);
   }
 
   function handleAllActions() {
-    for (const action of actions) {
-      if (!completions[cow.cowId]?.[action.id]) {
-        onToggle(cow.cowId, action.id);
-      }
-    }
-
-    if (!isDone) {
-      onDoneToggle(cow.cowId, true);
+    if (totalCount > 0 || isDone) {
+      onSelectAllActions(cow.cowId, !isDone);
     }
   }
 
   return (
-    <div className="active-grid-row" role="row">
+    <div
+      className={`active-grid-row${isDone ? " completed-row" : ""}`}
+      role="row"
+    >
       <div className="active-grid-done">
         <button
           type="button"
@@ -253,7 +270,7 @@ function Row({
           className="active-grid-all-actions-btn"
           onClick={handleAllActions}
         >
-          Select
+          {isAll ? "Clear" : "Select"}
         </button>
       </div>
       <div
@@ -285,6 +302,7 @@ function GridBody({
   actions,
   completions,
   onToggle,
+  onSelectAllActions,
   onDoneToggle,
   hoveredActionId,
   onColumnHover,
@@ -298,6 +316,7 @@ function GridBody({
           actions={actions}
           completions={completions}
           onToggle={onToggle}
+          onSelectAllActions={onSelectAllActions}
           onDoneToggle={onDoneToggle}
           isDone={false}
           hoveredActionId={hoveredActionId}
@@ -323,6 +342,7 @@ function GridBody({
           actions={actions}
           completions={completions}
           onToggle={onToggle}
+          onSelectAllActions={onSelectAllActions}
           onDoneToggle={onDoneToggle}
           isDone={true}
           hoveredActionId={hoveredActionId}
@@ -339,6 +359,7 @@ function GridContainer({
   completedCows,
   completions,
   onToggle,
+  onSelectAllActions,
   onDoneToggle,
   hoveredActionId,
   onColumnHover,
@@ -400,6 +421,7 @@ function GridContainer({
         actions={actions}
         completions={completions}
         onToggle={onToggle}
+        onSelectAllActions={onSelectAllActions}
         onDoneToggle={onDoneToggle}
         hoveredActionId={hoveredActionId}
         onColumnHover={onColumnHover}
@@ -416,6 +438,8 @@ function ActiveWorkdayPage() {
   const [completions, setCompletions] = useState<CompletionMap>({});
   const [doneCowIds, setDoneCowIds] = useState<DoneCowIds>(new Set());
   const [doneOrder, setDoneOrder] = useState<string[]>([]);
+  const [showResetModal, setShowResetModal] = useState(false);
+  const [showCompleteModal, setShowCompleteModal] = useState(false);
   const [hoveredActionId, setHoveredActionId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [completing, setCompleting] = useState(false);
@@ -495,11 +519,7 @@ function ActiveWorkdayPage() {
       const current = prev[cowId]?.[actionId] ?? false;
       const nextCompleted = !current;
 
-      void toggleWorkdayEntry(id, {
-        cowId,
-        actionId,
-        completed: nextCompleted,
-      }).catch((err) => {
+      void setEntryCompletion(id, cowId, actionId, nextCompleted).catch((err) => {
         setCompletions((prev2) => ({
           ...prev2,
           [cowId]: {
@@ -521,6 +541,66 @@ function ActiveWorkdayPage() {
         },
       };
     });
+  }
+
+  function handleSelectAllActions(
+    cowId: string,
+    markDone: boolean,
+  ) {
+    if (!isGuid(id)) {
+      return;
+    }
+
+    const actionIds = actions.map((action) => action.id);
+    const previousCompletionState = completions[cowId] ?? {};
+    const completedCount = actionIds.filter(
+      (actionId) => previousCompletionState[actionId],
+    ).length;
+    const totalCount = actionIds.length;
+    const shouldCompleteAll = completedCount < totalCount;
+
+    if (totalCount === 0) {
+      if (markDone) {
+        handleDoneToggle(cowId, true);
+      }
+
+      return;
+    }
+    setCompletions((prev) => {
+      return {
+        ...prev,
+        [cowId]: Object.fromEntries(
+          actionIds.map((actionId) => [actionId, shouldCompleteAll]),
+        ),
+      };
+    });
+
+    if (shouldCompleteAll && markDone) {
+      handleDoneToggle(cowId, true);
+    }
+
+    void (async () => {
+      try {
+        for (let i = 0; i < actionIds.length; i += 10) {
+          const batch = actionIds.slice(i, i + 10);
+
+          await Promise.all(
+            batch.map((actionId) =>
+              setEntryCompletion(id, cowId, actionId, shouldCompleteAll),
+            ),
+          );
+        }
+      } catch (err) {
+        setCompletions((prev) => ({
+          ...prev,
+          [cowId]: previousCompletionState,
+        }));
+
+        const message =
+          err instanceof Error ? err.message : "Failed to save completion";
+      setError(message);
+      }
+    })();
   }
 
   function handleDoneToggle(cowId: string, nextDone: boolean) {
@@ -578,11 +658,33 @@ function ActiveWorkdayPage() {
     });
   }
 
-  async function handleCompleteWorkday() {
+  async function handleConfirmReset() {
     if (!isGuid(id)) {
       return;
     }
 
+    setShowResetModal(false);
+    setError("");
+
+    try {
+      await resetWorkday(id);
+
+      setCompletions({});
+      setDoneCowIds(new Set());
+      setDoneOrder([]);
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to reset progress";
+      setError(message);
+    }
+  }
+
+  async function handleConfirmComplete() {
+    if (!isGuid(id)) {
+      return;
+    }
+
+    setShowCompleteModal(false);
     setCompleting(true);
     setError("");
 
@@ -633,8 +735,9 @@ function ActiveWorkdayPage() {
             searchTerm={searchTerm}
             onSearchChange={setSearchTerm}
             backHref={id ? `/workdays/${id}` : "/workdays"}
+            onResetProgress={() => setShowResetModal(true)}
             completing={completing}
-            onCompleteWorkday={() => void handleCompleteWorkday()}
+            onCompleteWorkday={() => setShowCompleteModal(true)}
           />
 
           {!actions.length || !cows.length ? (
@@ -653,12 +756,30 @@ function ActiveWorkdayPage() {
               completedCows={completedCows}
               completions={completions}
               onToggle={handleToggle}
+              onSelectAllActions={handleSelectAllActions}
               onDoneToggle={handleDoneToggle}
               hoveredActionId={hoveredActionId}
               onColumnHover={setHoveredActionId}
               onColumnLeave={() => setHoveredActionId(null)}
             />
           )}
+          <Modal
+            isOpen={showResetModal}
+            title="Reset Progress"
+            message="This will clear all progress for this workday. This cannot be undone."
+            confirmText="Reset"
+            onCancel={() => setShowResetModal(false)}
+            onConfirm={handleConfirmReset}
+          />
+          <Modal
+            isOpen={showCompleteModal}
+            title="Complete Workday?"
+            message={`This will move the workday to completed.\n\n${doneCowIds.size} of ${cows.length} cows completed.`}
+            confirmText="Complete Workday"
+            confirmVariant="success"
+            onCancel={() => setShowCompleteModal(false)}
+            onConfirm={handleConfirmComplete}
+          />
         </div>
       </div>
     </div>
