@@ -116,6 +116,56 @@
   background: var(--active-grid-column-hover);
 }
 
+.active-grid-done-header {
+  width: 60px;
+  min-width: 60px;
+  max-width: 60px;
+  position: sticky;
+  left: 0;
+  z-index: 4;
+  background: var(--color-surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 0 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  will-change: transform;
+  box-sizing: border-box;
+  border-right: 1px solid var(--color-border);
+  z-index: 30;
+  flex: 0 0 60px;
+}
+
+.active-grid-all-actions-header {
+  width: 120px;
+  min-width: 120px;
+  max-width: 120px;
+  position: sticky;
+  left: 60px;
+  z-index: 4;
+  background: var(--color-surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 0 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  will-change: transform;
+  box-sizing: border-box;
+  border-right: 1px solid var(--color-border);
+  z-index: 30;
+  flex: 0 0 120px;
+}
+
 .active-grid-row {
   display: flex;
   align-items: stretch;
@@ -141,7 +191,6 @@
 .active-grid-cow,
 .active-grid-cow-header {
   position: sticky;
-  left: 0;
 
   display: flex;
   align-items: center;
@@ -154,6 +203,7 @@
 }
 
 .active-grid-cow {
+  left: 180px;
   height: 100%;
   font-size: 14px;
   font-weight: 500;
@@ -162,27 +212,91 @@
   color: var(--text-primary);
   z-index: 20;
   box-shadow: none;
+  border-right: 1px solid var(--color-border);
+  flex: 0 0 var(--active-grid-cow-width);
+  will-change: transform;
+  box-sizing: border-box;
+  z-index: 22;
 }
 
 .active-grid-cow-header {
+  left: 180px;
   height: 100%;
   font-size: 13px;
   font-weight: 600;
-  background: var(--active-grid-header-bg);
+  background: var(--color-surface);
   z-index: 25;
+  border-right: 1px solid var(--color-border);
+  flex: 0 0 var(--active-grid-cow-width);
+  will-change: transform;
+  box-sizing: border-box;
+  z-index: 31;
 }
 
 .active-grid-divider-row {
+  height: 36px;
+  border-top: 1px solid var(--color-border);
   border-bottom: 1px solid var(--color-border);
-  background: var(--color-success-subtle);
+  background: #f3f4f6;
 }
 
 .active-grid-divider-label {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
-  color: var(--text-secondary);
   text-transform: uppercase;
+  color: var(--text-secondary);
+  letter-spacing: 0.04em;
+  display: flex;
+  align-items: center;
   background: inherit;
+}
+
+.active-grid-done {
+  width: 60px;
+  min-width: 60px;
+  max-width: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: sticky;
+  left: 0;
+  z-index: 4;
+  background: var(--color-surface);
+  will-change: transform;
+  box-sizing: border-box;
+  border-right: 1px solid var(--color-border);
+  z-index: 21;
+  flex: 0 0 60px;
+}
+
+.active-grid-all-actions {
+  width: 120px;
+  min-width: 120px;
+  max-width: 120px;
+  display: flex;
+  align-items: center;
+  position: sticky;
+  left: 60px;
+  z-index: 4;
+  background: var(--color-surface);
+  will-change: transform;
+  box-sizing: border-box;
+  border-right: 1px solid var(--color-border);
+  z-index: 21;
+  flex: 0 0 120px;
+}
+
+.active-grid-all-actions-btn {
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  cursor: pointer;
+}
+
+.active-grid-all-actions-btn:hover {
+  background: var(--color-hover);
 }
 
 .active-grid-cell {

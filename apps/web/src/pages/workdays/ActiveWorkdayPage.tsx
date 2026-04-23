@@ -141,6 +141,12 @@ function GridHeader({
 }: GridHeaderProps) {
   return (
     <div className="active-grid-header" role="row">
+      <div className="active-grid-done-header" role="columnheader">
+        Done
+      </div>
+      <div className="active-grid-all-actions-header" role="columnheader">
+        All
+      </div>
       <div className="active-grid-cow-header" role="columnheader">
         Tag #
       </div>
@@ -195,8 +201,51 @@ function Row({
   hoveredActionId,
   onColumnHover,
 }: RowProps) {
+  const isComplete = actions.every(
+    (action) => completions[cow.cowId]?.[action.id],
+  );
+
+  function handleDoneToggle() {
+    for (const action of actions) {
+      const isActionComplete = completions[cow.cowId]?.[action.id] ?? false;
+
+      if (isActionComplete !== !isComplete) {
+        onToggle(cow.cowId, action.id);
+      }
+    }
+  }
+
+  function handleAllActions() {
+    for (const action of actions) {
+      if (!completions[cow.cowId]?.[action.id]) {
+        onToggle(cow.cowId, action.id);
+      }
+    }
+  }
+
   return (
     <div className="active-grid-row" role="row">
+      <div className="active-grid-done">
+        <button
+          type="button"
+          aria-label={
+            isComplete
+              ? `Mark all actions incomplete for cow ${cow.cow.tagNumber}`
+              : `Mark all actions complete for cow ${cow.cow.tagNumber}`
+          }
+          className={`active-grid-circle${isComplete ? " complete" : ""}`}
+          onClick={handleDoneToggle}
+        />
+      </div>
+      <div className="active-grid-all-actions">
+        <button
+          type="button"
+          className="active-grid-all-actions-btn"
+          onClick={handleAllActions}
+        >
+          All Actions
+        </button>
+      </div>
       <div
         className="active-grid-cow"
         role="rowheader"
