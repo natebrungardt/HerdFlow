@@ -320,6 +320,11 @@ img {
   background: var(--shell-bg);
 }
 
+:root[data-theme="dark"] .navbar {
+  background: var(--color-surface-elevated);
+  border-bottom: 1px solid var(--color-border);
+}
+
 .navbar-left {
   display: inline-flex;
   align-items: center;
@@ -490,8 +495,16 @@ img {
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(circle at top left, rgba(176, 137, 104, 0.2), transparent 28%),
-    radial-gradient(circle at 82% 18%, rgba(76, 122, 91, 0.26), transparent 26%),
+    radial-gradient(
+      circle at top left,
+      rgba(176, 137, 104, 0.2),
+      transparent 28%
+    ),
+    radial-gradient(
+      circle at 82% 18%,
+      rgba(76, 122, 91, 0.26),
+      transparent 26%
+    ),
     radial-gradient(circle at 70% 62%, rgba(76, 122, 91, 0.14), transparent 22%);
   pointer-events: none;
 }
@@ -702,8 +715,16 @@ img {
   border: 1px solid var(--shell-border);
   border-radius: 34px;
   background:
-    radial-gradient(circle at top left, rgba(176, 137, 104, 0.12), transparent 26%),
-    linear-gradient(180deg, rgba(14, 18, 16, 0.9) 0%, rgba(9, 12, 11, 0.96) 100%);
+    radial-gradient(
+      circle at top left,
+      rgba(176, 137, 104, 0.12),
+      transparent 26%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(14, 18, 16, 0.9) 0%,
+      rgba(9, 12, 11, 0.96) 100%
+    );
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.05),
     0 30px 60px rgba(0, 0, 0, 0.26);
@@ -983,8 +1004,16 @@ img {
 .authBrandPanel {
   padding: 36px 40px;
   background:
-    radial-gradient(circle at top left, rgba(176, 137, 104, 0.18), transparent 34%),
-    radial-gradient(circle at bottom right, rgba(76, 122, 91, 0.2), transparent 32%),
+    radial-gradient(
+      circle at top left,
+      rgba(176, 137, 104, 0.18),
+      transparent 34%
+    ),
+    radial-gradient(
+      circle at bottom right,
+      rgba(76, 122, 91, 0.2),
+      transparent 32%
+    ),
     linear-gradient(180deg, rgba(8, 15, 12, 0.12), rgba(8, 15, 12, 0.04));
   display: flex;
   flex-direction: column;
@@ -1589,7 +1618,15 @@ img {
   min-width: 0;
 }
 
-:root[data-theme="dark"] :is(.dashboardCard, .toolbarCard, .statsCard, .cowListCard, .cowRowCard, .card) {
+:root[data-theme="dark"]
+  :is(
+    .dashboardCard,
+    .toolbarCard,
+    .statsCard,
+    .cowListCard,
+    .cowRowCard,
+    .card
+  ) {
   background: var(--color-surface);
   border-color: var(--color-border);
   box-shadow: none;
