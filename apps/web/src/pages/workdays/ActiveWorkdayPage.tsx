@@ -415,6 +415,7 @@ function ActiveWorkdayPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [completions, setCompletions] = useState<CompletionMap>({});
   const [doneCowIds, setDoneCowIds] = useState<DoneCowIds>(new Set());
+  const [doneOrder, setDoneOrder] = useState<string[]>([]);
   const [hoveredActionId, setHoveredActionId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [completing, setCompleting] = useState(false);
@@ -434,6 +435,11 @@ function ActiveWorkdayPage() {
         setWorkday(workdayData);
         setCompletions(buildCompletionMap(workdayData));
         setDoneCowIds(buildDoneCowIds(workdayData));
+        setDoneOrder(
+          (workdayData.workdayCows ?? [])
+            .filter((c) => c.status === "Worked")
+            .map((c) => c.cowId),
+        );
       } catch (err) {
         const message =
           err instanceof Error ? err.message : "Failed to load active workday";
@@ -464,8 +470,14 @@ function ActiveWorkdayPage() {
     [doneCowIds, filteredCows],
   );
   const completedCows = useMemo(
-    () => filteredCows.filter((cow) => doneCowIds.has(cow.cowId)),
-    [doneCowIds, filteredCows],
+    () => {
+      const completed = filteredCows.filter((cow) => doneCowIds.has(cow.cowId));
+
+      return completed.sort(
+        (a, b) => doneOrder.indexOf(a.cowId) - doneOrder.indexOf(b.cowId),
+      );
+    },
+    [doneCowIds, filteredCows, doneOrder],
   );
 
   function handleToggle(cowId: string, actionId: string) {
@@ -519,28 +531,44 @@ function ActiveWorkdayPage() {
         next.delete(cowId);
       }
 
-      void updateCowWorkdayStatus(id, {
-        cowId,
-        isWorked: nextDone,
-      }).catch((err) => {
-        setDoneCowIds((prev2) => {
-          const rollback = new Set(prev2);
+      return next;
+    });
 
-          if (nextDone) {
-            rollback.delete(cowId);
-          } else {
-            rollback.add(cowId);
-          }
+    setDoneOrder((prev) => {
+      if (nextDone) {
+        return [cowId, ...prev.filter((id) => id !== cowId)];
+      }
 
-          return rollback;
-        });
+      return prev.filter((id) => id !== cowId);
+    });
 
-        const message =
-          err instanceof Error ? err.message : "Failed to save cow workday status";
-        setError(message);
+    void updateCowWorkdayStatus(id, {
+      cowId,
+      isWorked: nextDone,
+    }).catch((err) => {
+      setDoneCowIds((prev) => {
+        const rollback = new Set(prev);
+
+        if (nextDone) {
+          rollback.delete(cowId);
+        } else {
+          rollback.add(cowId);
+        }
+
+        return rollback;
       });
 
-      return next;
+      setDoneOrder((prev) => {
+        if (nextDone) {
+          return prev.filter((id) => id !== cowId);
+        }
+
+        return [cowId, ...prev];
+      });
+
+      const message =
+        err instanceof Error ? err.message : "Failed to save cow workday status";
+      setError(message);
     });
   }
 
