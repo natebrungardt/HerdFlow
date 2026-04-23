@@ -70,6 +70,7 @@ public class WorkdayService
     {
         var userId = GetCurrentUserId();
         return await _context.Workdays
+            .AsNoTracking()
             .Where(w => w.UserId == userId && w.Status != WorkdayStatus.Completed)
             .OrderByDescending(w => w.CreatedAt)
             .ToListAsync();
@@ -80,6 +81,7 @@ public class WorkdayService
     {
         var userId = GetCurrentUserId();
         return await _context.Workdays
+            .AsNoTracking()
             .Where(w => w.UserId == userId && w.Status == WorkdayStatus.Completed)
             .OrderByDescending(w => w.CompletedAt ?? w.CreatedAt)
             .ToListAsync();
@@ -88,23 +90,63 @@ public class WorkdayService
     // READ - By Id (with cows + notes)
     public async Task<Workday> GetWorkdayById(Guid id)
     {
-        var stopwatch = Stopwatch.StartNew();
         var userId = GetCurrentUserId();
-        await EnsureWorkdayEntryGridAsync(id, userId);
-        _logger.LogInformation("WorkdayService.GetWorkdayById loading workday {WorkdayId}", id);
-        var workday = await _context.Workdays
-            .Include(w => w.WorkdayCows)
-                .ThenInclude(wc => wc.Cow)
-            .Include(w => w.WorkdayNotes)
-            .Include(w => w.Actions.OrderBy(action => action.CreatedAt))
-            .Include(w => w.Entries)
-            .FirstOrDefaultAsync(w => w.Id == id && w.UserId == userId);
+        var stopwatch = Stopwatch.StartNew();
+
         _logger.LogInformation(
-            "WorkdayService.GetWorkdayById loaded workday {WorkdayId} in {ElapsedMilliseconds}ms",
+            "WorkdayService.GetWorkdayById loading workday {WorkdayId}",
+            id);
+
+        var loadStopwatch = Stopwatch.StartNew();
+        var workday = await LoadWorkdayDetailsAsync(id, userId);
+
+        if (workday == null)
+        {
+            throw new NotFoundException("Workday not found.");
+        }
+
+        _logger.LogInformation(
+            "WorkdayService.GetWorkdayById load query finished for workday {WorkdayId} in {ElapsedMilliseconds}ms with {CowCount} cows, {ActionCount} actions, {EntryCount} entries",
+            id,
+            loadStopwatch.ElapsedMilliseconds,
+            workday.WorkdayCows.Count,
+            workday.Actions.Count,
+            workday.Entries.Count);
+
+        var expectedEntryCount = workday.WorkdayCows.Count * workday.Actions.Count;
+        if (expectedEntryCount > 0 && workday.Entries.Count != expectedEntryCount)
+        {
+            var repairStopwatch = Stopwatch.StartNew();
+            _logger.LogWarning(
+                "WorkdayService.GetWorkdayById detected incomplete workday entry grid for workday {WorkdayId}. Expected {ExpectedEntryCount} entries but found {ActualEntryCount}. Repairing.",
+                id,
+                expectedEntryCount,
+                workday.Entries.Count);
+
+            var insertedEntryCount = await EnsureWorkdayEntryGridAsync(id, userId);
+
+            _logger.LogInformation(
+                "WorkdayService.GetWorkdayById repaired workday {WorkdayId} by inserting {InsertedEntryCount} entries in {ElapsedMilliseconds}ms",
+                id,
+                insertedEntryCount,
+                repairStopwatch.ElapsedMilliseconds);
+
+            loadStopwatch.Restart();
+            workday = await LoadWorkdayDetailsAsync(id, userId)
+                ?? throw new NotFoundException("Workday not found.");
+
+            _logger.LogInformation(
+                "WorkdayService.GetWorkdayById reloaded workday {WorkdayId} after repair in {ElapsedMilliseconds}ms",
+                id,
+                loadStopwatch.ElapsedMilliseconds);
+        }
+
+        _logger.LogInformation(
+            "WorkdayService.GetWorkdayById completed for workday {WorkdayId} in {ElapsedMilliseconds}ms",
             id,
             stopwatch.ElapsedMilliseconds);
 
-        return workday ?? throw new NotFoundException("Workday not found.");
+        return workday;
     }
 
     public async Task AddCowsToWorkday(Guid id, List<Guid> cowIds)
@@ -329,23 +371,62 @@ public class WorkdayService
 
     public async Task StartWorkday(Guid workdayId)
     {
-        var workday = await FindWorkdayAsync(workdayId);
+        var userId = GetCurrentUserId();
+        var stopwatch = Stopwatch.StartNew();
 
-        await _context.Entry(workday)
-            .Collection(w => w.WorkdayCows)
-            .LoadAsync();
+        var validationStopwatch = Stopwatch.StartNew();
+        var workdaySnapshot = await _context.Workdays
+            .AsNoTracking()
+            .Where(w => w.Id == workdayId && w.UserId == userId)
+            .Select(w => new
+            {
+                w.Id,
+                CowCount = w.WorkdayCows.Count(),
+                ActionCount = w.Actions.Count()
+            })
+            .FirstOrDefaultAsync();
 
-        await _context.Entry(workday)
-            .Collection(w => w.Actions)
-            .LoadAsync();
+        if (workdaySnapshot == null)
+        {
+            throw new NotFoundException("Workday not found.");
+        }
 
-        if (!workday.WorkdayCows.Any() || !workday.Actions.Any())
+        _logger.LogInformation(
+            "WorkdayService.StartWorkday validation snapshot loaded for workday {WorkdayId} in {ElapsedMilliseconds}ms with {CowCount} cows and {ActionCount} actions",
+            workdayId,
+            validationStopwatch.ElapsedMilliseconds,
+            workdaySnapshot.CowCount,
+            workdaySnapshot.ActionCount);
+
+        if (workdaySnapshot.CowCount == 0 || workdaySnapshot.ActionCount == 0)
         {
             throw new ValidationException("Workday must have at least one cow and one action.");
         }
 
-        workday.Status = WorkdayStatus.InProgress;
-        await _context.SaveChangesAsync();
+        var repairStopwatch = Stopwatch.StartNew();
+        var insertedEntryCount = await EnsureWorkdayEntryGridAsync(workdayId, userId);
+        _logger.LogInformation(
+            "WorkdayService.StartWorkday ensured entry grid for workday {WorkdayId} in {ElapsedMilliseconds}ms and inserted {InsertedEntryCount} entries",
+            workdayId,
+            repairStopwatch.ElapsedMilliseconds,
+            insertedEntryCount);
+
+        var updateStopwatch = Stopwatch.StartNew();
+        var updatedRows = await _context.Workdays
+            .Where(w => w.Id == workdayId && w.UserId == userId)
+            .ExecuteUpdateAsync(updates => updates
+                .SetProperty(w => w.Status, WorkdayStatus.InProgress));
+
+        if (updatedRows == 0)
+        {
+            throw new NotFoundException("Workday not found.");
+        }
+
+        _logger.LogInformation(
+            "WorkdayService.StartWorkday updated workday {WorkdayId} status in {ElapsedMilliseconds}ms and completed in {TotalElapsedMilliseconds}ms",
+            workdayId,
+            updateStopwatch.ElapsedMilliseconds,
+            stopwatch.ElapsedMilliseconds);
     }
 
     public async Task CompleteWorkday(Guid workdayId)
@@ -397,7 +478,86 @@ public class WorkdayService
         return workday ?? throw new NotFoundException("Workday not found.");
     }
 
-    private async Task EnsureWorkdayEntryGridAsync(Guid workdayId, string userId)
+    private async Task<Workday?> LoadWorkdayDetailsAsync(Guid id, string userId)
+    {
+        return await _context.Workdays
+            .AsNoTracking()
+            .AsSplitQuery()
+            .Where(w => w.Id == id && w.UserId == userId)
+            .Include(w => w.WorkdayCows)
+                .ThenInclude(wc => wc.Cow)
+            .Include(w => w.Actions.OrderBy(action => action.CreatedAt))
+            .Include(w => w.Entries)
+            .FirstOrDefaultAsync();
+    }
+
+    private async Task<int> EnsureWorkdayEntryGridAsync(Guid workdayId, string userId)
+    {
+        if (!_context.Database.IsNpgsql())
+        {
+            return await EnsureWorkdayEntryGridFallbackAsync(workdayId, userId);
+        }
+
+        const string sql = """
+            WITH target_workday AS (
+                SELECT "Id"
+                FROM "Workdays"
+                WHERE "Id" = @workday_id AND "UserId" = @user_id
+            ),
+            inserted_entries AS (
+                INSERT INTO "WorkdayEntries" ("WorkdayId", "CowId", "ActionId", "IsCompleted")
+                SELECT wc."WorkdayId", wc."CowId", wa."Id", FALSE
+                FROM target_workday tw
+                JOIN "WorkdayCows" wc
+                    ON wc."WorkdayId" = tw."Id"
+                JOIN "WorkdayActions" wa
+                    ON wa."WorkdayId" = tw."Id"
+                ON CONFLICT DO NOTHING
+                RETURNING 1
+            )
+            SELECT
+                EXISTS(SELECT 1 FROM target_workday) AS workday_found,
+                (SELECT COUNT(*) FROM inserted_entries) AS inserted_entry_count;
+            """;
+
+        var connection = (NpgsqlConnection)_context.Database.GetDbConnection();
+        var shouldClose = connection.State != ConnectionState.Open;
+
+        if (shouldClose)
+        {
+            await connection.OpenAsync();
+        }
+
+        try
+        {
+            await using var command = new NpgsqlCommand(sql, connection);
+            command.Parameters.AddWithValue("workday_id", workdayId);
+            command.Parameters.AddWithValue("user_id", userId);
+
+            await using var reader = await command.ExecuteReaderAsync();
+
+            if (!await reader.ReadAsync())
+            {
+                throw new InvalidOperationException("Ensure workday entry grid returned no result.");
+            }
+
+            if (!reader.GetBoolean(0))
+            {
+                throw new NotFoundException("Workday not found.");
+            }
+
+            return reader.GetInt32(1);
+        }
+        finally
+        {
+            if (shouldClose)
+            {
+                await connection.CloseAsync();
+            }
+        }
+    }
+
+    private async Task<int> EnsureWorkdayEntryGridFallbackAsync(Guid workdayId, string userId)
     {
         var workdaySnapshot = await _context.Workdays
             .AsNoTracking()
@@ -416,7 +576,7 @@ public class WorkdayService
 
         if (workdaySnapshot.CowIds.Count == 0 || workdaySnapshot.ActionIds.Count == 0)
         {
-            return;
+            return 0;
         }
 
         var existingPairs = (await _context.WorkdayEntries
@@ -441,11 +601,12 @@ public class WorkdayService
 
         if (missingEntries.Count == 0)
         {
-            return;
+            return 0;
         }
 
         _context.WorkdayEntries.AddRange(missingEntries);
         await _context.SaveChangesAsync();
+        return missingEntries.Count;
     }
 
     public async Task<Workday> UpdateWorkday(Guid id, UpdateWorkdayDto dto)

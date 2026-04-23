@@ -51,14 +51,17 @@ public class WorkdayController : ControllerBase
     public async Task<ActionResult<Workday>> GetWorkdayById(Guid id)
     {
         var stopwatch = Stopwatch.StartNew();
-        _logger.LogInformation("WorkdayController.GetWorkdayById started for workday {WorkdayId}", id);
-        _logger.LogInformation("WorkdayController.GetWorkdayById calling service for workday {WorkdayId}", id);
-        var workday = await _service.GetWorkdayById(id);
         _logger.LogInformation(
-            "WorkdayController.GetWorkdayById service returned for workday {WorkdayId} in {ElapsedMilliseconds}ms",
+            "WorkdayController.GetWorkdayById started for workday {WorkdayId}",
+            id);
+
+        var workday = await _service.GetWorkdayById(id);
+
+        _logger.LogInformation(
+            "WorkdayController.GetWorkdayById completed for workday {WorkdayId} in {ElapsedMilliseconds}ms",
             id,
             stopwatch.ElapsedMilliseconds);
-        _logger.LogInformation("WorkdayController.GetWorkdayById returning response for workday {WorkdayId}", id);
+
         return Ok(workday);
     }
 
@@ -178,7 +181,18 @@ public class WorkdayController : ControllerBase
     [HttpPost("{id:guid}/start")]
     public async Task<ActionResult> StartWorkday(Guid id)
     {
+        var stopwatch = Stopwatch.StartNew();
+        _logger.LogInformation(
+            "WorkdayController.StartWorkday started for workday {WorkdayId}",
+            id);
+
         await _service.StartWorkday(id);
+
+        _logger.LogInformation(
+            "WorkdayController.StartWorkday completed for workday {WorkdayId} in {ElapsedMilliseconds}ms",
+            id,
+            stopwatch.ElapsedMilliseconds);
+
         return NoContent();
     }
 

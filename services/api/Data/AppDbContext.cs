@@ -54,6 +54,12 @@ public class AppDbContext : DbContext
             .HasConversion<int>()
             .HasDefaultValue(WorkdayStatus.Draft);
 
+        modelBuilder.Entity<Workday>()
+            .HasIndex(w => new { w.UserId, w.Status, w.CreatedAt });
+
+        modelBuilder.Entity<Workday>()
+            .HasIndex(w => new { w.UserId, w.Status, w.CompletedAt });
+
         base.OnModelCreating(modelBuilder);
 
         modelBuilder.Entity<WorkdayCow>()
