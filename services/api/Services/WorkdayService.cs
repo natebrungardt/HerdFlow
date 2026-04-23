@@ -95,7 +95,7 @@ public class WorkdayService
             .Include(w => w.WorkdayCows)
                 .ThenInclude(wc => wc.Cow)
             .Include(w => w.WorkdayNotes)
-            .Include(w => w.Actions)
+            .Include(w => w.Actions.OrderBy(action => action.CreatedAt))
             .Include(w => w.Entries)
             .FirstOrDefaultAsync(w => w.Id == id && w.UserId == userId);
         _logger.LogInformation(

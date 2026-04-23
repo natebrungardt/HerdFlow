@@ -23,6 +23,7 @@ import {
 } from "../../services/workdayService";
 import type { Cow } from "../../types/cow";
 import type { Workday, WorkdayAction } from "../../types/workday";
+import { preserveWorkdayGridOrder } from "../../utils/workdayGridOrder";
 import "../../styles/AllCows.css";
 import "../../styles/CowDetailPage.css";
 import WorkdayComposerCard from "../../components/workdays/WorkdayComposerCard";
@@ -107,7 +108,7 @@ function WorkdayPage() {
           getCows(),
         ]);
 
-        setWorkday(workdayData);
+        setWorkday(preserveWorkdayGridOrder(workdayData));
         setTitle(workdayData.title);
         setDate(formatDateInput(workdayData.date));
         setSummary(workdayData.summary ?? "");
@@ -245,7 +246,17 @@ function WorkdayPage() {
       actionCount: data.actions?.length ?? 0,
       assignedCowCount: data.workdayCows?.length ?? 0,
     });
-    setWorkday(data);
+    setWorkday((current) =>
+      preserveWorkdayGridOrder(
+        current
+          ? {
+              ...data,
+              workdayCows: data.workdayCows ?? current.workdayCows,
+              actions: data.actions ?? current.actions,
+            }
+          : data,
+      ),
+    );
     setTitle(data.title);
     setDate(formatDateInput(data.date));
     setSummary(data.summary ?? "");
@@ -267,7 +278,7 @@ function WorkdayPage() {
         return current;
       }
 
-      return {
+      return preserveWorkdayGridOrder({
         ...current,
         workdayCows: [
           ...(current.workdayCows ?? []),
@@ -279,7 +290,7 @@ function WorkdayPage() {
             cow,
           },
         ],
-      };
+      });
     });
 
     return true;
@@ -291,12 +302,12 @@ function WorkdayPage() {
         return current;
       }
 
-      return {
+      return preserveWorkdayGridOrder({
         ...current,
         workdayCows: (current.workdayCows ?? []).filter(
           (assignment) => assignment.cowId !== cowId,
         ),
-      };
+      });
     });
   }
 
@@ -307,10 +318,10 @@ function WorkdayPage() {
       }
 
       const nextActions = [...(current.actions ?? []), action];
-      return {
+      return preserveWorkdayGridOrder({
         ...current,
         actions: nextActions,
-      };
+      });
     });
   }
 
@@ -324,10 +335,10 @@ function WorkdayPage() {
         (action) => action.id !== actionId,
       );
 
-      return {
+      return preserveWorkdayGridOrder({
         ...current,
         actions: nextActions,
-      };
+      });
     });
   }
 

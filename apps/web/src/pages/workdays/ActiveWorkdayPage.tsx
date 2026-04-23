@@ -11,6 +11,7 @@ import type {
   WorkdayAction,
   WorkdayCowAssignment,
 } from "../../types/workday";
+import { preserveWorkdayGridOrder } from "../../utils/workdayGridOrder";
 import "../../styles/AllCows.css";
 import "../../styles/CowDetailPage.css";
 import "../../styles/ActiveWorkdayPage.css";
@@ -334,7 +335,7 @@ function ActiveWorkdayPage() {
 
       try {
         setError("");
-        const workdayData = await getWorkdayById(id);
+        const workdayData = preserveWorkdayGridOrder(await getWorkdayById(id));
         setWorkday(workdayData);
         setCompletions(buildCompletionMap(workdayData));
       } catch (err) {
@@ -349,8 +350,8 @@ function ActiveWorkdayPage() {
     void loadWorkday();
   }, [id]);
 
-  const actions = workday?.actions ?? [];
-  const cows = workday?.workdayCows ?? [];
+  const actions = useMemo(() => workday?.actions ?? [], [workday?.actions]);
+  const cows = useMemo(() => workday?.workdayCows ?? [], [workday?.workdayCows]);
   const normalizedSearch = searchTerm.trim().toLowerCase();
   const filteredCows = useMemo(
     () =>
