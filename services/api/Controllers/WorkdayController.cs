@@ -182,6 +182,28 @@ public class WorkdayController : ControllerBase
         return NoContent();
     }
 
+    // POST: api/workdays/{id}/toggle
+    [HttpPost("{id:guid}/toggle")]
+    public async Task<ActionResult> ToggleEntry(
+        Guid id,
+        [FromBody] ToggleWorkdayEntryDto dto)
+    {
+        if (dto == null)
+        {
+            throw new ValidationException("Workday entry payload is required.");
+        }
+
+        _logger.LogInformation(
+            "WorkdayController.ToggleEntry received toggle for workday {WorkdayId}, cow {CowId}, action {ActionId}, completed {Completed}",
+            id,
+            dto.CowId,
+            dto.ActionId,
+            dto.Completed);
+
+        await _service.SetEntryCompletion(id, dto.CowId, dto.ActionId, dto.Completed);
+        return NoContent();
+    }
+
     // POST: api/workdays/{id}/complete
     [HttpPost("{id:guid}/complete")]
     public async Task<ActionResult> CompleteWorkday(Guid id)

@@ -476,7 +476,7 @@ public class WorkdayServiceTests
     }
 
     [Fact]
-    public async Task ToggleEntry_flips_completion_state()
+    public async Task SetEntryCompletion_updates_completion_state()
     {
         await using var testContext = new ServiceTestContext();
         var cow = TestData.Cow("test-user", "A-100");
@@ -506,10 +506,10 @@ public class WorkdayServiceTests
 
         var service = testContext.CreateWorkdayService();
 
-        await service.ToggleEntry(workday.Id, cow.Id, action.Id);
+        await service.SetEntryCompletion(workday.Id, cow.Id, action.Id, true);
         testContext.DbContext.WorkdayEntries.Single().IsCompleted.Should().BeTrue();
 
-        await service.ToggleEntry(workday.Id, cow.Id, action.Id);
+        await service.SetEntryCompletion(workday.Id, cow.Id, action.Id, false);
         testContext.DbContext.WorkdayEntries.Single().IsCompleted.Should().BeFalse();
     }
 

@@ -7,6 +7,13 @@ export type WorkdayAction = {
   createdAt: string;
 };
 
+export type WorkdayEntry = {
+  workdayId: string;
+  cowId: string;
+  actionId: string;
+  isCompleted: boolean;
+};
+
 export type WorkdayCowAssignment = {
   id: string;
   workdayId: string;
@@ -24,4 +31,5 @@ export type Workday = {
   createdAt: string;
   workdayCows?: WorkdayCowAssignment[];
   actions?: WorkdayAction[];
+  entries?: WorkdayEntry[];
 };

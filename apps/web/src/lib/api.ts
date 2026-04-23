@@ -1,10 +1,32 @@
 import { supabase } from "./supabase";
 
-const API_BASE_URL = import.meta.env.VITE_API_URL;
+function normalizeApiBaseUrl(rawBaseUrl: string): string {
+  const trimmedBaseUrl = rawBaseUrl.trim().replace(/\/+$/, "");
 
-if (!API_BASE_URL) {
+  try {
+    const url = new URL(trimmedBaseUrl);
+    const normalizedPathname = url.pathname.startsWith("/api")
+      ? "/api"
+      : `${url.pathname.replace(/\/+$/, "")}/api`;
+
+    url.pathname = normalizedPathname.replace(/\/{2,}/g, "/");
+    return url.toString().replace(/\/+$/, "");
+  } catch {
+    const normalizedBaseUrl = trimmedBaseUrl.startsWith("/api")
+      ? "/api"
+      : `${trimmedBaseUrl}/api`;
+
+    return normalizedBaseUrl.replace(/\/{2,}/g, "/").replace(/\/+$/, "");
+  }
+}
+
+const RAW_API_BASE_URL = import.meta.env.VITE_API_URL;
+
+if (!RAW_API_BASE_URL) {
   throw new Error("VITE_API_URL is not configured");
 }
+
+const API_BASE_URL = normalizeApiBaseUrl(RAW_API_BASE_URL);
 
 type ApiError = {
   status?: number;

@@ -96,6 +96,7 @@ public class WorkdayService
                 .ThenInclude(wc => wc.Cow)
             .Include(w => w.WorkdayNotes)
             .Include(w => w.Actions)
+            .Include(w => w.Entries)
             .FirstOrDefaultAsync(w => w.Id == id && w.UserId == userId);
         _logger.LogInformation(
             "WorkdayService.GetWorkdayById loaded workday {WorkdayId} in {ElapsedMilliseconds}ms",
@@ -301,7 +302,7 @@ public class WorkdayService
             stopwatch.ElapsedMilliseconds);
     }
 
-    public async Task ToggleEntry(Guid workdayId, Guid cowId, Guid actionId)
+    public async Task SetEntryCompletion(Guid workdayId, Guid cowId, Guid actionId, bool completed)
     {
         var userId = GetCurrentUserId();
         var entry = await _context.WorkdayEntries
@@ -317,7 +318,7 @@ public class WorkdayService
             throw new NotFoundException("Workday entry not found.");
         }
 
-        entry.IsCompleted = !entry.IsCompleted;
+        entry.IsCompleted = completed;
         await _context.SaveChangesAsync();
     }
 

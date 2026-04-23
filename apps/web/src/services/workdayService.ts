@@ -19,6 +19,12 @@ export type CreateWorkdayActionInput = {
   name: string;
 };
 
+export type ToggleWorkdayEntryInput = {
+  cowId: string;
+  actionId: string;
+  completed: boolean;
+};
+
 export async function getActiveWorkdays(): Promise<Workday[]> {
   const response = await apiFetch(WORKDAY_API_BASE_PATH);
   return response.json();
@@ -116,5 +122,15 @@ export async function startWorkday(id: string): Promise<void> {
 export async function completeWorkday(id: string): Promise<void> {
   await apiFetch(`${WORKDAY_API_BASE_PATH}/${id}/complete`, {
     method: "POST",
+  });
+}
+
+export async function toggleWorkdayEntry(
+  id: string,
+  entry: ToggleWorkdayEntryInput,
+): Promise<void> {
+  await apiFetch(`${WORKDAY_API_BASE_PATH}/${id}/toggle`, {
+    method: "POST",
+    body: JSON.stringify(entry),
   });
 }

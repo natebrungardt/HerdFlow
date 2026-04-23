@@ -262,4 +262,65 @@ public class WorkdayApiIntegrationTests
         completedWorkday.Should().NotBeNull();
         completedWorkday!.CompletedAt.Should().NotBeNull();
     }
+
+    [Fact]
+    public async Task Toggle_endpoint_updates_existing_workday_entry_completion()
+    {
+        await using var factory = new HerdFlowApiFactory();
+        var cow = TestData.Cow("user-a", "A-100");
+        var action = new WorkdayAction
+        {
+            Name = "Vaccinate"
+        };
+        var workday = new Workday
+        {
+            UserId = "user-a",
+            Title = "Morning Checks",
+            Status = WorkdayStatus.InProgress,
+            WorkdayCows = new List<WorkdayCow>
+            {
+                new() { CowId = cow.Id }
+            },
+            Actions = new List<WorkdayAction>
+            {
+                action
+            }
+        };
+
+        await factory.SeedAsync(dbContext =>
+        {
+            dbContext.Cows.Add(cow);
+            dbContext.Workdays.Add(workday);
+            dbContext.WorkdayEntries.Add(new WorkdayEntry
+            {
+                WorkdayId = workday.Id,
+                CowId = cow.Id,
+                ActionId = action.Id,
+                IsCompleted = false
+            });
+            return Task.CompletedTask;
+        });
+        using var client = factory.CreateClientForUser("user-a");
+
+        var toggleResponse = await client.PostAsJsonAsync(
+            $"/api/workdays/{workday.Id}/toggle",
+            new
+            {
+                cowId = cow.Id,
+                actionId = action.Id,
+                completed = true
+            });
+
+        toggleResponse.StatusCode.Should().Be(HttpStatusCode.NoContent);
+
+        var fetchedWorkday = await client.GetFromJsonAsync<Workday>(
+            $"/api/workdays/{workday.Id}",
+            ApiJson.Options);
+
+        fetchedWorkday.Should().NotBeNull();
+        fetchedWorkday!.Entries.Should().ContainSingle(entry =>
+            entry.CowId == cow.Id &&
+            entry.ActionId == action.Id &&
+            entry.IsCompleted);
+    }
 }
