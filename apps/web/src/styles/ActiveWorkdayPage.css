@@ -362,6 +362,10 @@
   color: var(--text-primary);
 }
 
+:root[data-theme="dark"] .active-grid-container {
+  --active-grid-sticky-bg: var(--color-surface-elevated);
+}
+
 :root[data-theme="light"] .active-grid-container {
   --active-grid-header-bg: #f3f4f6;
   --active-grid-sticky-bg: #f3f4f6;
