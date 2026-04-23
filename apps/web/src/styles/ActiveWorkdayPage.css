@@ -36,6 +36,7 @@
   --active-grid-cow-width: 140px;
   --active-grid-cell-width: 100px;
   --active-grid-header-bg: var(--color-surface-elevated);
+  --active-grid-sticky-bg: rgba(0, 0, 0, 0.03);
   --active-grid-row-stripe: rgba(255, 255, 255, 0.02);
   --active-grid-column-hover: rgba(255, 255, 255, 0.03);
   --active-grid-circle-border: #6b7280;
@@ -117,13 +118,12 @@
 }
 
 .active-grid-done-header {
-  width: 60px;
-  min-width: 60px;
-  max-width: 60px;
+  width: 90px;
+  min-width: 90px;
+  max-width: 90px;
   position: sticky;
   left: 0;
-  z-index: 4;
-  background: var(--color-surface);
+  background: var(--active-grid-sticky-bg);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -134,21 +134,19 @@
   color: var(--text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  will-change: transform;
   box-sizing: border-box;
   border-right: 1px solid var(--color-border);
   z-index: 30;
-  flex: 0 0 60px;
+  flex: 0 0 90px;
 }
 
 .active-grid-all-actions-header {
-  width: 120px;
-  min-width: 120px;
-  max-width: 120px;
+  width: 90px;
+  min-width: 90px;
+  max-width: 90px;
   position: sticky;
-  left: 60px;
-  z-index: 4;
-  background: var(--color-surface);
+  left: 90px;
+  background: var(--active-grid-sticky-bg);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -159,11 +157,11 @@
   color: var(--text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  will-change: transform;
   box-sizing: border-box;
   border-right: 1px solid var(--color-border);
   z-index: 30;
-  flex: 0 0 120px;
+  flex: 0 0 90px;
+  text-align: center;
 }
 
 .active-grid-row {
@@ -208,15 +206,15 @@
   font-size: 14px;
   font-weight: 500;
   letter-spacing: 0.2px;
-  background: var(--color-surface);
+  background: var(--active-grid-sticky-bg);
   color: var(--text-primary);
-  z-index: 20;
-  box-shadow: none;
+  box-shadow: 1px 0 0 var(--color-border);
   border-right: 1px solid var(--color-border);
   flex: 0 0 var(--active-grid-cow-width);
-  will-change: transform;
-  box-sizing: border-box;
   z-index: 22;
+  justify-content: center;
+  padding-left: 0;
+  text-align: center;
 }
 
 .active-grid-cow-header {
@@ -224,20 +222,43 @@
   height: 100%;
   font-size: 13px;
   font-weight: 600;
-  background: var(--color-surface);
-  z-index: 25;
+  background: var(--active-grid-sticky-bg);
   border-right: 1px solid var(--color-border);
   flex: 0 0 var(--active-grid-cow-width);
-  will-change: transform;
-  box-sizing: border-box;
   z-index: 31;
+  justify-content: center;
+  padding-left: 0;
+  text-align: center;
+  box-shadow: 1px 0 0 var(--color-border);
 }
 
 .active-grid-divider-row {
-  height: 36px;
+  display: flex;
+  align-items: stretch;
+  min-width: max-content;
+  height: 30px;
   border-top: 1px solid var(--color-border);
   border-bottom: 1px solid var(--color-border);
-  background: #f3f4f6;
+  background: rgba(0, 0, 0, 0.06);
+  position: relative;
+  z-index: 5;
+}
+
+.active-grid-divider-row > div {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  flex-shrink: 0;
+}
+
+.active-grid-divider-sticky {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.active-grid-divider-row .active-grid-cell {
+  flex: 0 0 var(--active-grid-cell-width);
+  min-width: var(--active-grid-cell-width);
 }
 
 .active-grid-divider-label {
@@ -248,42 +269,42 @@
   letter-spacing: 0.04em;
   display: flex;
   align-items: center;
+  justify-content: center;
+  flex: 0 0 var(--active-grid-cow-width);
   background: inherit;
+  border-right: 1px solid var(--color-border);
 }
 
 .active-grid-done {
-  width: 60px;
-  min-width: 60px;
-  max-width: 60px;
+  width: 90px;
+  min-width: 90px;
+  max-width: 90px;
   display: flex;
   align-items: center;
   justify-content: center;
   position: sticky;
   left: 0;
-  z-index: 4;
-  background: var(--color-surface);
-  will-change: transform;
+  background: var(--active-grid-sticky-bg);
   box-sizing: border-box;
   border-right: 1px solid var(--color-border);
   z-index: 21;
-  flex: 0 0 60px;
+  flex: 0 0 90px;
 }
 
 .active-grid-all-actions {
-  width: 120px;
-  min-width: 120px;
-  max-width: 120px;
+  width: 90px;
+  min-width: 90px;
+  max-width: 90px;
   display: flex;
   align-items: center;
+  justify-content: center;
   position: sticky;
-  left: 60px;
-  z-index: 4;
-  background: var(--color-surface);
-  will-change: transform;
+  left: 90px;
+  background: var(--active-grid-sticky-bg);
   box-sizing: border-box;
   border-right: 1px solid var(--color-border);
   z-index: 21;
-  flex: 0 0 120px;
+  flex: 0 0 90px;
 }
 
 .active-grid-all-actions-btn {
@@ -343,10 +364,19 @@
 
 :root[data-theme="light"] .active-grid-container {
   --active-grid-header-bg: #f3f4f6;
+  --active-grid-sticky-bg: #f3f4f6;
   --active-grid-row-stripe: #fafafa;
   --active-grid-column-hover: rgba(0, 0, 0, 0.02);
   --active-grid-circle-border: #94a3b8;
   --active-grid-complete: #22c55e;
+}
+
+:root[data-theme="light"] .active-grid-divider-row {
+  background: #e5e7eb;
+}
+
+:root[data-theme="light"] .active-grid-divider-sticky {
+  background: #e5e7eb;
 }
 
 @media (max-width: 900px) {

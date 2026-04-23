@@ -142,10 +142,10 @@ function GridHeader({
   return (
     <div className="active-grid-header" role="row">
       <div className="active-grid-done-header" role="columnheader">
-        Done
+        Complete
       </div>
       <div className="active-grid-all-actions-header" role="columnheader">
-        All
+        All Actions
       </div>
       <div className="active-grid-cow-header" role="columnheader">
         Tag #
@@ -243,7 +243,7 @@ function Row({
           className="active-grid-all-actions-btn"
           onClick={handleAllActions}
         >
-          All Actions
+          Select
         </button>
       </div>
       <div
@@ -279,7 +279,7 @@ function GridBody({
   onColumnHover,
 }: GridBodyProps) {
   return (
-    <div className="active-grid-body" role="rowgroup">
+    <div role="rowgroup">
       {activeCows.map((cow) => (
         <Row
           key={cow.id}
@@ -293,10 +293,9 @@ function GridBody({
       ))}
       {completedCows.length > 0 ? (
         <div className="active-grid-row active-grid-divider-row" role="row">
-          <div
-            className="active-grid-cow active-grid-divider-label"
-            role="rowheader"
-          >
+          <div className="active-grid-done active-grid-divider-sticky" />
+          <div className="active-grid-all-actions active-grid-divider-sticky" />
+          <div className="active-grid-cow active-grid-divider-label" role="rowheader">
             Completed ({completedCows.length})
           </div>
           {actions.map((action) => (
@@ -366,7 +365,7 @@ function GridContainer({
   return (
     <div
       ref={containerRef}
-      className={`active-grid-container${isDragging ? " is-dragging" : ""}`}
+      className="active-grid-container"
       role="grid"
       aria-label="Active workday grid"
       onMouseDown={handleMouseDown}
@@ -429,7 +428,10 @@ function ActiveWorkdayPage() {
   }, [id]);
 
   const actions = useMemo(() => workday?.actions ?? [], [workday?.actions]);
-  const cows = useMemo(() => workday?.workdayCows ?? [], [workday?.workdayCows]);
+  const cows = useMemo(
+    () => workday?.workdayCows ?? [],
+    [workday?.workdayCows],
+  );
   const normalizedSearch = searchTerm.trim().toLowerCase();
   const filteredCows = useMemo(
     () =>
