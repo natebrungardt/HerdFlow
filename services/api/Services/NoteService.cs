@@ -35,6 +35,7 @@ public class NoteService
     {
         await EnsureCowExistsAsync(cowId);
         ValidateNoteContent(dto.Content);
+        await EnsureWorkdayExistsAsync(dto.WorkdayId);
         var now = DateTime.UtcNow;
 
         var note = new Note
@@ -42,6 +43,8 @@ public class NoteService
             UserId = GetCurrentUserId(),
             CowId = cowId,
             Content = dto.Content.Trim(),
+            Source = NormalizeSource(dto.Source),
+            WorkdayId = dto.WorkdayId,
             CreatedAt = now,
             UpdatedAt = now,
         };
@@ -106,12 +109,34 @@ public class NoteService
         return note ?? throw new NotFoundException("Note not found.");
     }
 
+    private async Task EnsureWorkdayExistsAsync(Guid? workdayId)
+    {
+        if (!workdayId.HasValue)
+        {
+            return;
+        }
+
+        var userId = GetCurrentUserId();
+        var exists = await _context.Workdays
+            .AnyAsync(workday => workday.Id == workdayId.Value && workday.UserId == userId);
+
+        if (!exists)
+        {
+            throw new NotFoundException("Workday not found.");
+        }
+    }
+
     private static void ValidateNoteContent(string? content)
     {
         if (string.IsNullOrWhiteSpace(content))
         {
             throw new ValidationException("Note content is required.");
         }
+    }
+
+    private static string? NormalizeSource(string? source)
+    {
+        return string.IsNullOrWhiteSpace(source) ? null : source.Trim();
     }
 
     private string GetCurrentUserId()

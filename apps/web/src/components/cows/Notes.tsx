@@ -91,6 +91,24 @@ function Notes({ cowId }: Props) {
     }
   }
 
+  function buildNoteMeta(note: Note) {
+    const timestamp = new Date(note.createdAt).toLocaleString(undefined, {
+      month: "short",
+      day: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+    });
+
+    if (note.source === "workday") {
+      return `From Workday • ${new Date(note.createdAt).toLocaleDateString(undefined, {
+        month: "short",
+        day: "numeric",
+      })}`;
+    }
+
+    return timestamp;
+  }
+
   return (
     <section className="dashboardCard notesPanel">
       <div className="dataCardHeader">
@@ -136,14 +154,7 @@ function Notes({ cowId }: Props) {
                   ) : (
                     <>
                       <span>{note.content}</span>
-                      <span className="noteTimestamp">
-                        {new Date(note.createdAt).toLocaleString(undefined, {
-                          month: "short",
-                          day: "numeric",
-                          hour: "numeric",
-                          minute: "2-digit",
-                        })}
-                      </span>
+                      <span className="noteTimestamp">{buildNoteMeta(note)}</span>
                     </>
                   )}
                 </div>

@@ -167,12 +167,19 @@ namespace HerdFlow.Api.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("Source")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("UserId")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<Guid?>("WorkdayId")
+                        .HasColumnType("uuid");
 
                     b.HasKey("Id");
 

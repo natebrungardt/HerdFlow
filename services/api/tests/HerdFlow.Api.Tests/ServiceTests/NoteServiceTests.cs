@@ -39,6 +39,36 @@ public class NoteServiceTests
     }
 
     [Fact]
+    public async Task CreateNoteAsync_persists_workday_context()
+    {
+        await using var testContext = new ServiceTestContext();
+        var cow = TestData.Cow("test-user");
+        var workday = TestData.CreateWorkdayDto();
+        testContext.DbContext.Cows.Add(cow);
+        var createdWorkday = new HerdFlow.Api.Models.Workday
+        {
+            UserId = "test-user",
+            Title = workday.Title,
+            Date = workday.Date ?? DateOnly.FromDateTime(DateTime.UtcNow),
+            Summary = workday.Summary
+        };
+        testContext.DbContext.Workdays.Add(createdWorkday);
+        await testContext.DbContext.SaveChangesAsync();
+
+        var service = testContext.CreateNoteService();
+
+        var note = await service.CreateNoteAsync(cow.Id, new CreateNoteDto
+        {
+            Content = "Needs recheck",
+            Source = "workday",
+            WorkdayId = createdWorkday.Id
+        });
+
+        note.Source.Should().Be("workday");
+        note.WorkdayId.Should().Be(createdWorkday.Id);
+    }
+
+    [Fact]
     public async Task GetNotesAsync_only_returns_notes_for_current_user()
     {
         await using var testContext = new ServiceTestContext();

@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { MouseEvent as ReactMouseEvent } from "react";
+import { createPortal } from "react-dom";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import Modal from "../../components/shared/Modal";
+import { createNote } from "../../services/noteService";
 import {
   completeWorkday,
   getWorkdayById,
@@ -39,6 +41,13 @@ type GridContainerProps = {
   onToggle: (cowId: string, actionId: string) => void;
   onSelectAllActions: (cowId: string, markDone: boolean) => void;
   onDoneToggle: (cowId: string, nextDone: boolean) => void;
+  openNoteCowId: string | null;
+  noteText: string;
+  savingNote: boolean;
+  onToggleNote: (cowId: string) => void;
+  onNoteTextChange: (value: string) => void;
+  onSaveNote: (cowId: string) => void;
+  onCancelNote: () => void;
   hoveredActionId: string | null;
   onColumnHover: (actionId: string) => void;
   onColumnLeave: () => void;
@@ -58,6 +67,13 @@ type GridBodyProps = {
   onToggle: (cowId: string, actionId: string) => void;
   onSelectAllActions: (cowId: string, markDone: boolean) => void;
   onDoneToggle: (cowId: string, nextDone: boolean) => void;
+  openNoteCowId: string | null;
+  noteText: string;
+  savingNote: boolean;
+  onToggleNote: (cowId: string) => void;
+  onNoteTextChange: (value: string) => void;
+  onSaveNote: (cowId: string) => void;
+  onCancelNote: () => void;
   hoveredActionId: string | null;
   onColumnHover: (actionId: string) => void;
 };
@@ -69,6 +85,13 @@ type RowProps = {
   onToggle: (cowId: string, actionId: string) => void;
   onSelectAllActions: (cowId: string, markDone: boolean) => void;
   onDoneToggle: (cowId: string, nextDone: boolean) => void;
+  isNoteOpen: boolean;
+  noteText: string;
+  savingNote: boolean;
+  onToggleNote: (cowId: string) => void;
+  onNoteTextChange: (value: string) => void;
+  onSaveNote: (cowId: string) => void;
+  onCancelNote: () => void;
   isDone: boolean;
   hoveredActionId: string | null;
   onColumnHover: (actionId: string) => void;
@@ -226,16 +249,74 @@ function Row({
   onToggle,
   onSelectAllActions,
   onDoneToggle,
+  isNoteOpen,
+  noteText,
+  savingNote,
+  onToggleNote,
+  onNoteTextChange,
+  onSaveNote,
+  onCancelNote,
   isDone,
   hoveredActionId,
   onColumnHover,
 }: RowProps) {
+  const rowContainerRef = useRef<HTMLDivElement>(null);
+  const noteTextareaRef = useRef<HTMLTextAreaElement>(null);
+  const noteButtonRef = useRef<HTMLButtonElement>(null);
+  const notePopoverRef = useRef<HTMLDivElement>(null);
+  const [popoverPosition, setPopoverPosition] = useState<{
+    top: number;
+    left: number;
+  } | null>(null);
   const actionIds = actions.map((action) => action.id);
   const completedCount = actionIds.filter(
     (actionId) => completions[cow.cowId]?.[actionId],
   ).length;
   const totalCount = actionIds.length;
   const isAll = totalCount > 0 && completedCount === totalCount;
+
+  useEffect(() => {
+    if (!isNoteOpen) {
+      setPopoverPosition(null);
+      return;
+    }
+
+    noteTextareaRef.current?.focus();
+
+    if (noteButtonRef.current) {
+      const rect = noteButtonRef.current.getBoundingClientRect();
+
+      setPopoverPosition({
+        top: rect.bottom + window.scrollY + 6,
+        left: rect.left + window.scrollX,
+      });
+    }
+
+    function handlePointerDown(event: MouseEvent) {
+      if (
+        rowContainerRef.current &&
+        !rowContainerRef.current.contains(event.target as Node) &&
+        (!notePopoverRef.current ||
+          !notePopoverRef.current.contains(event.target as Node))
+      ) {
+        onCancelNote();
+      }
+    }
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        onCancelNote();
+      }
+    }
+
+    document.addEventListener("mousedown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("mousedown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isNoteOpen, onCancelNote]);
 
   function handleDoneToggle() {
     onDoneToggle(cow.cowId, !isDone);
@@ -248,50 +329,130 @@ function Row({
   }
 
   return (
-    <div
-      className={`active-grid-row${isDone ? " completed-row" : ""}`}
-      role="row"
-    >
-      <div className="active-grid-done">
-        <button
-          type="button"
-          aria-label={
-            isDone
-              ? `Mark cow ${cow.cow.tagNumber} as not done for the workday`
-              : `Mark cow ${cow.cow.tagNumber} as done for the workday`
-          }
-          className={`active-grid-circle${isDone ? " complete" : ""}`}
-          onClick={handleDoneToggle}
-        />
-      </div>
-      <div className="active-grid-all-actions">
-        <button
-          type="button"
-          className="active-grid-all-actions-btn"
-          onClick={handleAllActions}
-        >
-          {isAll ? "Clear" : "Select"}
-        </button>
-      </div>
+    <div className="active-grid-row-shell" ref={rowContainerRef}>
       <div
-        className="active-grid-cow"
-        role="rowheader"
-        title={cow.cow.tagNumber}
+        className={`active-grid-row${isDone ? " completed-row" : ""}${isNoteOpen ? " note-open" : ""}`}
+        role="row"
       >
-        {cow.cow.tagNumber}
+        <div className="active-grid-done">
+          <button
+            type="button"
+            aria-label={
+              isDone
+                ? `Mark cow ${cow.cow.tagNumber} as not done for the workday`
+                : `Mark cow ${cow.cow.tagNumber} as done for the workday`
+            }
+            className={`active-grid-circle${isDone ? " complete" : ""}`}
+            onClick={handleDoneToggle}
+          />
+        </div>
+        <div className="active-grid-all-actions">
+          <button
+            type="button"
+            className="active-grid-all-actions-btn"
+            onClick={handleAllActions}
+          >
+            {isAll ? "Clear" : "Select"}
+          </button>
+        </div>
+        <div
+          className="active-grid-cow"
+          role="rowheader"
+          title={cow.cow.tagNumber}
+        >
+          <div className="active-grid-cow-content">
+            <span>{cow.cow.tagNumber}</span>
+            <div className="note-button-wrapper">
+              <button
+                type="button"
+                className="cowNoteButton"
+                aria-label={`Add note for cow ${cow.cow.tagNumber}`}
+                ref={noteButtonRef}
+                onClick={() => onToggleNote(cow.cowId)}
+              >
+                📝
+              </button>
+            </div>
+          </div>
+        </div>
+        {actions.map((action) => (
+          <Cell
+            key={action.id}
+            cowId={cow.cowId}
+            cowTag={cow.cow.tagNumber}
+            actionId={action.id}
+            complete={completions[cow.cowId]?.[action.id] ?? false}
+            onToggle={onToggle}
+            highlighted={hoveredActionId === action.id}
+            onColumnHover={onColumnHover}
+          />
+        ))}
       </div>
-      {actions.map((action) => (
-        <Cell
-          key={action.id}
-          cowId={cow.cowId}
-          cowTag={cow.cow.tagNumber}
-          actionId={action.id}
-          complete={completions[cow.cowId]?.[action.id] ?? false}
-          onToggle={onToggle}
-          highlighted={hoveredActionId === action.id}
-          onColumnHover={onColumnHover}
-        />
-      ))}
+      {isNoteOpen && popoverPosition
+        ? createPortal(
+            <div
+              ref={notePopoverRef}
+              className="active-grid-note-popover"
+              role="dialog"
+              aria-label={`Add note for cow ${cow.cow.tagNumber}`}
+              style={{
+                position: "absolute",
+                top: popoverPosition.top,
+                left: popoverPosition.left,
+                width: "340px",
+                zIndex: 9999,
+              }}
+            >
+              <div className="active-grid-note-card">
+                <div className="active-grid-note-title">
+                  Add Note - Tag #{cow.cow.tagNumber}
+                </div>
+                <textarea
+                  ref={noteTextareaRef}
+                  value={noteText}
+                  onChange={(event) => onNoteTextChange(event.target.value)}
+                  placeholder="Add a note for this cow..."
+                  rows={3}
+                  onKeyDown={(event) => {
+                    if (
+                      event.key === "Enter" &&
+                      (event.metaKey || event.ctrlKey) &&
+                      noteText.trim() &&
+                      !savingNote
+                    ) {
+                      event.preventDefault();
+                      onSaveNote(cow.cowId);
+                    }
+
+                    if (event.key === "Escape") {
+                      event.preventDefault();
+                      onCancelNote();
+                    }
+                  }}
+                />
+                <div className="active-grid-note-actions">
+                  <button
+                    type="button"
+                    className="addCowButton"
+                    disabled={savingNote || !noteText.trim()}
+                    onClick={() => onSaveNote(cow.cowId)}
+                  >
+                    {savingNote ? "Saving..." : "Save"}
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-outline"
+                    disabled={savingNote}
+                    onClick={onCancelNote}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            </div>,
+            document.body,
+          )
+        : null}
     </div>
   );
 }
@@ -304,6 +465,13 @@ function GridBody({
   onToggle,
   onSelectAllActions,
   onDoneToggle,
+  openNoteCowId,
+  noteText,
+  savingNote,
+  onToggleNote,
+  onNoteTextChange,
+  onSaveNote,
+  onCancelNote,
   hoveredActionId,
   onColumnHover,
 }: GridBodyProps) {
@@ -318,6 +486,13 @@ function GridBody({
           onToggle={onToggle}
           onSelectAllActions={onSelectAllActions}
           onDoneToggle={onDoneToggle}
+          isNoteOpen={openNoteCowId === cow.cowId}
+          noteText={noteText}
+          savingNote={savingNote}
+          onToggleNote={onToggleNote}
+          onNoteTextChange={onNoteTextChange}
+          onSaveNote={onSaveNote}
+          onCancelNote={onCancelNote}
           isDone={false}
           hoveredActionId={hoveredActionId}
           onColumnHover={onColumnHover}
@@ -344,6 +519,13 @@ function GridBody({
           onToggle={onToggle}
           onSelectAllActions={onSelectAllActions}
           onDoneToggle={onDoneToggle}
+          isNoteOpen={openNoteCowId === cow.cowId}
+          noteText={noteText}
+          savingNote={savingNote}
+          onToggleNote={onToggleNote}
+          onNoteTextChange={onNoteTextChange}
+          onSaveNote={onSaveNote}
+          onCancelNote={onCancelNote}
           isDone={true}
           hoveredActionId={hoveredActionId}
           onColumnHover={onColumnHover}
@@ -361,6 +543,13 @@ function GridContainer({
   onToggle,
   onSelectAllActions,
   onDoneToggle,
+  openNoteCowId,
+  noteText,
+  savingNote,
+  onToggleNote,
+  onNoteTextChange,
+  onSaveNote,
+  onCancelNote,
   hoveredActionId,
   onColumnHover,
   onColumnLeave,
@@ -410,22 +599,31 @@ function GridContainer({
       onMouseUp={stopDragging}
       onMouseLeave={handleMouseLeave}
     >
-      <GridHeader
-        actions={actions}
-        hoveredActionId={hoveredActionId}
-        onColumnHover={onColumnHover}
-      />
-      <GridBody
-        activeCows={activeCows}
-        completedCows={completedCows}
-        actions={actions}
-        completions={completions}
-        onToggle={onToggle}
-        onSelectAllActions={onSelectAllActions}
-        onDoneToggle={onDoneToggle}
-        hoveredActionId={hoveredActionId}
-        onColumnHover={onColumnHover}
-      />
+      <div className="active-grid-inner">
+        <GridHeader
+          actions={actions}
+          hoveredActionId={hoveredActionId}
+          onColumnHover={onColumnHover}
+        />
+        <GridBody
+          activeCows={activeCows}
+          completedCows={completedCows}
+          actions={actions}
+          completions={completions}
+          onToggle={onToggle}
+          onSelectAllActions={onSelectAllActions}
+          onDoneToggle={onDoneToggle}
+          openNoteCowId={openNoteCowId}
+          noteText={noteText}
+          savingNote={savingNote}
+          onToggleNote={onToggleNote}
+          onNoteTextChange={onNoteTextChange}
+          onSaveNote={onSaveNote}
+          onCancelNote={onCancelNote}
+          hoveredActionId={hoveredActionId}
+          onColumnHover={onColumnHover}
+        />
+      </div>
     </div>
   );
 }
@@ -440,6 +638,9 @@ function ActiveWorkdayPage() {
   const [doneOrder, setDoneOrder] = useState<string[]>([]);
   const [showResetModal, setShowResetModal] = useState(false);
   const [showCompleteModal, setShowCompleteModal] = useState(false);
+  const [openNoteCowId, setOpenNoteCowId] = useState<string | null>(null);
+  const [noteText, setNoteText] = useState("");
+  const [savingNote, setSavingNote] = useState(false);
   const [hoveredActionId, setHoveredActionId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [completing, setCompleting] = useState(false);
@@ -658,6 +859,41 @@ function ActiveWorkdayPage() {
     });
   }
 
+  function handleToggleNote(cowId: string) {
+    setOpenNoteCowId((current) => {
+      if (current === cowId) {
+        setNoteText("");
+        return null;
+      }
+
+      setNoteText("");
+      return cowId;
+    });
+  }
+
+  async function handleSaveNote(cowId: string) {
+    if (!isGuid(id) || !noteText.trim()) {
+      return;
+    }
+
+    try {
+      setSavingNote(true);
+      setError("");
+      await createNote(cowId, {
+        content: noteText.trim(),
+        source: "workday",
+        workdayId: id,
+      });
+      setOpenNoteCowId(null);
+      setNoteText("");
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Failed to add note";
+      setError(message);
+    } finally {
+      setSavingNote(false);
+    }
+  }
+
   async function handleConfirmReset() {
     if (!isGuid(id)) {
       return;
@@ -758,6 +994,16 @@ function ActiveWorkdayPage() {
               onToggle={handleToggle}
               onSelectAllActions={handleSelectAllActions}
               onDoneToggle={handleDoneToggle}
+              openNoteCowId={openNoteCowId}
+              noteText={noteText}
+              savingNote={savingNote}
+              onToggleNote={handleToggleNote}
+              onNoteTextChange={setNoteText}
+              onSaveNote={(cowId) => void handleSaveNote(cowId)}
+              onCancelNote={() => {
+                setOpenNoteCowId(null);
+                setNoteText("");
+              }}
               hoveredActionId={hoveredActionId}
               onColumnHover={setHoveredActionId}
               onColumnLeave={() => setHoveredActionId(null)}

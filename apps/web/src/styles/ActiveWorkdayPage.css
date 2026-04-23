@@ -11,7 +11,6 @@
 }
 
 .header-left,
-.header-center,
 .header-right {
   display: flex;
   align-items: center;
@@ -23,7 +22,6 @@
   min-width: 0;
 }
 
-.header-center,
 .header-right {
   flex: 0 0 auto;
 }
@@ -33,19 +31,21 @@
 }
 
 .active-grid-container {
-  --active-grid-cow-width: 140px;
+  --active-grid-cow-width: 180px;
   --active-grid-cell-width: 100px;
   --active-grid-header-bg: var(--color-surface-elevated);
-  --active-grid-sticky-bg: rgba(0, 0, 0, 0.03);
+  --active-grid-sticky-bg: var(--color-surface);
   --active-grid-row-stripe: rgba(255, 255, 255, 0.02);
   --active-grid-column-hover: rgba(255, 255, 255, 0.03);
   --active-grid-circle-border: #6b7280;
   --active-grid-complete: var(--color-primary);
 
+  display: block;
   width: 100%;
+  min-width: 100%;
   overflow-x: auto;
-  overflow-y: hidden;
-  scrollbar-gutter: stable;
+  overflow-y: visible;
+  scrollbar-gutter: auto;
   scrollbar-width: thin;
   scrollbar-color: var(--scroll-thumb) transparent;
 
@@ -55,6 +55,14 @@
   background: var(--color-surface);
 
   box-shadow: none;
+}
+
+.active-grid-inner {
+  display: flex;
+  flex-direction: column;
+  width: max-content;
+  min-width: 100%;
+  background: var(--color-surface);
 }
 
 .active-grid-container::-webkit-scrollbar {
@@ -80,7 +88,8 @@
   top: 0;
   z-index: 10;
   display: flex;
-  min-width: max-content;
+  width: 100%;
+  min-width: 100%;
 
   height: 64px;
 
@@ -92,6 +101,7 @@
 .active-grid-header-cell {
   position: relative;
   z-index: 10;
+  flex: 0 0 var(--active-grid-cell-width);
   width: var(--active-grid-cell-width);
   min-width: var(--active-grid-cell-width);
   text-align: center;
@@ -171,11 +181,25 @@
 .active-grid-row {
   display: flex;
   align-items: stretch;
-  min-width: max-content;
+  width: 100%;
+  min-width: 100%;
   height: 64px;
 
   background: transparent;
   border-bottom: 1px solid var(--color-border);
+}
+
+.active-grid-row-shell {
+  position: relative;
+}
+
+.active-grid-row.note-open {
+  position: relative;
+  z-index: 100;
+}
+
+.active-grid-row.note-open .active-grid-cow {
+  z-index: 500;
 }
 
 .active-grid-row:nth-child(even) {
@@ -184,10 +208,6 @@
 
 .completed-row {
   background-color: #f3f4f6;
-}
-
-.completed-row > div {
-  opacity: 0.95;
 }
 
 :root[data-theme="dark"] .completed-row {
@@ -210,7 +230,18 @@
 :root[data-theme="dark"] .completed-row .active-grid-done,
 :root[data-theme="dark"] .completed-row .active-grid-all-actions {
   background-color: #0f1f17 !important;
-  opacity: 0.9;
+}
+
+.active-grid-done,
+.active-grid-all-actions,
+.active-grid-cow,
+.active-grid-done-header,
+.active-grid-all-actions-header,
+.active-grid-cow-header {
+  background: var(--active-grid-sticky-bg) !important;
+  opacity: 1 !important;
+  backdrop-filter: none !important;
+  filter: none !important;
 }
 
 :root[data-theme="dark"] .active-grid-row.completed-row .active-grid-done,
@@ -252,6 +283,10 @@
   background: rgba(34, 197, 94, 0.08);
 }
 
+.active-grid-row.note-open {
+  background: rgba(34, 197, 94, 0.1);
+}
+
 .active-grid-cow,
 .active-grid-cow-header {
   position: sticky;
@@ -274,13 +309,57 @@
   letter-spacing: 0.2px;
   background: var(--active-grid-sticky-bg);
   color: var(--text-primary);
-  box-shadow: 1px 0 0 var(--color-border);
+  box-shadow:
+    1px 0 0 var(--color-border),
+    2px 0 6px rgba(0, 0, 0, 0.04);
   border-right: 1px solid var(--color-border);
   flex: 0 0 var(--active-grid-cow-width);
-  z-index: 22;
+  z-index: 200;
   justify-content: center;
   padding-left: 0;
   text-align: center;
+}
+
+.active-grid-cow-content {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 0 10px;
+  box-sizing: border-box;
+  position: relative;
+}
+
+.active-grid-cow-content span {
+  flex: 1;
+  min-width: 0;
+  overflow: visible;
+  text-overflow: unset;
+  white-space: nowrap;
+  padding-right: 26px; /* keep space for icon */
+}
+
+.cowNoteButton {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  opacity: 0.65;
+  font-size: 0.95rem;
+  line-height: 1;
+  padding: 2px;
+}
+
+.cowNoteButton:hover,
+.cowNoteButton:focus-visible {
+  opacity: 1;
+}
+
+.note-button-wrapper {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
 }
 
 .active-grid-cow-header {
@@ -301,6 +380,7 @@
 .active-grid-divider-row {
   display: flex;
   align-items: stretch;
+  width: 100%;
   min-width: max-content;
   height: 30px;
   border-top: none;
@@ -369,6 +449,7 @@
   border-right: 1px solid var(--color-border);
   z-index: 21;
   flex: 0 0 90px;
+  box-shadow: 2px 0 6px rgba(0, 0, 0, 0.04);
 }
 
 .active-grid-all-actions {
@@ -385,6 +466,7 @@
   border-right: 1px solid var(--color-border);
   z-index: 21;
   flex: 0 0 90px;
+  box-shadow: 2px 0 6px rgba(0, 0, 0, 0.04);
 }
 
 .active-grid-all-actions-btn {
@@ -401,6 +483,7 @@
 }
 
 .active-grid-cell {
+  flex: 0 0 var(--active-grid-cell-width);
   width: var(--active-grid-cell-width);
   min-width: var(--active-grid-cell-width);
   display: flex;
@@ -436,6 +519,51 @@
 .active-grid-circle.complete {
   background: var(--active-grid-complete);
   border-color: var(--active-grid-complete);
+}
+
+.active-grid-note-popover {
+  position: absolute;
+  width: 340px;
+  z-index: 9999;
+}
+
+.active-grid-note-card {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  background: var(--color-surface);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+}
+
+.active-grid-note-title {
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.active-grid-note-card textarea {
+  width: 100%;
+  min-height: 76px;
+  resize: vertical;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--text-primary);
+  font: inherit;
+  box-sizing: border-box;
+}
+
+.active-grid-note-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
 }
 
 .active-workday-state {
@@ -479,6 +607,11 @@
   .active-grid-search {
     max-width: none;
     width: 100%;
+  }
+
+  .active-grid-note-popover {
+    left: 0;
+    width: min(340px, calc(100vw - 32px));
   }
 }
 .btn-ghost {
