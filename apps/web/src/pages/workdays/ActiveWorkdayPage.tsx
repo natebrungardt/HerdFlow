@@ -5,6 +5,7 @@ import {
   completeWorkday,
   getWorkdayById,
   toggleWorkdayEntry,
+  updateCowWorkdayStatus,
 } from "../../services/workdayService";
 import type {
   Workday,
@@ -17,6 +18,7 @@ import "../../styles/CowDetailPage.css";
 import "../../styles/ActiveWorkdayPage.css";
 
 type CompletionMap = Record<string, Record<string, boolean>>;
+type DoneCowIds = Set<string>;
 
 type HeaderBarProps = {
   searchTerm: string;
@@ -32,6 +34,7 @@ type GridContainerProps = {
   completedCows: WorkdayCowAssignment[];
   completions: CompletionMap;
   onToggle: (cowId: string, actionId: string) => void;
+  onDoneToggle: (cowId: string, nextDone: boolean) => void;
   hoveredActionId: string | null;
   onColumnHover: (actionId: string) => void;
   onColumnLeave: () => void;
@@ -49,6 +52,7 @@ type GridBodyProps = {
   actions: WorkdayAction[];
   completions: CompletionMap;
   onToggle: (cowId: string, actionId: string) => void;
+  onDoneToggle: (cowId: string, nextDone: boolean) => void;
   hoveredActionId: string | null;
   onColumnHover: (actionId: string) => void;
 };
@@ -58,6 +62,8 @@ type RowProps = {
   actions: WorkdayAction[];
   completions: CompletionMap;
   onToggle: (cowId: string, actionId: string) => void;
+  onDoneToggle: (cowId: string, nextDone: boolean) => void;
+  isDone: boolean;
   hoveredActionId: string | null;
   onColumnHover: (actionId: string) => void;
 };
@@ -94,6 +100,14 @@ function buildCompletionMap(workday: Workday): CompletionMap {
   }
 
   return nextMap;
+}
+
+function buildDoneCowIds(workday: Workday): DoneCowIds {
+  return new Set(
+    (workday.workdayCows ?? [])
+      .filter((assignment) => assignment.status === "Worked")
+      .map((assignment) => assignment.cowId),
+  );
 }
 
 function HeaderBar({
@@ -198,21 +212,13 @@ function Row({
   actions,
   completions,
   onToggle,
+  onDoneToggle,
+  isDone,
   hoveredActionId,
   onColumnHover,
 }: RowProps) {
-  const isComplete = actions.every(
-    (action) => completions[cow.cowId]?.[action.id],
-  );
-
   function handleDoneToggle() {
-    for (const action of actions) {
-      const isActionComplete = completions[cow.cowId]?.[action.id] ?? false;
-
-      if (isActionComplete !== !isComplete) {
-        onToggle(cow.cowId, action.id);
-      }
-    }
+    onDoneToggle(cow.cowId, !isDone);
   }
 
   function handleAllActions() {
@@ -220,6 +226,10 @@ function Row({
       if (!completions[cow.cowId]?.[action.id]) {
         onToggle(cow.cowId, action.id);
       }
+    }
+
+    if (!isDone) {
+      onDoneToggle(cow.cowId, true);
     }
   }
 
@@ -229,11 +239,11 @@ function Row({
         <button
           type="button"
           aria-label={
-            isComplete
-              ? `Mark all actions incomplete for cow ${cow.cow.tagNumber}`
-              : `Mark all actions complete for cow ${cow.cow.tagNumber}`
+            isDone
+              ? `Mark cow ${cow.cow.tagNumber} as not done for the workday`
+              : `Mark cow ${cow.cow.tagNumber} as done for the workday`
           }
-          className={`active-grid-circle${isComplete ? " complete" : ""}`}
+          className={`active-grid-circle${isDone ? " complete" : ""}`}
           onClick={handleDoneToggle}
         />
       </div>
@@ -275,6 +285,7 @@ function GridBody({
   actions,
   completions,
   onToggle,
+  onDoneToggle,
   hoveredActionId,
   onColumnHover,
 }: GridBodyProps) {
@@ -287,6 +298,8 @@ function GridBody({
           actions={actions}
           completions={completions}
           onToggle={onToggle}
+          onDoneToggle={onDoneToggle}
+          isDone={false}
           hoveredActionId={hoveredActionId}
           onColumnHover={onColumnHover}
         />
@@ -310,6 +323,8 @@ function GridBody({
           actions={actions}
           completions={completions}
           onToggle={onToggle}
+          onDoneToggle={onDoneToggle}
+          isDone={true}
           hoveredActionId={hoveredActionId}
           onColumnHover={onColumnHover}
         />
@@ -324,6 +339,7 @@ function GridContainer({
   completedCows,
   completions,
   onToggle,
+  onDoneToggle,
   hoveredActionId,
   onColumnHover,
   onColumnLeave,
@@ -384,6 +400,7 @@ function GridContainer({
         actions={actions}
         completions={completions}
         onToggle={onToggle}
+        onDoneToggle={onDoneToggle}
         hoveredActionId={hoveredActionId}
         onColumnHover={onColumnHover}
       />
@@ -397,6 +414,7 @@ function ActiveWorkdayPage() {
   const [workday, setWorkday] = useState<Workday | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [completions, setCompletions] = useState<CompletionMap>({});
+  const [doneCowIds, setDoneCowIds] = useState<DoneCowIds>(new Set());
   const [hoveredActionId, setHoveredActionId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [completing, setCompleting] = useState(false);
@@ -415,6 +433,7 @@ function ActiveWorkdayPage() {
         const workdayData = preserveWorkdayGridOrder(await getWorkdayById(id));
         setWorkday(workdayData);
         setCompletions(buildCompletionMap(workdayData));
+        setDoneCowIds(buildDoneCowIds(workdayData));
       } catch (err) {
         const message =
           err instanceof Error ? err.message : "Failed to load active workday";
@@ -441,18 +460,12 @@ function ActiveWorkdayPage() {
     [cows, normalizedSearch],
   );
   const activeCows = useMemo(
-    () =>
-      filteredCows.filter((cow) =>
-        actions.some((action) => !completions[cow.cowId]?.[action.id]),
-      ),
-    [actions, completions, filteredCows],
+    () => filteredCows.filter((cow) => !doneCowIds.has(cow.cowId)),
+    [doneCowIds, filteredCows],
   );
   const completedCows = useMemo(
-    () =>
-      filteredCows.filter((cow) =>
-        actions.every((action) => completions[cow.cowId]?.[action.id]),
-      ),
-    [actions, completions, filteredCows],
+    () => filteredCows.filter((cow) => doneCowIds.has(cow.cowId)),
+    [doneCowIds, filteredCows],
   );
 
   function handleToggle(cowId: string, actionId: string) {
@@ -489,6 +502,45 @@ function ActiveWorkdayPage() {
           [actionId]: nextCompleted,
         },
       };
+    });
+  }
+
+  function handleDoneToggle(cowId: string, nextDone: boolean) {
+    if (!isGuid(id)) {
+      return;
+    }
+
+    setDoneCowIds((prev) => {
+      const next = new Set(prev);
+
+      if (nextDone) {
+        next.add(cowId);
+      } else {
+        next.delete(cowId);
+      }
+
+      void updateCowWorkdayStatus(id, {
+        cowId,
+        isWorked: nextDone,
+      }).catch((err) => {
+        setDoneCowIds((prev2) => {
+          const rollback = new Set(prev2);
+
+          if (nextDone) {
+            rollback.delete(cowId);
+          } else {
+            rollback.add(cowId);
+          }
+
+          return rollback;
+        });
+
+        const message =
+          err instanceof Error ? err.message : "Failed to save cow workday status";
+        setError(message);
+      });
+
+      return next;
     });
   }
 
@@ -567,6 +619,7 @@ function ActiveWorkdayPage() {
               completedCows={completedCows}
               completions={completions}
               onToggle={handleToggle}
+              onDoneToggle={handleDoneToggle}
               hoveredActionId={hoveredActionId}
               onColumnHover={setHoveredActionId}
               onColumnLeave={() => setHoveredActionId(null)}

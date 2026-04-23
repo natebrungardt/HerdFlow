@@ -25,6 +25,11 @@ export type ToggleWorkdayEntryInput = {
   completed: boolean;
 };
 
+export type UpdateWorkdayCowStatusInput = {
+  cowId: string;
+  isWorked: boolean;
+};
+
 export async function getActiveWorkdays(): Promise<Workday[]> {
   const response = await apiFetch(WORKDAY_API_BASE_PATH);
   return response.json();
@@ -122,6 +127,16 @@ export async function startWorkday(id: string): Promise<void> {
 export async function completeWorkday(id: string): Promise<void> {
   await apiFetch(`${WORKDAY_API_BASE_PATH}/${id}/complete`, {
     method: "POST",
+  });
+}
+
+export async function updateCowWorkdayStatus(
+  id: string,
+  input: UpdateWorkdayCowStatusInput,
+): Promise<void> {
+  await apiFetch(`${WORKDAY_API_BASE_PATH}/${id}/cows/${input.cowId}/status`, {
+    method: "PUT",
+    body: JSON.stringify({ isWorked: input.isWorked }),
   });
 }
 
