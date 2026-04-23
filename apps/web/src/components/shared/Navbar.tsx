@@ -117,6 +117,13 @@ function Navbar() {
       );
     }
 
+    if (targetPath === "/workdays/completed") {
+      return (
+        location.pathname.startsWith("/workdays/completed") ||
+        location.pathname.startsWith("/completed-workdays")
+      );
+    }
+
     return location.pathname === targetPath;
   }
 

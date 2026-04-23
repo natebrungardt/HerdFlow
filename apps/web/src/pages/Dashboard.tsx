@@ -261,7 +261,7 @@ function Dashboard() {
                         <Link
                           key={workday.id}
                           className="cowRowCard"
-                          to={`/workdays/${workday.id}`}
+                          to={`/completed-workdays/${workday.id}`}
                         >
                           <div className="cowRowMain">
                             <div className="cowRowTitle">{workday.title}</div>

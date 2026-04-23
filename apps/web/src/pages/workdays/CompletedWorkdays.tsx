@@ -52,7 +52,7 @@ function CompletedWorkdays() {
       error={error}
       title="Completed Workdays"
       subtitle="Review completed workdays and revisit the plans your crew finished."
-      getWorkdayHref={(workday) => `/workdays/${workday.id}`}
+      getWorkdayHref={(workday) => `/completed-workdays/${workday.id}`}
       emptyMessage="No completed workdays found."
       showScheduledDateLabel={false}
       getWorkdaySupplementaryMeta={(workday) => {

@@ -15,6 +15,7 @@ import RemovedCows from "./pages/cows/RemovedCows";
 import AllWorkdayPage from "./pages/workdays/AllWorkdayPage";
 import AddWorkdayPage from "./pages/workdays/AddWorkdayPage";
 import ActiveWorkdayPage from "./pages/workdays/ActiveWorkdayPage";
+import CompletedWorkdayDetailsPage from "./pages/workdays/CompletedWorkdayDetailsPage";
 import CompletedWorkdays from "./pages/workdays/CompletedWorkdays";
 import WorkdayPage from "./pages/workdays/WorkdayPage";
 import Finances from "./pages/Finances";
@@ -94,6 +95,10 @@ function App() {
             <Route path="/workdays/:id" element={<WorkdayPage />} />
             <Route path="/workdays/:id/active" element={<ActiveWorkdayPage />} />
             <Route path="/workdays/completed" element={<CompletedWorkdays />} />
+            <Route
+              path="/completed-workdays/:id"
+              element={<CompletedWorkdayDetailsPage />}
+            />
             <Route path="/finances" element={<Finances />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Route>,
