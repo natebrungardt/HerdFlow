@@ -131,7 +131,7 @@ function HeaderBar({
       </div>
       <div className="header-center">
         <Link className="btn btn-outline" to={backHref}>
-          Back
+          Back to Edit
         </Link>
       </div>
       <div className="header-right">
@@ -473,9 +473,15 @@ function ActiveWorkdayPage() {
     () => {
       const completed = filteredCows.filter((cow) => doneCowIds.has(cow.cowId));
 
-      return completed.sort(
-        (a, b) => doneOrder.indexOf(a.cowId) - doneOrder.indexOf(b.cowId),
-      );
+      return [...completed].sort((a, b) => {
+        const aIndex = doneOrder.indexOf(a.cowId);
+        const bIndex = doneOrder.indexOf(b.cowId);
+
+        const safeA = aIndex === -1 ? Number.POSITIVE_INFINITY : aIndex;
+        const safeB = bIndex === -1 ? Number.POSITIVE_INFINITY : bIndex;
+
+        return safeA - safeB;
+      });
     },
     [doneCowIds, filteredCows, doneOrder],
   );
