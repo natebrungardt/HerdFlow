@@ -28,7 +28,8 @@ type HeaderBarProps = {
 
 type GridContainerProps = {
   actions: WorkdayAction[];
-  cows: WorkdayCowAssignment[];
+  activeCows: WorkdayCowAssignment[];
+  completedCows: WorkdayCowAssignment[];
   completions: CompletionMap;
   onToggle: (cowId: string, actionId: string) => void;
   hoveredActionId: string | null;
@@ -43,7 +44,8 @@ type GridHeaderProps = {
 };
 
 type GridBodyProps = {
-  cows: WorkdayCowAssignment[];
+  activeCows: WorkdayCowAssignment[];
+  completedCows: WorkdayCowAssignment[];
   actions: WorkdayAction[];
   completions: CompletionMap;
   onToggle: (cowId: string, actionId: string) => void;
@@ -219,7 +221,8 @@ function Row({
 }
 
 function GridBody({
-  cows,
+  activeCows,
+  completedCows,
   actions,
   completions,
   onToggle,
@@ -228,7 +231,31 @@ function GridBody({
 }: GridBodyProps) {
   return (
     <div className="active-grid-body" role="rowgroup">
-      {cows.map((cow) => (
+      {activeCows.map((cow) => (
+        <Row
+          key={cow.id}
+          cow={cow}
+          actions={actions}
+          completions={completions}
+          onToggle={onToggle}
+          hoveredActionId={hoveredActionId}
+          onColumnHover={onColumnHover}
+        />
+      ))}
+      {completedCows.length > 0 ? (
+        <div className="active-grid-row active-grid-divider-row" role="row">
+          <div
+            className="active-grid-cow active-grid-divider-label"
+            role="rowheader"
+          >
+            Completed ({completedCows.length})
+          </div>
+          {actions.map((action) => (
+            <div key={action.id} className="active-grid-cell" role="gridcell" />
+          ))}
+        </div>
+      ) : null}
+      {completedCows.map((cow) => (
         <Row
           key={cow.id}
           cow={cow}
@@ -245,7 +272,8 @@ function GridBody({
 
 function GridContainer({
   actions,
-  cows,
+  activeCows,
+  completedCows,
   completions,
   onToggle,
   hoveredActionId,
@@ -303,7 +331,8 @@ function GridContainer({
         onColumnHover={onColumnHover}
       />
       <GridBody
-        cows={cows}
+        activeCows={activeCows}
+        completedCows={completedCows}
         actions={actions}
         completions={completions}
         onToggle={onToggle}
@@ -359,6 +388,20 @@ function ActiveWorkdayPage() {
         assignment.cow.tagNumber.toLowerCase().includes(normalizedSearch),
       ),
     [cows, normalizedSearch],
+  );
+  const activeCows = useMemo(
+    () =>
+      filteredCows.filter((cow) =>
+        actions.some((action) => !completions[cow.cowId]?.[action.id]),
+      ),
+    [actions, completions, filteredCows],
+  );
+  const completedCows = useMemo(
+    () =>
+      filteredCows.filter((cow) =>
+        actions.every((action) => completions[cow.cowId]?.[action.id]),
+      ),
+    [actions, completions, filteredCows],
   );
 
   function handleToggle(cowId: string, actionId: string) {
@@ -469,7 +512,8 @@ function ActiveWorkdayPage() {
           ) : (
             <GridContainer
               actions={actions}
-              cows={filteredCows}
+              activeCows={activeCows}
+              completedCows={completedCows}
               completions={completions}
               onToggle={handleToggle}
               hoveredActionId={hoveredActionId}

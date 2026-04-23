@@ -172,6 +172,19 @@
   z-index: 25;
 }
 
+.active-grid-divider-row {
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-success-subtle);
+}
+
+.active-grid-divider-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  background: inherit;
+}
+
 .active-grid-cell {
   width: var(--active-grid-cell-width);
   min-width: var(--active-grid-cell-width);
