@@ -131,14 +131,32 @@
   align-items: center;
 }
 
+:root[data-theme="dark"] .feedbackModalCard {
+  background: var(--color-surface);
+  border-color: var(--color-border);
+  box-shadow: none;
+}
+
+:root[data-theme="dark"] :is(.feedbackField input, .feedbackField textarea) {
+  background: var(--color-surface);
+  border-color: var(--input-border);
+  color: var(--text-primary);
+}
+
+:root[data-theme="dark"] .feedbackSubmitSuccess {
+  border-color: var(--success-border-subtle);
+  background: var(--success-bg-subtle);
+  color: var(--text-primary);
+}
+
 .feedbackSubmitButton {
   min-width: 168px;
   padding: 13px 22px;
   border-radius: 14px;
-  background: linear-gradient(180deg, #67d58c 0%, #45b86d 100%);
-  color: #ffffff;
+  background: var(--color-primary);
+  color: #f8fafc;
   font-weight: 700;
-  box-shadow: 0 10px 24px rgba(69, 184, 109, 0.28);
+  box-shadow: none;
   transition:
     transform 0.2s ease,
     box-shadow 0.2s ease,
@@ -147,7 +165,8 @@
 
 .feedbackSubmitButton:hover {
   transform: translateY(-1px);
-  box-shadow: 0 12px 28px rgba(69, 184, 109, 0.34);
+  background: var(--color-primary-hover);
+  box-shadow: none;
 }
 
 .feedbackSubmitButton:disabled,

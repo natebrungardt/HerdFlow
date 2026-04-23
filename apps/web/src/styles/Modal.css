@@ -70,14 +70,15 @@
 }
 
 .modalActions .success {
-  background: linear-gradient(180deg, #67d58c 0%, #45b86d 100%);
-  color: #ffffff;
-  box-shadow: 0 8px 24px rgba(69, 184, 109, 0.38);
+  background: var(--color-primary);
+  color: #f8fafc;
+  box-shadow: none;
 }
 
 .modalActions .success:hover {
   transform: translateY(-1px);
-  box-shadow: 0 10px 28px rgba(69, 184, 109, 0.5);
+  background: var(--color-primary-hover);
+  box-shadow: none;
 }
 
 .modalActions .success:active {
@@ -88,7 +89,7 @@
 .modalActions .neutral {
   background: var(--surface-strong);
   color: var(--text-primary);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+  box-shadow: none;
 }
 
 .modalActions .neutral:hover {
@@ -98,5 +99,11 @@
 
 .modalActions .neutral:active {
   transform: translateY(0);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.14);
+  box-shadow: none;
+}
+
+:root[data-theme="dark"] .modalCard {
+  background: var(--color-surface);
+  border-color: var(--color-border);
+  box-shadow: none;
 }

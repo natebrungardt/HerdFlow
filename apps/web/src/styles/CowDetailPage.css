@@ -1466,3 +1466,54 @@ input[type="date"]::-webkit-datetime-edit-fields-wrapper {
     padding-top: 18px;
   }
 }
+
+:root[data-theme="dark"] :is(
+  .dashboardCard,
+  .heroCard,
+  .metricCard,
+  .infoTile,
+  .activityCard,
+  .notesPanel,
+  .calvesCard
+) {
+  background: var(--color-surface);
+  border-color: var(--color-border);
+  box-shadow: none;
+}
+
+:root[data-theme="dark"] :is(
+  .cardInput,
+  .metricFieldInput,
+  .heroTitleInput,
+  .parentSearchInput,
+  .workdayNotesInput
+) {
+  background: var(--color-surface);
+  border-color: var(--input-border);
+  color: var(--text-primary);
+}
+
+:root[data-theme="dark"] :is(
+  .cardInput,
+  .metricFieldInput,
+  .heroTitleInput,
+  .parentSearchInput,
+  .workdayNotesInput
+):focus {
+  border-color: var(--input-focus);
+  box-shadow: 0 0 0 3px var(--focus-ring);
+}
+
+:root[data-theme="dark"] .detailActionButton {
+  background: var(--color-surface-elevated);
+  border-color: var(--color-border);
+  color: var(--text-primary);
+  box-shadow: none;
+}
+
+:root[data-theme="dark"] .detailActionButton:hover {
+  background: var(--color-surface-hover);
+  border-color: var(--input-focus);
+  color: var(--text-primary);
+  box-shadow: none;
+}

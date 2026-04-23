@@ -187,6 +187,8 @@ function WorkdayPage() {
     workday?.status !== "Completed" &&
     (workday?.workdayCows?.length ?? 0) > 0 &&
     (workday?.actions?.length ?? 0) > 0;
+  const workdayActionLabel =
+    workday?.status === "InProgress" ? "Continue Workday" : "Start Workday";
   const hasUnsavedChanges = useMemo(() => {
     if (!workday) {
       return false;
@@ -628,14 +630,16 @@ function WorkdayPage() {
             </div>
 
             <div className="workdayHeaderActions workday-actions">
-              <button
-                type="button"
-                className="addCowButton workdayStartButton"
-                onClick={handleStartWorkday}
-                disabled={!canStartWorkday || startingWorkday}
-              >
-                {startingWorkday ? "Starting..." : "Start Workday"}
-              </button>
+              {workday?.status !== "Completed" ? (
+                <button
+                  type="button"
+                  className="addCowButton workdayStartButton"
+                  onClick={handleStartWorkday}
+                  disabled={!canStartWorkday || startingWorkday}
+                >
+                  {startingWorkday ? "Starting..." : workdayActionLabel}
+                </button>
+              ) : null}
               <button
                 type="button"
                 className="btn btn-danger"

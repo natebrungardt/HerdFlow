@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import type { MouseEvent as ReactMouseEvent } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import {
   completeWorkday,
@@ -29,10 +30,15 @@ type GridContainerProps = {
   cows: WorkdayCowAssignment[];
   completions: CompletionMap;
   onToggle: (cowId: string, actionId: string) => void;
+  hoveredActionId: string | null;
+  onColumnHover: (actionId: string) => void;
+  onColumnLeave: () => void;
 };
 
 type GridHeaderProps = {
   actions: WorkdayAction[];
+  hoveredActionId: string | null;
+  onColumnHover: (actionId: string) => void;
 };
 
 type GridBodyProps = {
@@ -40,6 +46,8 @@ type GridBodyProps = {
   actions: WorkdayAction[];
   completions: CompletionMap;
   onToggle: (cowId: string, actionId: string) => void;
+  hoveredActionId: string | null;
+  onColumnHover: (actionId: string) => void;
 };
 
 type RowProps = {
@@ -47,6 +55,8 @@ type RowProps = {
   actions: WorkdayAction[];
   completions: CompletionMap;
   onToggle: (cowId: string, actionId: string) => void;
+  hoveredActionId: string | null;
+  onColumnHover: (actionId: string) => void;
 };
 
 type CellProps = {
@@ -55,6 +65,8 @@ type CellProps = {
   actionId: string;
   complete: boolean;
   onToggle: (cowId: string, actionId: string) => void;
+  highlighted: boolean;
+  onColumnHover: (actionId: string) => void;
 };
 
 function isGuid(value: string | undefined): value is string {
@@ -119,18 +131,25 @@ function HeaderBar({
   );
 }
 
-function GridHeader({ actions }: GridHeaderProps) {
+function GridHeader({
+  actions,
+  hoveredActionId,
+  onColumnHover,
+}: GridHeaderProps) {
   return (
     <div className="active-grid-header" role="row">
-      <div className="active-grid-cow active-grid-cow-header" role="columnheader">
-        Cow
+      <div className="active-grid-cow-header" role="columnheader">
+        Tag #
       </div>
       {actions.map((action) => (
         <div
           key={action.id}
-          className="active-grid-header-cell"
+          className={`active-grid-header-cell${
+            hoveredActionId === action.id ? " column-highlighted" : ""
+          }`}
           role="columnheader"
           title={action.name}
+          onMouseEnter={() => onColumnHover(action.id)}
         >
           <span>{action.name}</span>
         </div>
@@ -139,9 +158,21 @@ function GridHeader({ actions }: GridHeaderProps) {
   );
 }
 
-function Cell({ cowId, cowTag, actionId, complete, onToggle }: CellProps) {
+function Cell({
+  cowId,
+  cowTag,
+  actionId,
+  complete,
+  onToggle,
+  highlighted,
+  onColumnHover,
+}: CellProps) {
   return (
-    <div className="active-grid-cell" role="gridcell">
+    <div
+      className={`active-grid-cell${highlighted ? " column-highlighted" : ""}`}
+      role="gridcell"
+      onMouseEnter={() => onColumnHover(actionId)}
+    >
       <button
         type="button"
         aria-label={`${complete ? "Mark incomplete" : "Mark complete"} for cow ${cowTag}`}
@@ -153,10 +184,21 @@ function Cell({ cowId, cowTag, actionId, complete, onToggle }: CellProps) {
   );
 }
 
-function Row({ cow, actions, completions, onToggle }: RowProps) {
+function Row({
+  cow,
+  actions,
+  completions,
+  onToggle,
+  hoveredActionId,
+  onColumnHover,
+}: RowProps) {
   return (
     <div className="active-grid-row" role="row">
-      <div className="active-grid-cow" role="rowheader" title={cow.cow.tagNumber}>
+      <div
+        className="active-grid-cow"
+        role="rowheader"
+        title={cow.cow.tagNumber}
+      >
         {cow.cow.tagNumber}
       </div>
       {actions.map((action) => (
@@ -167,13 +209,22 @@ function Row({ cow, actions, completions, onToggle }: RowProps) {
           actionId={action.id}
           complete={completions[cow.cowId]?.[action.id] ?? false}
           onToggle={onToggle}
+          highlighted={hoveredActionId === action.id}
+          onColumnHover={onColumnHover}
         />
       ))}
     </div>
   );
 }
 
-function GridBody({ cows, actions, completions, onToggle }: GridBodyProps) {
+function GridBody({
+  cows,
+  actions,
+  completions,
+  onToggle,
+  hoveredActionId,
+  onColumnHover,
+}: GridBodyProps) {
   return (
     <div className="active-grid-body" role="rowgroup">
       {cows.map((cow) => (
@@ -183,6 +234,8 @@ function GridBody({ cows, actions, completions, onToggle }: GridBodyProps) {
           actions={actions}
           completions={completions}
           onToggle={onToggle}
+          hoveredActionId={hoveredActionId}
+          onColumnHover={onColumnHover}
         />
       ))}
     </div>
@@ -194,15 +247,67 @@ function GridContainer({
   cows,
   completions,
   onToggle,
+  hoveredActionId,
+  onColumnHover,
+  onColumnLeave,
 }: GridContainerProps) {
+  const [isDragging, setIsDragging] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const dragStartXRef = useRef(0);
+  const dragStartScrollLeftRef = useRef(0);
+
+  function handleMouseDown(event: ReactMouseEvent<HTMLDivElement>) {
+    if (event.button !== 0 || !containerRef.current) {
+      return;
+    }
+
+    setIsDragging(true);
+    dragStartXRef.current = event.clientX;
+    dragStartScrollLeftRef.current = containerRef.current.scrollLeft;
+  }
+
+  function handleMouseMove(event: ReactMouseEvent<HTMLDivElement>) {
+    if (!isDragging || !containerRef.current) {
+      return;
+    }
+
+    event.preventDefault();
+    const deltaX = event.clientX - dragStartXRef.current;
+    containerRef.current.scrollLeft = dragStartScrollLeftRef.current - deltaX;
+  }
+
+  function stopDragging() {
+    setIsDragging(false);
+  }
+
+  function handleMouseLeave() {
+    stopDragging();
+    onColumnLeave();
+  }
+
   return (
-    <div className="active-grid-container" role="grid" aria-label="Active workday grid">
-      <GridHeader actions={actions} />
+    <div
+      ref={containerRef}
+      className={`active-grid-container${isDragging ? " is-dragging" : ""}`}
+      role="grid"
+      aria-label="Active workday grid"
+      onMouseDown={handleMouseDown}
+      onMouseMove={handleMouseMove}
+      onMouseUp={stopDragging}
+      onMouseLeave={handleMouseLeave}
+    >
+      <GridHeader
+        actions={actions}
+        hoveredActionId={hoveredActionId}
+        onColumnHover={onColumnHover}
+      />
       <GridBody
         cows={cows}
         actions={actions}
         completions={completions}
         onToggle={onToggle}
+        hoveredActionId={hoveredActionId}
+        onColumnHover={onColumnHover}
       />
     </div>
   );
@@ -214,6 +319,7 @@ function ActiveWorkdayPage() {
   const [workday, setWorkday] = useState<Workday | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [completions, setCompletions] = useState<CompletionMap>({});
+  const [hoveredActionId, setHoveredActionId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [completing, setCompleting] = useState(false);
   const [error, setError] = useState("");
@@ -259,10 +365,28 @@ function ActiveWorkdayPage() {
       return;
     }
 
-    const current = completions[cowId]?.[actionId] ?? false;
-    const nextCompleted = !current;
-
     setCompletions((prev) => {
+      const current = prev[cowId]?.[actionId] ?? false;
+      const nextCompleted = !current;
+
+      void toggleWorkdayEntry(id, {
+        cowId,
+        actionId,
+        completed: nextCompleted,
+      }).catch((err) => {
+        setCompletions((prev2) => ({
+          ...prev2,
+          [cowId]: {
+            ...prev2[cowId],
+            [actionId]: current,
+          },
+        }));
+
+        const message =
+          err instanceof Error ? err.message : "Failed to save completion";
+        setError(message);
+      });
+
       return {
         ...prev,
         [cowId]: {
@@ -270,24 +394,6 @@ function ActiveWorkdayPage() {
           [actionId]: nextCompleted,
         },
       };
-    });
-
-    void toggleWorkdayEntry(id, {
-      cowId,
-      actionId,
-      completed: nextCompleted,
-    }).catch((err) => {
-      setCompletions((prev) => ({
-        ...prev,
-        [cowId]: {
-          ...prev[cowId],
-          [actionId]: current,
-        },
-      }));
-
-      const message =
-        err instanceof Error ? err.message : "Failed to save completion";
-      setError(message);
     });
   }
 
@@ -316,7 +422,9 @@ function ActiveWorkdayPage() {
       <div className="allCowsPage">
         <div className="allCowsShell">
           <div className="allCowsContent">
-            <div className="active-workday-state">Loading active workday...</div>
+            <div className="active-workday-state">
+              Loading active workday...
+            </div>
           </div>
         </div>
       </div>
@@ -331,7 +439,9 @@ function ActiveWorkdayPage() {
 
           <div className="allCowsHeader active-workday-header">
             <div className="titleBlock">
-              <h1 className="pageTitle">{workday?.title ?? "Active Workday"}</h1>
+              <h1 className="pageTitle">
+                {workday?.title ?? "Active Workday"}
+              </h1>
               <p className="pageSubtitle">
                 Track work as it happens with fast, optimistic action toggles.
               </p>
@@ -348,7 +458,8 @@ function ActiveWorkdayPage() {
 
           {!actions.length || !cows.length ? (
             <div className="active-workday-state">
-              Add at least one cow and one action in setup before using the live grid.
+              Add at least one cow and one action in setup before using the live
+              grid.
             </div>
           ) : filteredCows.length === 0 ? (
             <div className="active-workday-state">
@@ -360,6 +471,9 @@ function ActiveWorkdayPage() {
               cows={filteredCows}
               completions={completions}
               onToggle={handleToggle}
+              hoveredActionId={hoveredActionId}
+              onColumnHover={setHoveredActionId}
+              onColumnLeave={() => setHoveredActionId(null)}
             />
           )}
         </div>
