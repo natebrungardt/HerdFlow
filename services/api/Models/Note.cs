@@ -19,8 +19,6 @@ public class Note
     [MaxLength(50)]
     public string? Source { get; set; }
 
-    public Guid? WorkdayId { get; set; }
-
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;

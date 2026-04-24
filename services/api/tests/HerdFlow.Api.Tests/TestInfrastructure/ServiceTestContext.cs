@@ -49,7 +49,8 @@ internal sealed class ServiceTestContext : IAsyncDisposable
     public WorkdayService CreateWorkdayService() =>
         new(DbContext, HttpContextAccessor, NullLogger<WorkdayService>.Instance);
 
-    public NoteService CreateNoteService() => new(DbContext, HttpContextAccessor);
+    public NoteService CreateNoteService() =>
+        new(DbContext, HttpContextAccessor, NullLogger<NoteService>.Instance);
 
     public async ValueTask DisposeAsync()
     {

@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using DotNetEnv;
+using System.Security.Claims;
 var builder = WebApplication.CreateBuilder(args);
 
 if (builder.Environment.IsDevelopment())
@@ -86,16 +87,53 @@ else
                 ClockSkew = TimeSpan.Zero
             };
 
-            // 🔥 Debug logging (temporary)
+            // Temporary debug logging.
             options.Events = new JwtBearerEvents
             {
                 OnAuthenticationFailed = context =>
                 {
-                    Console.WriteLine($"❌ AUTH FAILED: {context.Exception.Message}");
+                    var logger = context.HttpContext.RequestServices
+                        .GetRequiredService<ILoggerFactory>()
+                        .CreateLogger("JwtBearer");
+
+                    logger.LogWarning(
+                        context.Exception,
+                        "JWT authentication failed for {Path}.",
+                        context.HttpContext.Request.Path);
                     return Task.CompletedTask;
                 },
                 OnTokenValidated = context =>
                 {
+                    var logger = context.HttpContext.RequestServices
+                        .GetRequiredService<ILoggerFactory>()
+                        .CreateLogger("JwtBearer");
+                    var userId = context.Principal?.FindFirstValue("sub")
+                        ?? context.Principal?.FindFirstValue(ClaimTypes.NameIdentifier)
+                        ?? "<missing>";
+                    var claimTypes = context.Principal is null
+                        ? "<no principal>"
+                        : string.Join(", ", context.Principal.Claims.Select(claim => claim.Type));
+
+                    logger.LogWarning(
+                        "Temporary JWT auth debug: path={Path}, tokenUserId={TokenUserId}, claimTypes={ClaimTypes}",
+                        context.HttpContext.Request.Path,
+                        userId,
+                        claimTypes);
+
+                    return Task.CompletedTask;
+                },
+                OnChallenge = context =>
+                {
+                    var logger = context.HttpContext.RequestServices
+                        .GetRequiredService<ILoggerFactory>()
+                        .CreateLogger("JwtBearer");
+
+                    logger.LogWarning(
+                        "JWT challenge for {Path}: error={Error}, description={ErrorDescription}",
+                        context.HttpContext.Request.Path,
+                        context.Error ?? "<none>",
+                        context.ErrorDescription ?? "<none>");
+
                     return Task.CompletedTask;
                 }
             };

@@ -9,6 +9,4 @@ public class CreateNoteDto
 
     [MaxLength(50)]
     public string? Source { get; set; }
-
-    public Guid? WorkdayId { get; set; }
 }

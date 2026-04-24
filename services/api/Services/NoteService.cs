@@ -4,6 +4,7 @@ using HerdFlow.Api.Exceptions;
 using HerdFlow.Api.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using Npgsql;
 using System.Security.Claims;
 
@@ -13,11 +14,16 @@ public class NoteService
 {
     private readonly AppDbContext _context;
     private readonly IHttpContextAccessor _httpContextAccessor;
+    private readonly ILogger<NoteService> _logger;
 
-    public NoteService(AppDbContext context, IHttpContextAccessor httpContextAccessor)
+    public NoteService(
+        AppDbContext context,
+        IHttpContextAccessor httpContextAccessor,
+        ILogger<NoteService> logger)
     {
         _context = context;
         _httpContextAccessor = httpContextAccessor;
+        _logger = logger;
     }
 
     public async Task<List<Note>> GetNotesAsync(Guid cowId)
@@ -35,7 +41,6 @@ public class NoteService
     {
         await EnsureCowExistsAsync(cowId);
         ValidateNoteContent(dto.Content);
-        await EnsureWorkdayExistsAsync(dto.WorkdayId);
         var now = DateTime.UtcNow;
 
         var note = new Note
@@ -44,7 +49,7 @@ public class NoteService
             CowId = cowId,
             Content = dto.Content.Trim(),
             Source = NormalizeSource(dto.Source),
-            WorkdayId = dto.WorkdayId,
+
             CreatedAt = now,
             UpdatedAt = now,
         };
@@ -92,7 +97,19 @@ public class NoteService
     private async Task EnsureCowExistsAsync(Guid cowId)
     {
         var userId = GetCurrentUserId();
-        var exists = await _context.Cows.AnyAsync(c => c.Id == cowId && c.UserId == userId);
+        var cow = await _context.Cows
+            .AsNoTracking()
+            .Where(c => c.Id == cowId)
+            .Select(c => new { c.Id, c.UserId })
+            .FirstOrDefaultAsync();
+        var exists = cow?.UserId == userId;
+
+        _logger.LogWarning(
+            "Temporary notes auth debug: cowId={CowId}, tokenUserId={TokenUserId}, cowUserId={CowUserId}, existsForUser={ExistsForUser}",
+            cowId,
+            userId,
+            cow?.UserId ?? "<cow not found>",
+            exists);
 
         if (!exists)
         {
@@ -109,22 +126,7 @@ public class NoteService
         return note ?? throw new NotFoundException("Note not found.");
     }
 
-    private async Task EnsureWorkdayExistsAsync(Guid? workdayId)
-    {
-        if (!workdayId.HasValue)
-        {
-            return;
-        }
 
-        var userId = GetCurrentUserId();
-        var exists = await _context.Workdays
-            .AnyAsync(workday => workday.Id == workdayId.Value && workday.UserId == userId);
-
-        if (!exists)
-        {
-            throw new NotFoundException("Workday not found.");
-        }
-    }
 
     private static void ValidateNoteContent(string? content)
     {
@@ -142,8 +144,15 @@ public class NoteService
     private string GetCurrentUserId()
     {
         var user = _httpContextAccessor.HttpContext?.User;
-        var userId = user?.FindFirstValue(ClaimTypes.NameIdentifier)
-            ?? user?.FindFirstValue("sub");
+        var userId = user?.FindFirstValue("sub")
+            ?? user?.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        _logger.LogWarning(
+            "Temporary notes auth debug: httpContextPresent={HttpContextPresent}, isAuthenticated={IsAuthenticated}, tokenUserId={TokenUserId}, claimTypes={ClaimTypes}",
+            _httpContextAccessor.HttpContext is not null,
+            user?.Identity?.IsAuthenticated ?? false,
+            string.IsNullOrWhiteSpace(userId) ? "<missing>" : userId,
+            user is null ? "<no user>" : string.Join(", ", user.Claims.Select(claim => claim.Type)));
 
         if (string.IsNullOrWhiteSpace(userId))
         {
