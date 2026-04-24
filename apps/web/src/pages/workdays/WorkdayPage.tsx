@@ -552,23 +552,20 @@ function WorkdayPage() {
     void handleAddAction();
   }
 
-  async function handleStartWorkday() {
+  function handleStartWorkday() {
     if (!workday || !canStartWorkday) return;
 
     setStartingWorkday(true);
     setError("");
     setActionError("");
 
-    try {
-      await startWorkday(workday.id);
-      allowNavigation(() => navigate(`/workdays/${workday.id}/active`));
-    } catch (err) {
-      const message =
-        err instanceof Error ? err.message : "Failed to start workday";
-      setError(message);
-    } finally {
-      setStartingWorkday(false);
-    }
+    // Fire-and-forget: start workday in background to avoid blocking navigation
+    startWorkday(workday.id).catch((err: unknown) => {
+      console.error("Failed to start workday:", err);
+    });
+
+    allowNavigation(() => navigate(`/workdays/${workday.id}/active`));
+    setStartingWorkday(false);
   }
 
   async function handleDelete() {
