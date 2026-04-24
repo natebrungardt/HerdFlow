@@ -87,6 +87,45 @@ public class WorkdayService
             .ToListAsync();
     }
 
+    public async Task<ActiveWorkdayDto> GetActiveWorkdayById(Guid id)
+    {
+        var userId = GetCurrentUserId();
+
+        return await _context.Workdays
+            .AsNoTracking()
+            .Where(w => w.Id == id && w.UserId == userId)
+            .Select(w => new ActiveWorkdayDto
+            {
+                Id = w.Id,
+
+                Actions = w.Actions
+                    .OrderBy(a => a.CreatedAt)
+                    .Select(a => new ActionDto
+                    {
+                        Id = a.Id,
+                        Name = a.Name
+                    }).ToList(),
+
+                WorkdayCows = w.WorkdayCows
+                    .Select(wc => new WorkdayCowDto
+                    {
+                        CowId = wc.CowId,
+                        TagNumber = wc.Cow.TagNumber,
+                        Status = wc.Status
+                    }).ToList(),
+
+                Entries = w.Entries
+                    .Select(e => new WorkdayEntryDto
+                    {
+                        CowId = e.CowId,
+                        ActionId = e.ActionId,
+                        IsCompleted = e.IsCompleted
+                    }).ToList()
+            })
+            .FirstOrDefaultAsync()
+            ?? throw new NotFoundException("Workday not found.");
+    }
+
     // READ - By Id (with cows + notes)
     public async Task<Workday> GetWorkdayById(Guid id)
     {

@@ -46,6 +46,15 @@ public class WorkdayController : ControllerBase
         return Ok(workdays);
     }
 
+    // Used by ActiveWorkdayPage for fast grid loading
+    // Frontend should call: GET /api/workdays/{id}/active
+    [HttpGet("{id:guid}/active")]
+    public async Task<ActionResult<ActiveWorkdayDto>> GetActiveWorkday(Guid id)
+    {
+        var result = await _service.GetActiveWorkdayById(id);
+        return Ok(result);
+    }
+
     // GET: api/workdays/{id}
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<Workday>> GetWorkdayById(Guid id)
