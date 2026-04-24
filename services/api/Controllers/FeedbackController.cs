@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using SendGrid;
 using SendGrid.Helpers.Mail;
+using System.Linq;
 using System.Net;
 
 
@@ -11,8 +12,20 @@ namespace HerdFlow.Api.Controllers
     public class FeedbackController : ControllerBase
     {
         [HttpPost]
-        public async Task<IActionResult> SendFeedback([FromBody] FeedbackDto dto)
+        public async Task<IActionResult> SendFeedback([FromForm] FeedbackDto dto, IFormFile? file)
         {
+            if (file is not null && file.Length > 5 * 1024 * 1024)
+            {
+                return BadRequest("File too large (max 5MB)");
+            }
+
+            var allowedTypes = new[] { "image/", "application/pdf" };
+
+            if (file is not null && !allowedTypes.Any(t => file.ContentType.StartsWith(t)))
+            {
+                return BadRequest("Invalid file type");
+            }
+
             var apiKey = Environment.GetEnvironmentVariable("SENDGRID_API_KEY");
             if (string.IsNullOrEmpty(apiKey))
                 return StatusCode(500, "SendGrid API key not found");
@@ -73,6 +86,15 @@ $"""
                 htmlContent
             );
             msg.SetReplyTo(new EmailAddress(dto.Email, dto.Name));
+
+            if (file is not null && file.Length > 0 && !string.IsNullOrWhiteSpace(file.FileName))
+            {
+                using var memoryStream = new MemoryStream();
+                await file.CopyToAsync(memoryStream);
+                var base64String = Convert.ToBase64String(memoryStream.ToArray());
+                msg.AddAttachment(file.FileName, base64String);
+            }
+
             var response = await client.SendEmailAsync(msg);
 
             var body = await response.Body.ReadAsStringAsync();

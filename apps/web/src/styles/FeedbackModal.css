@@ -1,11 +1,11 @@
 .feedbackModalCard {
   width: min(620px, calc(100% - 32px));
   max-width: 100%;
-  padding: 28px;
+  padding: 18px 22px;
   border-radius: 22px;
   box-shadow:
-  0 20px 45px rgba(18, 36, 68, 0.16),
-  0 2px 8px rgba(18, 36, 68, 0.08);
+    0 20px 45px rgba(18, 36, 68, 0.16),
+    0 2px 8px rgba(18, 36, 68, 0.08);
 }
 
 .feedbackModalHeader {
@@ -13,7 +13,7 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
-  margin-bottom: 24px;
+  margin-bottom: 18px;
 }
 
 .feedbackModalHeader h3 {
@@ -39,8 +39,8 @@
   font-size: 1.5rem;
   line-height: 1;
   transition:
-  background 0.2s ease,
-  color 0.2s ease;
+    background 0.2s ease,
+    color 0.2s ease;
 }
 
 .feedbackModalClose:hover {
@@ -51,19 +51,19 @@
 .feedbackModalForm {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 8px;
 }
 
 .feedbackModalGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
+  gap: 12px;
 }
 
 .feedbackField {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 }
 
 .feedbackField > span:first-child {
@@ -77,18 +77,19 @@
   width: 100%;
   border: 1px solid color-mix(in srgb, var(--input-border) 85%, #d9e5f2);
   border-radius: 16px;
-  padding: 15px 16px;
+  padding: 13px 14px;
   background: color-mix(in srgb, var(--surface-strong) 72%, white);
   color: var(--text-primary);
   transition:
-  border-color 0.2s ease,
-  box-shadow 0.2s ease,
-  background 0.2s ease;
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
 }
 
 .feedbackField textarea {
   resize: vertical;
-  min-height: 170px;
+  min-height: 85px;
+  max-height: 130px;
 }
 
 .feedbackField input:focus,
@@ -96,6 +97,71 @@
   outline: none;
   border-color: var(--input-focus);
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--input-focus) 22%, transparent);
+}
+
+.feedbackUploadBox {
+  border: 1px dashed #ccc;
+  border-radius: 8px;
+  padding: 14px;
+  text-align: center;
+  cursor: pointer;
+  font-size: 14px;
+  color: #666;
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease;
+}
+
+.feedbackUploadHint {
+  font-size: 12px;
+  color: #888;
+  margin-top: 2px;
+}
+
+.feedbackUploadBox:hover {
+  border-color: #3f6a4a;
+  background: #eef7f1;
+  box-shadow: 0 0 0 3px rgba(79, 124, 90, 0.18);
+}
+
+.feedbackUploadBox.dragActive {
+  border-color: #4f7c5a;
+  background: #eef7f1;
+}
+
+.feedbackUploadBox:active {
+  transform: scale(0.99);
+}
+
+.feedbackFileRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 2px;
+  gap: 8px;
+}
+
+.feedbackHelperText {
+  font-size: 13px;
+  color: #555;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.feedbackRemoveFile {
+  background: none;
+  border: none;
+  color: #999;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 2px 6px;
+  line-height: 1;
+  transition: color 0.2s ease;
+}
+
+.feedbackRemoveFile:hover {
+  color: #d11a2a;
 }
 
 .feedbackFieldError,
@@ -110,14 +176,16 @@
 }
 
 .feedbackSubmitError {
-  padding: 12px 14px;
+  margin-top: 6px;
+  padding: 8px 10px;
   border: 1px solid rgba(217, 108, 120, 0.28);
-  border-radius: 12px;
+  border-radius: 10px;
   background: rgba(217, 108, 120, 0.08);
+  font-size: 0.9rem;
 }
 
 .feedbackSubmitSuccess {
-  padding: 14px 16px;
+  padding: 10px 12px;
   border: 1px solid rgba(76, 194, 146, 0.34);
   border-radius: 14px;
   background: rgba(76, 194, 146, 0.12);
@@ -158,9 +226,9 @@
   font-weight: 700;
   box-shadow: none;
   transition:
-  transform 0.2s ease,
-  box-shadow 0.2s ease,
-  opacity 0.2s ease;
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    opacity 0.2s ease;
 }
 
 .feedbackSubmitButton:hover {
@@ -184,14 +252,14 @@
   }
 
   :is(
-  .feedbackModalHeader h3,
-  .feedbackModalIntro,
-  .feedbackField,
-  .feedbackField input,
-  .feedbackField textarea,
-  .feedbackFieldError,
-  .feedbackSubmitError,
-  .feedbackSubmitSuccess
+    .feedbackModalHeader h3,
+    .feedbackModalIntro,
+    .feedbackField,
+    .feedbackField input,
+    .feedbackField textarea,
+    .feedbackFieldError,
+    .feedbackSubmitError,
+    .feedbackSubmitSuccess
   ) {
     overflow-wrap: anywhere;
     word-break: break-word;

@@ -48,6 +48,7 @@ export default function FeedbackModal({
   const [submitError, setSubmitError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [file, setFile] = useState<File | null>(null);
 
   useEffect(() => {
     if (!isOpen) {
@@ -59,7 +60,18 @@ export default function FeedbackModal({
     setSubmitError("");
     setIsSubmitting(false);
     setIsSuccess(false);
+    setFile(null);
   }, [defaultValues, isOpen]);
+
+  useEffect(() => {
+    if (!isSuccess) return;
+
+    const timeout = setTimeout(() => {
+      onClose();
+    }, 1800);
+
+    return () => clearTimeout(timeout);
+  }, [isSuccess, onClose]);
 
   if (!isOpen) {
     return null;
@@ -118,6 +130,12 @@ export default function FeedbackModal({
 
     setFormErrors({});
     setSubmitError("");
+
+    if (file && file.size > 5 * 1024 * 1024) {
+      setSubmitError("File must be under 5MB");
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -126,6 +144,7 @@ export default function FeedbackModal({
         email: formValues.email.trim(),
         company: formValues.company,
         message: formValues.message.trim(),
+        file,
       });
 
       setFormErrors({});
@@ -207,7 +226,12 @@ export default function FeedbackModal({
             </label>
           </div>
 
-          <label className="feedbackField">
+          <label
+            className="feedbackField"
+            onDragOver={(e) => {
+              e.preventDefault();
+            }}
+          >
             <span>Company (optional)</span>
             <input
               autoComplete="organization"
@@ -239,6 +263,71 @@ export default function FeedbackModal({
             ) : null}
           </label>
 
+          <label className="feedbackField">
+            <span>Attach file (optional)</span>
+            <input
+              key={file ? file.name : "empty"}
+              id="feedback-file-input"
+              style={{ display: "none" }}
+              accept="image/*,.pdf"
+              onClick={(e) => e.stopPropagation()}
+              onChange={(event) => setFile(event.target.files?.[0] ?? null)}
+              type="file"
+            />
+            <div
+              className="feedbackUploadBox"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+
+                const input = document.getElementById("feedback-file-input");
+                if (input) {
+                  (input as HTMLInputElement).click();
+                }
+              }}
+              onDragEnter={(e) => {
+                e.preventDefault();
+              }}
+              onDragOver={(e) => {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = "copy";
+              }}
+              onDragLeave={(e) => {
+                e.preventDefault();
+              }}
+              onDrop={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+
+                const droppedFile = e.dataTransfer.files?.[0] ?? null;
+                if (droppedFile) {
+                  setFile(droppedFile);
+                }
+              }}
+            >
+              <span style={{ pointerEvents: "none" }}>
+                📎 Click or drag file here
+              </span>
+            </div>
+            <span className="feedbackUploadHint">
+              PNG, JPG, or PDF • Max 5MB
+            </span>
+            {file && (
+              <div className="feedbackFileRow">
+                <span className="feedbackHelperText">
+                  Selected: {file.name}
+                </span>
+                <button
+                  className="feedbackRemoveFile"
+                  onClick={() => setFile(null)}
+                  type="button"
+                >
+                  ✕
+                </button>
+              </div>
+            )}
+          </label>
+
           {submitError ? (
             <div className="feedbackSubmitError">{submitError}</div>
           ) : null}
@@ -255,10 +344,14 @@ export default function FeedbackModal({
             </button>
             <button
               className="feedbackSubmitButton"
-              disabled={isSubmitting}
+              disabled={isSubmitting || isSuccess}
               type="submit"
             >
-              {isSubmitting ? "Sending..." : "Send Feedback"}
+              {isSubmitting
+                ? "Sending..."
+                : isSuccess
+                  ? "Sent ✓"
+                  : "Send Feedback"}
             </button>
           </div>
         </form>
