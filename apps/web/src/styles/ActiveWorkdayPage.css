@@ -623,3 +623,93 @@
   color: #b45309;
   font-size: 0.9rem;
 }
+
+@media (max-width: 1024px) {
+  .header-bar,
+  .header-left,
+  .header-right,
+  .active-grid-note-actions {
+    flex-wrap: wrap;
+  }
+
+  .active-grid-search {
+    max-width: none;
+  }
+
+  :is(
+    .active-grid-header-cell,
+    .active-grid-done-header,
+    .active-grid-all-actions-header,
+    .active-grid-cow-content span,
+    .active-grid-divider-label,
+    .active-grid-note-title,
+    .active-workday-state,
+    .danger-text
+  ) {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  .active-grid-container {
+    overflow-x: auto;
+  }
+}
+
+@media (max-width: 768px) {
+  .header-bar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .header-left,
+  .header-right,
+  .active-grid-search {
+    width: 100%;
+  }
+
+  .header-right .addCowButton,
+  .active-grid-note-actions .addCowButton {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .active-grid-note-popover {
+    left: 0;
+    width: min(340px, calc(100vw - 32px));
+  }
+}
+
+@media (max-width: 480px) {
+  .active-grid-container {
+    --active-grid-cow-width: 150px;
+    --active-grid-cell-width: 86px;
+  }
+
+  .active-grid-done,
+  .active-grid-done-header,
+  .active-grid-all-actions,
+  .active-grid-all-actions-header {
+    width: 72px;
+    min-width: 72px;
+    max-width: 72px;
+    flex-basis: 72px;
+  }
+
+  .active-grid-all-actions,
+  .active-grid-all-actions-header {
+    left: 72px;
+  }
+
+  .active-grid-cow,
+  .active-grid-cow-header {
+    left: 144px;
+  }
+
+  .active-grid-cow-content span {
+    white-space: normal;
+  }
+
+  .active-grid-note-popover {
+    width: calc(100vw - 24px);
+  }
+}

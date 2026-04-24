@@ -200,3 +200,58 @@
     width: 100%;
   }
 }
+
+@media (max-width: 1024px) {
+  .feedbackModalHeader,
+  .feedbackModalActions {
+    flex-wrap: wrap;
+  }
+
+  :is(
+    .feedbackModalHeader h3,
+    .feedbackModalIntro,
+    .feedbackField,
+    .feedbackField input,
+    .feedbackField textarea,
+    .feedbackFieldError,
+    .feedbackSubmitError,
+    .feedbackSubmitSuccess
+  ) {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+}
+
+@media (max-width: 768px) {
+  .feedbackModalGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .feedbackModalCard {
+    width: min(620px, calc(100% - 24px));
+    padding: var(--space-5);
+  }
+}
+
+@media (max-width: 480px) {
+  .feedbackModalCard {
+    width: calc(100% - 16px);
+    padding: var(--space-4);
+  }
+
+  .feedbackModalHeader,
+  .feedbackModalActions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .feedbackModalActions {
+    flex-direction: column-reverse;
+  }
+
+  .feedbackSubmitButton,
+  .feedbackModalActions button {
+    width: 100%;
+    min-width: 0;
+  }
+}

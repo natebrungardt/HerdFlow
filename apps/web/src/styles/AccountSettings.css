@@ -106,3 +106,40 @@
     width: 100%;
   }
 }
+
+@media (max-width: 1024px) {
+  .accountSettingsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .accountSettingsActions {
+    flex-wrap: wrap;
+  }
+
+  :is(
+    .accountSettingsIntro,
+    .accountSettingsHelperText,
+    .accountSettingsReadonlyInput
+  ) {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+}
+
+@media (max-width: 768px) {
+  .accountSettingsDisclosure {
+    padding: var(--space-4);
+  }
+}
+
+@media (max-width: 480px) {
+  .accountSettingsActions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .accountSettingsActions .addCowButton {
+    width: 100%;
+    min-width: 0;
+  }
+}

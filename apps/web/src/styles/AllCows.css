@@ -1698,3 +1698,182 @@
   filter: none;
   box-shadow: none;
 }
+
+@media (max-width: 1024px) {
+  .allCowsHeader,
+  .sectionHeader,
+  .cowRowCard,
+  .workdayWorkspaceSectionHeader,
+  .workdayWorkspaceCowRow {
+    flex-wrap: wrap;
+  }
+
+  .statsGrid,
+  .herdStatsGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .dashboardQuickActions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .dashboardSplitGrid,
+  .workdaySetupColumns,
+  .workday-container,
+  .workdayCreateTopGrid,
+  .workdaySetupGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .workdayComposerActions,
+  .workdayHeaderActions,
+  .workday-actions,
+  .workdayActionComposer,
+  .action-input-row,
+  .workdayWorkspaceHeaderRow,
+  .workdayWorkspaceToolbar,
+  .cowRowActions {
+    flex-wrap: wrap;
+  }
+
+  .cowRowActions,
+  .workdayWorkspaceToolbar,
+  .action-input-row {
+    min-width: 0;
+  }
+
+  :is(
+    .pageTitle,
+    .pageSubtitle,
+    .dashboardFarmName,
+    .dashboardFarmFallback,
+    .sectionTitle,
+    .sectionSubtle,
+    .statLabel,
+    .statValue,
+    .statMeta,
+    .cowRowTitle,
+    .cowRowMeta,
+    .cowRowSupplementaryMeta,
+    .cowRowRelationship,
+    .cowRowOwner,
+    .workdaySaveStatus,
+    .workdaySelectionPillMeta,
+    .workdayActionName
+  ) {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  .workdayActionAddButton,
+  .workdayStartButton {
+    min-width: 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .allCowsPage {
+    padding-inline: var(--space-3);
+  }
+
+  .allCowsShell,
+  .toolbarCard,
+  .statsCard,
+  .cowListCard,
+  .workdayComposerCard,
+  .workdaySelectedSummaryCard,
+  .workdayWorkspacePanel {
+    padding: var(--space-4);
+  }
+
+  .allCowsHeader,
+  .cowRowCard,
+  .workdayWorkspaceHeaderRow,
+  .workdayWorkspaceToolbar,
+  .workdayWorkspaceSectionHeader,
+  .workdayWorkspaceCowRow,
+  .workdaySelectableRow {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .statsGrid,
+  .herdStatsGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .dashboardQuickActions,
+  .dashboardSplitGrid,
+  .workdaySetupColumns,
+  .workday-container,
+  .workdayCreateTopGrid,
+  .workdaySetupGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .addCowButton,
+  .dashboardQuickActions .addCowButton,
+  .workdayActionAddButton,
+  .workdayStartButton,
+  .workdaySecondaryButton,
+  .workdayComposerActions > *,
+  .workday-actions button,
+  .statusPill,
+  .workdaySaveStatus {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .cowRowActions,
+  .workdayComposerActions,
+  .workday-actions {
+    justify-content: stretch;
+  }
+}
+
+@media (max-width: 480px) {
+  .allCowsPage {
+    padding-inline: var(--space-2);
+  }
+
+  .allCowsShell,
+  .toolbarCard,
+  .statsCard,
+  .cowListCard,
+  .workdayComposerCard,
+  .workdaySelectedSummaryCard,
+  .workdayWorkspacePanel,
+  .workdayAddCowsCard {
+    padding: var(--space-3);
+  }
+
+  .statsGrid,
+  .herdStatsGrid,
+  .dashboardQuickActions,
+  .dashboardSplitGrid,
+  .workdayCreateTopGrid,
+  .workdaySetupGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .filterRow,
+  .workdayHeaderActions,
+  .workday-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .filterChip,
+  .workdayActionChip,
+  .workdaySelectionPill,
+  .workdayWorkspaceInput,
+  .action-input-row input {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .cowRowActions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}

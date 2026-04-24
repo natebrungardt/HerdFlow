@@ -107,3 +107,45 @@
   border-color: var(--color-border);
   box-shadow: none;
 }
+
+@media (max-width: 1024px) {
+  .modalActions {
+    flex-wrap: wrap;
+  }
+
+  .modalCard {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+}
+
+@media (max-width: 768px) {
+  .modalOverlay {
+    padding: var(--space-4);
+  }
+
+  .modalCard {
+    width: 100%;
+    max-width: 520px;
+  }
+}
+
+@media (max-width: 480px) {
+  .modalOverlay {
+    padding: var(--space-3);
+  }
+
+  .modalCard {
+    padding: var(--space-4);
+    max-width: 100%;
+  }
+
+  .modalActions {
+    align-items: stretch;
+    flex-direction: column-reverse;
+  }
+
+  .modalActions button {
+    width: 100%;
+  }
+}

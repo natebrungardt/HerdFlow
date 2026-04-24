@@ -1517,3 +1517,126 @@ input[type="date"]::-webkit-datetime-edit-fields-wrapper {
   color: var(--text-primary);
   box-shadow: none;
 }
+
+@media (max-width: 1024px) {
+  .cowDashboardGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .metricsGrid,
+  .infoGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .heroHeader,
+  .dataCardHeader,
+  .ownerRow,
+  .kpiRow,
+  .detailInlineActions,
+  .addNoteRow {
+    flex-wrap: wrap;
+  }
+
+  :is(
+    .cowTitle,
+    .cowSubtitle,
+    .metricLabel,
+    .metricValue,
+    .infoLabel,
+    .infoValue,
+    .ownerName,
+    .ownerRole,
+    .kpiLabel,
+    .kpiValue,
+    .activityText,
+    .activityMeta,
+    .calfListPrimary,
+    .calfListSecondary,
+    .noteContent,
+    .noteContent span,
+    .noteTimestamp,
+    .detailHelperText
+  ) {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  .cowDetailRightColumnOffset {
+    padding-top: 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .cowDetailPage {
+    padding-inline: var(--space-3);
+  }
+
+  .cowDetailShell,
+  .heroCard,
+  .dashboardCard,
+  .metricCard,
+  .infoTile {
+    padding: var(--space-4);
+  }
+
+  .heroHeader,
+  .dataCardHeader,
+  .ownerRow,
+  .kpiRow,
+  .noteItem,
+  .addNoteRow {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .metricsGrid,
+  .infoGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .form-actions,
+  .workdayDetailActionRow {
+    width: 100%;
+    justify-content: stretch;
+  }
+
+  .cowDetailPage .allCowsHeader .btn,
+  .workdayRemoveCowButton,
+  .detailActionButton,
+  .addNoteRow button {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .kpiValue {
+    text-align: left;
+  }
+}
+
+@media (max-width: 480px) {
+  .cowDetailPage {
+    padding-inline: var(--space-2);
+  }
+
+  .cowDetailShell,
+  .heroCard,
+  .dashboardCard,
+  .metricCard,
+  .infoTile {
+    padding: var(--space-3);
+  }
+
+  .metricToggleRow,
+  .parentSegmentedControl,
+  .detailInlineActions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .metricToggleButton,
+  .parentSegmentButton,
+  .calvesViewAllButton {
+    width: 100%;
+    min-width: 0;
+  }
+}

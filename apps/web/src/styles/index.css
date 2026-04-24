@@ -2051,3 +2051,187 @@ body {
     border-radius: 24px;
   }
 }
+
+@media (max-width: 1024px) {
+  .app-container {
+    padding-inline: var(--space-4);
+  }
+
+  .form-actions,
+  .navbar,
+  .navbar-links,
+  .landingHeader,
+  .landingHeaderActions,
+  .landingActions,
+  .landingFooter,
+  .landingFooterMeta,
+  .landingFooterLinks,
+  .authHighlightStrip {
+    flex-wrap: wrap;
+  }
+
+  .landingHero,
+  .authShell {
+    grid-template-columns: 1fr;
+  }
+
+  :is(.cowDetailPage, .allCowsPage) {
+    padding-inline: var(--space-4);
+  }
+
+  :is(
+    .navbar-left,
+    .navbarAccountName,
+    .navbarUserEmail,
+    .landingBrandName,
+    .landingBrandTag,
+    .landingTitle,
+    .landingLead,
+    .landingFeaturePill,
+    .landingShowcaseItem strong,
+    .landingShowcaseFooter p,
+    .landingFooterName,
+    .landingFooterTagline,
+    .landingFooterCopyright,
+    .authTitle,
+    .authLead,
+    .authFormTitle,
+    .authFormCopy,
+    .authHighlightValue,
+    .authHighlightLabel,
+    .authFeatureCard,
+    .authMessage,
+    .authFormFootnote
+  ) {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+}
+
+@media (max-width: 768px) {
+  .app-container,
+  .authPage {
+    padding-inline: var(--space-3);
+  }
+
+  .navbar {
+    align-items: stretch;
+    flex-direction: column;
+    height: auto;
+    padding: var(--space-3) var(--space-4);
+  }
+
+  .navbar-left,
+  .landingBrand {
+    justify-content: center;
+  }
+
+  .navbar-links {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-2);
+  }
+
+  .navbar-links a,
+  .navbarAccountButton {
+    min-width: 0;
+    justify-content: center;
+    text-align: center;
+    white-space: normal;
+  }
+
+  .navbarAccount {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .landingHeader,
+  .landingFooter,
+  .authBrandPanel,
+  .authFormPanel,
+  :is(.cowDetailShell, .allCowsShell) {
+    padding: var(--space-4);
+  }
+
+  .landingHeader,
+  .landingFooter {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .landingHeaderActions,
+  .landingActions,
+  .landingFooterLinks,
+  .landingFooterMeta {
+    width: 100%;
+  }
+
+  .landingHeaderLink,
+  .landingHeaderButton,
+  .landingPrimaryButton,
+  .landingSecondaryButton,
+  .landingFooterLink,
+  .landingFooterButton {
+    flex: 1 1 180px;
+  }
+
+  :is(.cowDetailPage, .allCowsPage) {
+    padding: var(--space-4) var(--space-3) var(--space-5);
+  }
+
+  .form-actions {
+    justify-content: stretch;
+  }
+
+  .form-actions > * {
+    flex: 1 1 160px;
+    min-width: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .app-container,
+  .authPage,
+  :is(.cowDetailPage, .allCowsPage) {
+    padding-inline: var(--space-2);
+  }
+
+  .navbar,
+  .landingPage,
+  .landingHeader,
+  .landingShowcaseCard,
+  .landingFooter,
+  .authBrandPanel,
+  .authFormPanel,
+  .authFormCard,
+  :is(.cowDetailShell, .allCowsShell) {
+    padding-inline: var(--space-3);
+  }
+
+  .navbar-links {
+    grid-template-columns: 1fr;
+  }
+
+  .landingHeaderLink,
+  .landingHeaderButton,
+  .landingPrimaryButton,
+  .landingSecondaryButton,
+  .landingFooterLink,
+  .landingFooterButton,
+  .authPrimaryButton,
+  .btn,
+  .primary-button,
+  .secondary-button,
+  .form-actions > * {
+    width: 100%;
+    min-width: 0;
+    white-space: normal;
+  }
+
+  .landingShowcaseTop,
+  .landingShowcaseFooter {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
