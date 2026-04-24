@@ -106,8 +106,6 @@ public class CowService
         var userId = GetCurrentUserId();
         var cows = await _context.Cows
             .AsNoTracking()
-            .Include(c => c.Sire)
-            .Include(c => c.Dam)
             .Where(c => c.UserId == userId && !c.IsRemoved)
             .OrderBy(c => c.TagNumber)
             .ToListAsync();
