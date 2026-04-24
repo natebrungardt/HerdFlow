@@ -59,9 +59,9 @@
   padding: 12px 16px;
   min-width: 140px;
   background: linear-gradient(
-    180deg,
-    var(--color-primary) 0%,
-    var(--color-primary-hover) 100%
+  180deg,
+  var(--color-primary) 0%,
+  var(--color-primary-hover) 100%
   );
   color: #f8fafc;
   font-weight: 700;
@@ -69,9 +69,9 @@
   cursor: pointer;
   box-shadow: none;
   transition:
-    transform 0.18s ease,
-    box-shadow 0.18s ease,
-    filter 0.18s ease;
+  transform 0.18s ease,
+  box-shadow 0.18s ease,
+  filter 0.18s ease;
 }
 
 .addCowButton:hover {
@@ -105,9 +105,9 @@
   background: var(--surface-subtle);
   color: var(--text-primary);
   transition:
-    border-color 0.18s ease,
-    box-shadow 0.18s ease,
-    background 0.18s ease;
+  border-color 0.18s ease,
+  box-shadow 0.18s ease,
+  background 0.18s ease;
 }
 
 .searchInput::placeholder {
@@ -141,9 +141,9 @@
   font-size: 0.92rem;
   cursor: pointer;
   transition:
-    border-color 0.18s ease,
-    background 0.18s ease,
-    transform 0.18s ease;
+  border-color 0.18s ease,
+  background 0.18s ease,
+  transform 0.18s ease;
 }
 
 .filterChip:hover {
@@ -155,9 +155,9 @@
 
 .filterChip.active {
   background: linear-gradient(
-    180deg,
-    var(--color-primary) 0%,
-    var(--color-primary-hover) 100%
+  180deg,
+  var(--color-primary) 0%,
+  var(--color-primary-hover) 100%
   );
   border-color: rgba(134, 193, 151, 0.22);
   color: #f8fafc;
@@ -227,8 +227,8 @@
   min-width: 0;
   border-color: var(--shell-border);
   box-shadow:
-    inset 0 1px 0 var(--surface-subtle-hover),
-    0 0 0 1px rgba(76, 122, 91, 0.04);
+  inset 0 1px 0 var(--surface-subtle-hover),
+  0 0 0 1px rgba(76, 122, 91, 0.04);
 }
 
 .statsFilterButton {
@@ -237,10 +237,10 @@
   appearance: none;
   cursor: pointer;
   transition:
-    transform 0.18s ease,
-    border-color 0.18s ease,
-    background 0.18s ease,
-    box-shadow 0.18s ease;
+  transform 0.18s ease,
+  border-color 0.18s ease,
+  background 0.18s ease,
+  box-shadow 0.18s ease;
 }
 
 .statsLinkCard {
@@ -248,10 +248,10 @@
   text-decoration: none;
   cursor: pointer;
   transition:
-    transform 0.18s ease,
-    border-color 0.18s ease,
-    background 0.18s ease,
-    box-shadow 0.18s ease;
+  transform 0.18s ease,
+  border-color 0.18s ease,
+  background 0.18s ease,
+  box-shadow 0.18s ease;
 }
 
 .statsLinkCard:hover {
@@ -284,8 +284,8 @@
   background: linear-gradient(180deg, #6ea97f 0%, #4c7a5b 100%);
   border-color: rgba(134, 193, 151, 0.22);
   box-shadow:
-    0 14px 28px rgba(76, 122, 91, 0.24),
-    0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+  0 14px 28px rgba(76, 122, 91, 0.24),
+  0 0 0 1px rgba(255, 255, 255, 0.05) inset;
 }
 
 .statsFilterButton.active .statLabel,
@@ -323,6 +323,7 @@
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   overflow: hidden;
 }
 
@@ -366,9 +367,9 @@
   padding: var(--space-3) var(--space-4);
   cursor: pointer;
   transition:
-    transform 0.18s ease,
-    border-color 0.18s ease,
-    box-shadow 0.18s ease;
+  transform 0.18s ease,
+  border-color 0.18s ease,
+  box-shadow 0.18s ease;
 }
 
 .cowCard {
@@ -406,12 +407,12 @@
 .workdayRowCardWorked {
   border-color: var(--success-border-subtle);
   background:
-    linear-gradient(
-      180deg,
-      rgba(76, 122, 91, 0.12) 0%,
-      rgba(76, 122, 91, 0.08) 100%
-    ),
-    var(--card-bg);
+  linear-gradient(
+  180deg,
+  rgba(76, 122, 91, 0.12) 0%,
+  rgba(76, 122, 91, 0.08) 100%
+  ),
+  var(--card-bg);
 }
 
 .cowRowMain {
@@ -685,9 +686,9 @@
   font-size: 0.95rem;
   outline: none;
   transition:
-    border-color 0.18s ease,
-    box-shadow 0.18s ease,
-    background 0.18s ease;
+  border-color 0.18s ease,
+  box-shadow 0.18s ease,
+  background 0.18s ease;
 }
 
 .workdayNotesInput:focus {
@@ -777,10 +778,10 @@
   align-items: center;
   justify-content: center;
   transition:
-    background-color 0.18s ease,
-    border-color 0.18s ease,
-    color 0.18s ease,
-    transform 0.18s ease;
+  background-color 0.18s ease,
+  border-color 0.18s ease,
+  color 0.18s ease,
+  transform 0.18s ease;
 }
 
 .workdaySelectionRemoveButton:hover {
@@ -875,8 +876,8 @@
   --action-chip-row-height: 42px;
   --action-chip-gap: var(--space-2);
   height: calc(
-    (var(--action-chip-row-height) * 2) + (var(--action-chip-gap) * 2) +
-      (var(--action-chip-row-height) / 2)
+  (var(--action-chip-row-height) * 2) + (var(--action-chip-gap) * 2) +
+  (var(--action-chip-row-height) / 2)
   );
   overflow-y: auto;
   padding-right: 4px;
@@ -901,8 +902,8 @@
   background: var(--surface-subtle);
   color: var(--text-primary);
   box-shadow:
-    inset 0 1px 0 var(--surface-subtle-hover),
-    0 8px 20px rgba(0, 0, 0, 0.08);
+  inset 0 1px 0 var(--surface-subtle-hover),
+  0 8px 20px rgba(0, 0, 0, 0.08);
 }
 
 .workdayActionContent {
@@ -935,9 +936,9 @@
   align-items: center;
   justify-content: center;
   transition:
-    background-color 0.18s ease,
-    color 0.18s ease,
-    transform 0.18s ease;
+  background-color 0.18s ease,
+  color 0.18s ease,
+  transform 0.18s ease;
 }
 
 .workdayActionChipRemove:hover {
@@ -949,11 +950,11 @@
 .workdayWorkspaceDivider {
   height: 1px;
   background: linear-gradient(
-    90deg,
-    transparent 0%,
-    var(--card-border) 8%,
-    var(--card-border) 92%,
-    transparent 100%
+  90deg,
+  transparent 0%,
+  var(--card-border) 8%,
+  var(--card-border) 92%,
+  transparent 100%
   );
 }
 
@@ -1003,8 +1004,8 @@
   border: 1px solid var(--card-border);
   background: var(--surface-subtle);
   box-shadow:
-    inset 0 1px 0 var(--surface-subtle-hover),
-    0 8px 18px rgba(0, 0, 0, 0.08);
+  inset 0 1px 0 var(--surface-subtle-hover),
+  0 8px 18px rgba(0, 0, 0, 0.08);
   cursor: default;
 }
 
@@ -1012,8 +1013,8 @@
   transform: none;
   border-color: var(--card-border);
   box-shadow:
-    inset 0 1px 0 var(--surface-subtle-hover),
-    0 8px 18px rgba(0, 0, 0, 0.08);
+  inset 0 1px 0 var(--surface-subtle-hover),
+  0 8px 18px rgba(0, 0, 0, 0.08);
 }
 
 .cow-card {
@@ -1071,91 +1072,6 @@
   cursor: progress;
 }
 
-@media (max-width: 960px) {
-  .workdaySetupColumns {
-    grid-template-columns: 1fr;
-  }
-
-  .workdayCreateTopGrid {
-    grid-template-columns: 1fr;
-  }
-
-  .workdaySetupGrid {
-    grid-template-columns: 1fr;
-  }
-
-  .workdaySelectedSummaryCard {
-    min-height: 0;
-  }
-
-  .workdaySelectionPills {
-    max-height: 360px;
-  }
-
-  .workdayComposerActions {
-    flex-direction: column-reverse;
-  }
-
-  .workdayComposerActions > * {
-    width: 100%;
-  }
-
-  .workdayActionComposer {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .workdayWorkspaceHeaderRow {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .workdayWorkspaceToolbar {
-    flex-direction: column;
-    align-items: stretch;
-    justify-content: flex-start;
-  }
-
-  .workdayWorkspaceInput {
-    max-width: none;
-  }
-
-  .workdayActionAddButton,
-  .workdayStartButton {
-    width: 100%;
-  }
-
-  .workdayWorkspaceSectionHeader,
-  .workdayWorkspaceCowRow {
-    align-items: stretch;
-    flex-direction: column;
-  }
-}
-
-@media (max-width: 900px) {
-  .workday-container {
-    grid-template-columns: 1fr;
-  }
-
-  .workday-actions {
-    display: flex;
-    gap: 12px;
-    flex-wrap: wrap;
-    justify-content: flex-end;
-  }
-}
-
-@media (max-width: 600px) {
-  .workday-actions {
-    justify-content: stretch;
-  }
-
-  .workday-actions button {
-    width: 100%;
-    min-width: 0;
-  }
-}
-
 .statusPill {
   display: inline-flex;
   align-items: center;
@@ -1207,151 +1123,6 @@
   padding: 6px 2px;
 }
 
-@media (max-width: 1080px) {
-  .statsGrid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-
-  .herdStatsGrid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-
-  .dashboardQuickActions {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 760px) {
-  .allCowsPage {
-    padding: 20px 16px 28px;
-  }
-
-  .allCowsShell {
-    padding: 18px;
-    border-radius: 20px;
-  }
-
-  .allCowsHeader,
-  .cowRowCard {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .addCowButton {
-    width: 100%;
-    min-width: 0;
-  }
-
-  .statsGrid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .herdStatsGrid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .dashboardQuickActions,
-  .dashboardSplitGrid {
-    grid-template-columns: 1fr;
-  }
-
-  .cowRowActions {
-    justify-content: flex-start;
-  }
-
-  .allCowsHeader {
-    margin-bottom: 18px;
-  }
-
-  .pageTitle {
-    font-size: 1.65rem;
-  }
-
-  .toolbarCard,
-  .statsCard,
-  .cowListCard {
-    padding: 16px;
-  }
-
-  .cowRowCard {
-    padding: 16px;
-    gap: 12px;
-  }
-
-  .statusPill {
-    width: 100%;
-    min-width: 0;
-  }
-
-  .filterChip {
-    padding: 9px 14px;
-    font-size: 0.86rem;
-  }
-
-  .workdaySelectionPill {
-    width: 100%;
-  }
-}
-
-@media (max-width: 520px) {
-  .statsGrid {
-    grid-template-columns: 1fr;
-  }
-
-  .herdStatsGrid {
-    grid-template-columns: 1fr;
-  }
-
-  .pageTitle {
-    font-size: 1.45rem;
-  }
-
-  .pageSubtitle {
-    font-size: 0.9rem;
-  }
-
-  .searchInput {
-    height: 44px;
-    font-size: 0.92rem;
-  }
-
-  .sectionHeader {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .cowRowTitle {
-    font-size: 1rem;
-  }
-
-  .cowRowMeta,
-  .cowRowOwner {
-    font-size: 0.84rem;
-  }
-
-  .workdaySelectionPills {
-    gap: 8px;
-  }
-
-  .workdayComposerCard,
-  .workdaySelectedSummaryCard {
-    padding: 16px;
-  }
-
-  .workdaySaveStatus {
-    width: 100%;
-  }
-
-  .workdayDetailActionRow {
-    justify-content: stretch;
-  }
-
-  .workdayDetailActionRow .addCowButton {
-    width: 100%;
-  }
-}
-
-/* Device tuning: phone 390, tablet 768, desktop 1024 */
 .allCowsShell {
   padding: var(--space-4);
 }
@@ -1375,14 +1146,6 @@
   width: 100%;
   min-width: 0;
   padding: 12px 16px;
-}
-
-.toolbarCard,
-.statsCard,
-.cowListCard,
-.workdayComposerCard,
-.workdaySelectedSummaryCard {
-  padding: var(--space-4);
 }
 
 .toolbarCard,
@@ -1474,42 +1237,44 @@
   width: 100%;
 }
 
-@media (max-width: 430px) {
-  .allCowsShell {
-    padding: var(--space-3);
-  }
+:root[data-theme="dark"] :is(
+.toolbarCard,
+.statsCard,
+.cowListCard,
+.cowRowCard,
+.dashboardCard,
+.workdayComposerCard,
+.workdaySelectedSummaryCard,
+.workdayWorkspacePanel,
+.workdayAddCowsCard
+) {
+  background: var(--color-surface);
+  border-color: var(--color-border);
+  box-shadow: none;
+}
 
-  .pageTitle {
-    font-size: 1.32rem;
-  }
+:root[data-theme="dark"] :is(.filterChip, .workdayActionChip, .workdaySelectionPill) {
+  background: var(--surface-faint);
+  border-color: var(--color-border);
+  color: var(--text-primary);
+}
 
-  .pageSubtitle {
-    font-size: 0.86rem;
-  }
+:root[data-theme="dark"] :is(.workdaySecondaryButton, .addCowButtonGhost) {
+  background: var(--color-surface-elevated);
+  border: 1px solid var(--color-border);
+  color: var(--text-primary);
+  box-shadow: none;
+}
 
-  .toolbarCard,
-  .statsCard,
-  .cowListCard,
-  .workdayComposerCard,
-  .workdaySelectedSummaryCard {
-    padding: var(--space-3);
-  }
+:root[data-theme="dark"] .addCowButton {
+  background: var(--color-primary);
+  box-shadow: none;
+}
 
-  .statsGrid {
-    gap: var(--space-2);
-  }
-
-  .cowRowCard {
-    padding: var(--space-3);
-  }
-
-  .cowRowDetailLabel {
-    font-size: 0.72rem;
-  }
-
-  .cowRowDetailValue {
-    font-size: 0.84rem;
-  }
+:root[data-theme="dark"] .addCowButton:hover {
+  background: var(--color-primary-hover);
+  filter: none;
+  box-shadow: none;
 }
 
 @media (min-width: 768px) {
@@ -1638,9 +1403,7 @@
   .workdayComposerActions > * {
     width: auto;
   }
-}
 
-@media (min-width: 1280px) {
   .statsGrid {
     grid-template-columns: repeat(6, minmax(0, 1fr));
   }
@@ -1659,62 +1422,95 @@
   }
 }
 
-:root[data-theme="dark"] :is(
-  .toolbarCard,
-  .statsCard,
-  .cowListCard,
-  .cowRowCard,
-  .dashboardCard,
-  .workdayComposerCard,
-  .workdaySelectedSummaryCard,
-  .workdayWorkspacePanel,
-  .workdayAddCowsCard
-) {
-  background: var(--color-surface);
-  border-color: var(--color-border);
-  box-shadow: none;
-}
-
-:root[data-theme="dark"] :is(.filterChip, .workdayActionChip, .workdaySelectionPill) {
-  background: var(--surface-faint);
-  border-color: var(--color-border);
-  color: var(--text-primary);
-}
-
-:root[data-theme="dark"] :is(.workdaySecondaryButton, .addCowButtonGhost) {
-  background: var(--color-surface-elevated);
-  border: 1px solid var(--color-border);
-  color: var(--text-primary);
-  box-shadow: none;
-}
-
-:root[data-theme="dark"] .addCowButton {
-  background: var(--color-primary);
-  box-shadow: none;
-}
-
-:root[data-theme="dark"] .addCowButton:hover {
-  background: var(--color-primary-hover);
-  filter: none;
-  box-shadow: none;
-}
-
 @media (max-width: 1024px) {
-  .allCowsHeader,
-  .sectionHeader,
-  .cowRowCard,
-  .workdayWorkspaceSectionHeader,
-  .workdayWorkspaceCowRow {
-    flex-wrap: wrap;
+  .workdaySetupColumns {
+    grid-template-columns: 1fr;
   }
 
-  .statsGrid,
+  .workdayCreateTopGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .workdaySetupGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .workdaySelectedSummaryCard {
+    min-height: 0;
+  }
+
+  .workdaySelectionPills {
+    max-height: 360px;
+  }
+
+  .workdayComposerActions {
+    flex-direction: column-reverse;
+  }
+
+  .workdayComposerActions > * {
+    width: 100%;
+  }
+
+  .workdayActionComposer {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .workdayWorkspaceHeaderRow {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .workdayWorkspaceToolbar {
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+  }
+
+  .workdayWorkspaceInput {
+    max-width: none;
+  }
+
+  .workdayActionAddButton,
+  .workdayStartButton {
+    width: 100%;
+  }
+
+  .workdayWorkspaceSectionHeader,
+  .workdayWorkspaceCowRow {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .workday-container {
+    grid-template-columns: 1fr;
+  }
+
+  .workday-actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  .statsGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
   .herdStatsGrid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .dashboardQuickActions {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .allCowsHeader,
+  .sectionHeader,
+  .cowRowCard,
+  .workdayWorkspaceSectionHeader,
+  .workdayWorkspaceCowRow {
+    flex-wrap: wrap;
   }
 
   .dashboardSplitGrid,
@@ -1743,23 +1539,23 @@
   }
 
   :is(
-    .pageTitle,
-    .pageSubtitle,
-    .dashboardFarmName,
-    .dashboardFarmFallback,
-    .sectionTitle,
-    .sectionSubtle,
-    .statLabel,
-    .statValue,
-    .statMeta,
-    .cowRowTitle,
-    .cowRowMeta,
-    .cowRowSupplementaryMeta,
-    .cowRowRelationship,
-    .cowRowOwner,
-    .workdaySaveStatus,
-    .workdaySelectionPillMeta,
-    .workdayActionName
+  .pageTitle,
+  .pageSubtitle,
+  .dashboardFarmName,
+  .dashboardFarmFallback,
+  .sectionTitle,
+  .sectionSubtle,
+  .statLabel,
+  .statValue,
+  .statMeta,
+  .cowRowTitle,
+  .cowRowMeta,
+  .cowRowSupplementaryMeta,
+  .cowRowRelationship,
+  .cowRowOwner,
+  .workdaySaveStatus,
+  .workdaySelectionPillMeta,
+  .workdayActionName
   ) {
     overflow-wrap: anywhere;
     word-break: break-word;
@@ -1772,6 +1568,76 @@
 }
 
 @media (max-width: 768px) {
+  .allCowsPage {
+    padding: 20px 16px 28px;
+  }
+
+  .allCowsShell {
+    padding: 18px;
+    border-radius: 20px;
+  }
+
+  .allCowsHeader,
+  .cowRowCard {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .addCowButton {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .statsGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .herdStatsGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .dashboardQuickActions,
+  .dashboardSplitGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .cowRowActions {
+    justify-content: flex-start;
+  }
+
+  .allCowsHeader {
+    margin-bottom: 18px;
+  }
+
+  .pageTitle {
+    font-size: 1.65rem;
+  }
+
+  .toolbarCard,
+  .statsCard,
+  .cowListCard {
+    padding: 16px;
+  }
+
+  .cowRowCard {
+    padding: 16px;
+    gap: 12px;
+  }
+
+  .statusPill {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .filterChip {
+    padding: 9px 14px;
+    font-size: 0.86rem;
+  }
+
+  .workdaySelectionPill {
+    width: 100%;
+  }
+
   .allCowsPage {
     padding-inline: var(--space-3);
   }
@@ -1795,11 +1661,6 @@
   .workdaySelectableRow {
     flex-direction: column;
     align-items: stretch;
-  }
-
-  .statsGrid,
-  .herdStatsGrid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .dashboardQuickActions,
@@ -1832,6 +1693,107 @@
 }
 
 @media (max-width: 480px) {
+  .workday-actions {
+    justify-content: stretch;
+  }
+
+  .workday-actions button {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .statsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .herdStatsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .pageTitle {
+    font-size: 1.45rem;
+  }
+
+  .pageSubtitle {
+    font-size: 0.9rem;
+  }
+
+  .searchInput {
+    height: 44px;
+    font-size: 0.92rem;
+  }
+
+  .sectionHeader {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .cowRowTitle {
+    font-size: 1rem;
+  }
+
+  .cowRowMeta,
+  .cowRowOwner {
+    font-size: 0.84rem;
+  }
+
+  .workdaySelectionPills {
+    gap: 8px;
+  }
+
+  .workdayComposerCard,
+  .workdaySelectedSummaryCard {
+    padding: 16px;
+  }
+
+  .workdaySaveStatus {
+    width: 100%;
+  }
+
+  .workdayDetailActionRow {
+    justify-content: stretch;
+  }
+
+  .workdayDetailActionRow .addCowButton {
+    width: 100%;
+  }
+
+  .allCowsShell {
+    padding: var(--space-3);
+  }
+
+  .pageTitle {
+    font-size: 1.32rem;
+  }
+
+  .pageSubtitle {
+    font-size: 0.86rem;
+  }
+
+  .toolbarCard,
+  .statsCard,
+  .cowListCard,
+  .workdayComposerCard,
+  .workdaySelectedSummaryCard {
+    padding: var(--space-3);
+  }
+
+  .statsGrid {
+    gap: var(--space-2);
+  }
+
+  .cowRowCard {
+    padding: var(--space-3);
+  }
+
+  .cowRowDetailLabel {
+    font-size: 0.72rem;
+  }
+
+  .cowRowDetailValue {
+    font-size: 0.84rem;
+  }
+
   .allCowsPage {
     padding-inline: var(--space-2);
   }

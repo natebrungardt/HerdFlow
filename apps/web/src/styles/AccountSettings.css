@@ -95,18 +95,6 @@
   box-shadow: none;
 }
 
-@media (max-width: 980px) {
-  .accountSettingsGrid {
-    grid-template-columns: 1fr;
-  }
-}
-
-@media (max-width: 640px) {
-  .accountSettingsActions .addCowButton {
-    width: 100%;
-  }
-}
-
 @media (max-width: 1024px) {
   .accountSettingsGrid {
     grid-template-columns: 1fr;
@@ -117,9 +105,9 @@
   }
 
   :is(
-    .accountSettingsIntro,
-    .accountSettingsHelperText,
-    .accountSettingsReadonlyInput
+  .accountSettingsIntro,
+  .accountSettingsHelperText,
+  .accountSettingsReadonlyInput
   ) {
     overflow-wrap: anywhere;
     word-break: break-word;
@@ -127,6 +115,10 @@
 }
 
 @media (max-width: 768px) {
+  .accountSettingsActions .addCowButton {
+    width: 100%;
+  }
+
   .accountSettingsDisclosure {
     padding: var(--space-4);
   }

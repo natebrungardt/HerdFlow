@@ -4,8 +4,8 @@
   padding: 28px;
   border-radius: 22px;
   box-shadow:
-    0 20px 45px rgba(18, 36, 68, 0.16),
-    0 2px 8px rgba(18, 36, 68, 0.08);
+  0 20px 45px rgba(18, 36, 68, 0.16),
+  0 2px 8px rgba(18, 36, 68, 0.08);
 }
 
 .feedbackModalHeader {
@@ -39,8 +39,8 @@
   font-size: 1.5rem;
   line-height: 1;
   transition:
-    background 0.2s ease,
-    color 0.2s ease;
+  background 0.2s ease,
+  color 0.2s ease;
 }
 
 .feedbackModalClose:hover {
@@ -81,9 +81,9 @@
   background: color-mix(in srgb, var(--surface-strong) 72%, white);
   color: var(--text-primary);
   transition:
-    border-color 0.2s ease,
-    box-shadow 0.2s ease,
-    background 0.2s ease;
+  border-color 0.2s ease,
+  box-shadow 0.2s ease,
+  background 0.2s ease;
 }
 
 .feedbackField textarea {
@@ -158,9 +158,9 @@
   font-weight: 700;
   box-shadow: none;
   transition:
-    transform 0.2s ease,
-    box-shadow 0.2s ease,
-    opacity 0.2s ease;
+  transform 0.2s ease,
+  box-shadow 0.2s ease,
+  opacity 0.2s ease;
 }
 
 .feedbackSubmitButton:hover {
@@ -177,7 +177,28 @@
   box-shadow: none;
 }
 
-@media (max-width: 640px) {
+@media (max-width: 1024px) {
+  .feedbackModalHeader,
+  .feedbackModalActions {
+    flex-wrap: wrap;
+  }
+
+  :is(
+  .feedbackModalHeader h3,
+  .feedbackModalIntro,
+  .feedbackField,
+  .feedbackField input,
+  .feedbackField textarea,
+  .feedbackFieldError,
+  .feedbackSubmitError,
+  .feedbackSubmitSuccess
+  ) {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+}
+
+@media (max-width: 768px) {
   .feedbackModalCard {
     padding: 20px;
   }
@@ -199,30 +220,7 @@
   .feedbackModalActions button {
     width: 100%;
   }
-}
 
-@media (max-width: 1024px) {
-  .feedbackModalHeader,
-  .feedbackModalActions {
-    flex-wrap: wrap;
-  }
-
-  :is(
-    .feedbackModalHeader h3,
-    .feedbackModalIntro,
-    .feedbackField,
-    .feedbackField input,
-    .feedbackField textarea,
-    .feedbackFieldError,
-    .feedbackSubmitError,
-    .feedbackSubmitSuccess
-  ) {
-    overflow-wrap: anywhere;
-    word-break: break-word;
-  }
-}
-
-@media (max-width: 768px) {
   .feedbackModalGrid {
     grid-template-columns: 1fr;
   }

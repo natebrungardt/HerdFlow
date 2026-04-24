@@ -142,9 +142,9 @@
   font-size: 1rem;
   cursor: pointer;
   transition:
-    transform 0.18s ease,
-    box-shadow 0.18s ease,
-    filter 0.18s ease;
+  transform 0.18s ease,
+  box-shadow 0.18s ease,
+  filter 0.18s ease;
 }
 
 .metricToggleButton:disabled {
@@ -318,18 +318,18 @@ select.metricFieldInput {
   border-radius: 12px;
   background-color: var(--surface-subtle);
   background-image:
-    linear-gradient(45deg, transparent 50%, var(--text-muted-soft) 50%),
-    linear-gradient(135deg, var(--text-muted-soft) 50%, transparent 50%);
+  linear-gradient(45deg, transparent 50%, var(--text-muted-soft) 50%),
+  linear-gradient(135deg, var(--text-muted-soft) 50%, transparent 50%);
   background-position:
-    calc(100% - 18px) calc(50% - 3px),
-    calc(100% - 12px) calc(50% - 3px);
+  calc(100% - 18px) calc(50% - 3px),
+  calc(100% - 12px) calc(50% - 3px);
   background-size: 6px 6px, 6px 6px;
   background-repeat: no-repeat;
   box-shadow: var(--card-shadow);
   transition:
-    border-color 0.18s ease,
-    box-shadow 0.18s ease,
-    background-color 0.18s ease;
+  border-color 0.18s ease,
+  box-shadow 0.18s ease,
+  background-color 0.18s ease;
 }
 
 select.cardInput:hover,
@@ -429,8 +429,8 @@ select.metricFieldInput:focus {
   border: 1px solid var(--input-border);
   border-radius: 14px;
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent 100%),
-    var(--surface-subtle);
+  linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent 100%),
+  var(--surface-subtle);
   box-shadow: var(--card-shadow);
   transition: all 0.18s ease;
 }
@@ -473,8 +473,8 @@ select.metricFieldInput:focus {
   color: #254332;
   font-weight: 700;
   box-shadow:
-    inset 0 0 0 1px rgba(76, 122, 91, 0.32),
-    0 1px 2px rgba(0, 0, 0, 0.08);
+  inset 0 0 0 1px rgba(76, 122, 91, 0.32),
+  0 1px 2px rgba(0, 0, 0, 0.08);
 }
 
 .parentSegmentButton:focus-visible {
@@ -508,9 +508,9 @@ select.metricFieldInput:focus {
   background-color: var(--surface-subtle);
   box-shadow: var(--card-shadow);
   transition:
-    border-color 0.18s ease,
-    box-shadow 0.18s ease,
-    background-color 0.18s ease;
+  border-color 0.18s ease,
+  box-shadow 0.18s ease,
+  background-color 0.18s ease;
 }
 
 .parentSearchInput {
@@ -536,11 +536,11 @@ select.metricFieldInput:focus {
   -moz-appearance: none;
   padding: 0.72rem 2.6rem 0.72rem 0.95rem;
   background-image:
-    linear-gradient(45deg, transparent 50%, var(--text-muted-soft) 50%),
-    linear-gradient(135deg, var(--text-muted-soft) 50%, transparent 50%);
+  linear-gradient(45deg, transparent 50%, var(--text-muted-soft) 50%),
+  linear-gradient(135deg, var(--text-muted-soft) 50%, transparent 50%);
   background-position:
-    calc(100% - 18px) calc(50% - 3px),
-    calc(100% - 12px) calc(50% - 3px);
+  calc(100% - 18px) calc(50% - 3px),
+  calc(100% - 12px) calc(50% - 3px);
   background-size: 6px 6px, 6px 6px;
   background-repeat: no-repeat;
 }
@@ -561,8 +561,8 @@ select.metricFieldInput:focus {
   border-radius: 14px;
   background: #fff;
   box-shadow:
-    0 10px 24px rgba(20, 27, 18, 0.12),
-    0 2px 6px rgba(20, 27, 18, 0.06);
+  0 10px 24px rgba(20, 27, 18, 0.12),
+  0 2px 6px rgba(20, 27, 18, 0.06);
 }
 
 .parentAutocompleteOption {
@@ -576,8 +576,8 @@ select.metricFieldInput:focus {
   padding: 0.72rem 0.95rem;
   cursor: pointer;
   transition:
-    background-color 0.18s ease,
-    color 0.18s ease;
+  background-color 0.18s ease,
+  color 0.18s ease;
 }
 
 .parentAutocompleteOption:last-child {
@@ -878,113 +878,6 @@ select.metricFieldInput:focus {
   color: var(--text-note);
 }
 
-@media (max-width: 1080px) {
-  .cowDashboardGrid {
-    grid-template-columns: 1fr;
-  }
-
-  .metricsGrid,
-  .infoGrid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-}
-
-@media (max-width: 760px) {
-  .cowDetailPage {
-    padding: 20px 16px 28px;
-  }
-
-  .cowDetailShell {
-    padding: 18px;
-    border-radius: 20px;
-  }
-
-  .heroHeader {
-    flex-direction: column;
-  }
-
-  .allCowsHeader .btn {
-    width: 100%;
-    min-width: 0;
-  }
-
-  .metricsGrid,
-  .infoGrid {
-    grid-template-columns: 1fr;
-  }
-
-  .heroCard,
-  .dashboardCard {
-    padding: 16px;
-  }
-
-  .cowTitle {
-    font-size: 1.64rem;
-  }
-
-  .form-actions {
-    width: 100%;
-    justify-content: stretch;
-  }
-
-  .dataCardHeader {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-
-  .ownerRow,
-  .kpiRow {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-
-  .kpiValue {
-    text-align: left;
-  }
-
-  .workdayDetailActionRow {
-    justify-content: stretch;
-  }
-
-  .workdayRemoveCowButton {
-    width: 100%;
-  }
-}
-
-@media (max-width: 520px) {
-  .cowTitle {
-    font-size: 1.42rem;
-  }
-
-  .cowSubtitle,
-  .activityText {
-    font-size: 0.96rem;
-  }
-
-  .metricCard,
-  .infoTile {
-    padding: 14px;
-  }
-
-  .metricToggleButton {
-    min-width: 0;
-    font-size: 0.93rem;
-  }
-
-  .metricToggleRow {
-    flex-direction: column;
-  }
-
-  .metricToggleRow .metricToggleButton {
-    width: 100%;
-  }
-
-  .ownerAvatar {
-    width: 38px;
-    height: 38px;
-  }
-}
 .infoTile:hover {
   background: var(--surface-subtle-hover);
 }
@@ -1122,8 +1015,8 @@ select.metricFieldInput:focus {
   cursor: pointer;
   font-size: 0.9rem;
   transition:
-    color 0.2s ease,
-    transform 0.2s ease;
+  color 0.2s ease,
+  transform 0.2s ease;
 }
 
 .noteItem button:hover {
@@ -1205,11 +1098,13 @@ select.metricFieldInput:focus {
 input[type="number"]::-webkit-inner-spin-button,
 input[type="number"]::-webkit-outer-spin-button {
   -webkit-appearance: none;
+  appearance: none;
   margin: 0;
 }
 
 input[type="number"] {
   -moz-appearance: textfield;
+  appearance: textfield;
 }
 
 /* Style date inputs to match dark inline-edit look */
@@ -1238,7 +1133,6 @@ input[type="date"]::-webkit-datetime-edit-fields-wrapper {
   padding: 0;
 }
 
-/* Device tuning: phone 390, tablet 768, desktop 1024 */
 .cowDashboardGrid {
   grid-template-columns: 1fr;
   gap: 16px;
@@ -1341,32 +1235,55 @@ input[type="date"]::-webkit-datetime-edit-fields-wrapper {
   gap: 10px;
 }
 
-@media (max-width: 430px) {
-  .cowTitle {
-    font-size: 1.22rem;
-  }
+:root[data-theme="dark"] :is(
+.dashboardCard,
+.heroCard,
+.metricCard,
+.infoTile,
+.activityCard,
+.notesPanel,
+.calvesCard
+) {
+  background: var(--color-surface);
+  border-color: var(--color-border);
+  box-shadow: none;
+}
 
-  .heroCard,
-  .dashboardCard,
-  .metricCard,
-  .infoTile {
-    padding: 14px;
-  }
+:root[data-theme="dark"] :is(
+.cardInput,
+.metricFieldInput,
+.heroTitleInput,
+.parentSearchInput,
+.workdayNotesInput
+) {
+  background: var(--color-surface);
+  border-color: var(--input-border);
+  color: var(--text-primary);
+}
 
-  .metricLabel,
-  .infoLabel {
-    font-size: 0.72rem;
-  }
+:root[data-theme="dark"] :is(
+.cardInput,
+.metricFieldInput,
+.heroTitleInput,
+.parentSearchInput,
+.workdayNotesInput
+):focus {
+  border-color: var(--input-focus);
+  box-shadow: 0 0 0 3px var(--focus-ring);
+}
 
-  .metricValue,
-  .infoValue,
-  .activityText {
-    font-size: 0.86rem;
-  }
+:root[data-theme="dark"] .detailActionButton {
+  background: var(--color-surface-elevated);
+  border-color: var(--color-border);
+  color: var(--text-primary);
+  box-shadow: none;
+}
 
-  .addNoteRow textarea {
-    min-height: 56px;
-  }
+:root[data-theme="dark"] .detailActionButton:hover {
+  background: var(--color-surface-hover);
+  border-color: var(--input-focus);
+  color: var(--text-primary);
+  box-shadow: none;
 }
 
 @media (min-width: 768px) {
@@ -1467,57 +1384,6 @@ input[type="date"]::-webkit-datetime-edit-fields-wrapper {
   }
 }
 
-:root[data-theme="dark"] :is(
-  .dashboardCard,
-  .heroCard,
-  .metricCard,
-  .infoTile,
-  .activityCard,
-  .notesPanel,
-  .calvesCard
-) {
-  background: var(--color-surface);
-  border-color: var(--color-border);
-  box-shadow: none;
-}
-
-:root[data-theme="dark"] :is(
-  .cardInput,
-  .metricFieldInput,
-  .heroTitleInput,
-  .parentSearchInput,
-  .workdayNotesInput
-) {
-  background: var(--color-surface);
-  border-color: var(--input-border);
-  color: var(--text-primary);
-}
-
-:root[data-theme="dark"] :is(
-  .cardInput,
-  .metricFieldInput,
-  .heroTitleInput,
-  .parentSearchInput,
-  .workdayNotesInput
-):focus {
-  border-color: var(--input-focus);
-  box-shadow: 0 0 0 3px var(--focus-ring);
-}
-
-:root[data-theme="dark"] .detailActionButton {
-  background: var(--color-surface-elevated);
-  border-color: var(--color-border);
-  color: var(--text-primary);
-  box-shadow: none;
-}
-
-:root[data-theme="dark"] .detailActionButton:hover {
-  background: var(--color-surface-hover);
-  border-color: var(--input-focus);
-  color: var(--text-primary);
-  box-shadow: none;
-}
-
 @media (max-width: 1024px) {
   .cowDashboardGrid {
     grid-template-columns: 1fr;
@@ -1538,24 +1404,24 @@ input[type="date"]::-webkit-datetime-edit-fields-wrapper {
   }
 
   :is(
-    .cowTitle,
-    .cowSubtitle,
-    .metricLabel,
-    .metricValue,
-    .infoLabel,
-    .infoValue,
-    .ownerName,
-    .ownerRole,
-    .kpiLabel,
-    .kpiValue,
-    .activityText,
-    .activityMeta,
-    .calfListPrimary,
-    .calfListSecondary,
-    .noteContent,
-    .noteContent span,
-    .noteTimestamp,
-    .detailHelperText
+  .cowTitle,
+  .cowSubtitle,
+  .metricLabel,
+  .metricValue,
+  .infoLabel,
+  .infoValue,
+  .ownerName,
+  .ownerRole,
+  .kpiLabel,
+  .kpiValue,
+  .activityText,
+  .activityMeta,
+  .calfListPrimary,
+  .calfListSecondary,
+  .noteContent,
+  .noteContent span,
+  .noteTimestamp,
+  .detailHelperText
   ) {
     overflow-wrap: anywhere;
     word-break: break-word;
@@ -1567,6 +1433,66 @@ input[type="date"]::-webkit-datetime-edit-fields-wrapper {
 }
 
 @media (max-width: 768px) {
+  .cowDetailPage {
+    padding: 20px 16px 28px;
+  }
+
+  .cowDetailShell {
+    padding: 18px;
+    border-radius: 20px;
+  }
+
+  .heroHeader {
+    flex-direction: column;
+  }
+
+  .allCowsHeader .btn {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .metricsGrid,
+  .infoGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .heroCard,
+  .dashboardCard {
+    padding: 16px;
+  }
+
+  .cowTitle {
+    font-size: 1.64rem;
+  }
+
+  .form-actions {
+    width: 100%;
+    justify-content: stretch;
+  }
+
+  .dataCardHeader {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .ownerRow,
+  .kpiRow {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .kpiValue {
+    text-align: left;
+  }
+
+  .workdayDetailActionRow {
+    justify-content: stretch;
+  }
+
+  .workdayRemoveCowButton {
+    width: 100%;
+  }
+
   .cowDetailPage {
     padding-inline: var(--space-3);
   }
@@ -1589,11 +1515,6 @@ input[type="date"]::-webkit-datetime-edit-fields-wrapper {
     align-items: stretch;
   }
 
-  .metricsGrid,
-  .infoGrid {
-    grid-template-columns: 1fr;
-  }
-
   .form-actions,
   .workdayDetailActionRow {
     width: 100%;
@@ -1607,13 +1528,67 @@ input[type="date"]::-webkit-datetime-edit-fields-wrapper {
     width: 100%;
     min-width: 0;
   }
-
-  .kpiValue {
-    text-align: left;
-  }
 }
 
 @media (max-width: 480px) {
+  .cowTitle {
+    font-size: 1.42rem;
+  }
+
+  .cowSubtitle,
+  .activityText {
+    font-size: 0.96rem;
+  }
+
+  .metricCard,
+  .infoTile {
+    padding: 14px;
+  }
+
+  .metricToggleButton {
+    min-width: 0;
+    font-size: 0.93rem;
+  }
+
+  .metricToggleRow {
+    flex-direction: column;
+  }
+
+  .metricToggleRow .metricToggleButton {
+    width: 100%;
+  }
+
+  .ownerAvatar {
+    width: 38px;
+    height: 38px;
+  }
+
+  .cowTitle {
+    font-size: 1.22rem;
+  }
+
+  .heroCard,
+  .dashboardCard,
+  .metricCard,
+  .infoTile {
+    padding: 14px;
+  }
+
+  .metricLabel,
+  .infoLabel {
+    font-size: 0.72rem;
+  }
+
+  .metricValue,
+  .infoValue,
+  .activityText {
+    font-size: 0.86rem;
+  }
+
+  .addNoteRow textarea {
+    min-height: 56px;
+  }
+
   .cowDetailPage {
     padding-inline: var(--space-2);
   }
