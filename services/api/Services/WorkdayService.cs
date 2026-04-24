@@ -443,7 +443,21 @@ public class WorkdayService
         }
 
         var repairStopwatch = Stopwatch.StartNew();
-        var insertedEntryCount = await EnsureWorkdayEntryGridAsync(workdayId, userId);
+
+        var existingEntryCount = await _context.WorkdayEntries
+            .AsNoTracking()
+            .Where(e => e.WorkdayId == workdayId)
+            .CountAsync();
+
+        var expectedEntryCount = workdaySnapshot.CowCount * workdaySnapshot.ActionCount;
+
+        int insertedEntryCount = 0;
+
+        if (existingEntryCount < expectedEntryCount)
+        {
+            insertedEntryCount = await EnsureWorkdayEntryGridAsync(workdayId, userId);
+        }
+
         _logger.LogInformation(
             "WorkdayService.StartWorkday ensured entry grid for workday {WorkdayId} in {ElapsedMilliseconds}ms and inserted {InsertedEntryCount} entries",
             workdayId,
