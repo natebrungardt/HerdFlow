@@ -18,17 +18,17 @@
   --color-text: #18211c;
   --color-text-muted: #5f6c67;
   --color-border: #d3ddd5;
-  --page-bg: linear-gradient(to bottom, #f7fbf6 0%, #e9f1eb 100%);
+  --page-bg: #e9f1eb;
   --shell-bg: linear-gradient(180deg, #ffffff 0%, #f5f8f4 100%);
   --shell-border: rgba(76, 122, 91, 0.18);
   --shell-shadow:
-  0 0 0 1px rgba(255, 255, 255, 0.8) inset,
-  0 24px 60px rgba(34, 52, 41, 0.08), 0 0 20px rgba(76, 122, 91, 0.06);
+    0 0 0 1px rgba(255, 255, 255, 0.8) inset,
+    0 24px 60px rgba(34, 52, 41, 0.08), 0 0 20px rgba(76, 122, 91, 0.06);
   --shell-ring: linear-gradient(
-  135deg,
-  rgba(76, 122, 91, 0.24),
-  rgba(76, 122, 91, 0.04),
-  rgba(255, 255, 255, 0.6)
+    135deg,
+    rgba(76, 122, 91, 0.24),
+    rgba(76, 122, 91, 0.04),
+    rgba(255, 255, 255, 0.6)
   );
   --card-bg: linear-gradient(180deg, #ffffff 0%, #f7faf7 100%);
   --card-border: rgba(92, 112, 101, 0.18);
@@ -48,11 +48,11 @@
   --text-note: #66756e;
   --row-hover-border: rgba(76, 122, 91, 0.28);
   --row-hover-shadow:
-  inset 0 1px 0 rgba(255, 255, 255, 0.6), 0 14px 30px rgba(34, 52, 41, 0.08),
-  0 0 0 1px rgba(76, 122, 91, 0.04);
+    inset 0 1px 0 rgba(255, 255, 255, 0.6), 0 14px 30px rgba(34, 52, 41, 0.08),
+    0 0 0 1px rgba(76, 122, 91, 0.04);
   --row-focus-border: rgba(76, 122, 91, 0.45);
   --row-focus-shadow:
-  0 0 0 3px rgba(76, 122, 91, 0.14), 0 14px 30px rgba(34, 52, 41, 0.06);
+    0 0 0 3px rgba(76, 122, 91, 0.14), 0 14px 30px rgba(34, 52, 41, 0.06);
   --modal-bg: linear-gradient(180deg, #ffffff 0%, #f4f8f3 100%);
   --modal-overlay: rgba(18, 24, 20, 0.32);
   --scroll-thumb: rgba(95, 116, 107, 0.35);
@@ -82,9 +82,9 @@
   --shell-border: var(--color-border);
   --shell-shadow: none;
   --shell-ring: linear-gradient(
-  135deg,
-  rgba(34, 197, 94, 0.18),
-  rgba(31, 45, 36, 0.85)
+    135deg,
+    rgba(34, 197, 94, 0.18),
+    rgba(31, 45, 36, 0.85)
   );
   --card-bg: var(--color-surface);
   --card-border: var(--color-border);
@@ -122,24 +122,24 @@
 html,
 body,
 #root {
-  min-height: 100%;
+  min-height: 100vh;
 }
 
 body {
   font-family:
-  Inter,
-  system-ui,
-  -apple-system,
-  BlinkMacSystemFont,
-  "Segoe UI",
-  sans-serif;
+    Inter,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
 
   background: var(--page-bg);
   color: var(--color-text);
   line-height: 1.5;
   transition:
-  background 0.25s ease,
-  color 0.25s ease;
+    background 0.25s ease,
+    color 0.25s ease;
 }
 
 a {
@@ -289,8 +289,8 @@ img {
   padding: 0.75rem 1rem;
   border-radius: var(--radius-sm);
   transition:
-  background-color 0.2s ease,
-  border-color 0.2s ease;
+    background-color 0.2s ease,
+    border-color 0.2s ease;
 }
 
 .secondary-button:hover {
@@ -311,17 +311,16 @@ img {
 }
 
 .navbar {
-  height: 72px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 32px;
   border-bottom: 1px solid var(--shell-border);
-  background: var(--shell-bg);
+  background: var(--page-bg);
 }
 
 :root[data-theme="dark"] .navbar {
-  background: var(--color-surface-elevated);
+  background: var(--page-bg);
   border-bottom: 1px solid var(--color-border);
 }
 
@@ -366,10 +365,10 @@ img {
   color: var(--text-primary);
   box-shadow: none;
   transition:
-  transform 0.2s ease,
-  border-color 0.2s ease,
-  background-color 0.2s ease,
-  color 0.2s ease;
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    background-color 0.2s ease,
+    color 0.2s ease;
 }
 
 .navbarAccountButton:hover {
@@ -386,8 +385,8 @@ img {
   justify-content: center;
   border-radius: 999px;
   background:
-  linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent 100%),
-  var(--color-primary);
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent 100%),
+    var(--color-primary);
   color: #f8fbf8;
   font-size: 0.82rem;
   font-weight: 800;
@@ -461,9 +460,9 @@ img {
   font-weight: 700;
   text-align: left;
   transition:
-  transform 0.2s ease,
-  background-color 0.2s ease,
-  color 0.2s ease;
+    transform 0.2s ease,
+    background-color 0.2s ease,
+    color 0.2s ease;
 }
 
 .navbarMenuItem:hover {
@@ -495,17 +494,17 @@ img {
   position: absolute;
   inset: 0;
   background:
-  radial-gradient(
-  circle at top left,
-  rgba(176, 137, 104, 0.2),
-  transparent 28%
-  ),
-  radial-gradient(
-  circle at 82% 18%,
-  rgba(76, 122, 91, 0.26),
-  transparent 26%
-  ),
-  radial-gradient(circle at 70% 62%, rgba(76, 122, 91, 0.14), transparent 22%);
+    radial-gradient(
+      circle at top left,
+      rgba(176, 137, 104, 0.2),
+      transparent 28%
+    ),
+    radial-gradient(
+      circle at 82% 18%,
+      rgba(76, 122, 91, 0.26),
+      transparent 26%
+    ),
+    radial-gradient(circle at 70% 62%, rgba(76, 122, 91, 0.14), transparent 22%);
   pointer-events: none;
 }
 
@@ -577,11 +576,11 @@ img {
   border-radius: 16px;
   font-weight: 700;
   transition:
-  transform 0.2s ease,
-  border-color 0.2s ease,
-  background-color 0.2s ease,
-  color 0.2s ease,
-  box-shadow 0.2s ease;
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    background-color 0.2s ease,
+    color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .landingHeaderLink {
@@ -715,19 +714,19 @@ img {
   border: 1px solid var(--shell-border);
   border-radius: 34px;
   background:
-  radial-gradient(
-  circle at top left,
-  rgba(176, 137, 104, 0.12),
-  transparent 26%
-  ),
-  linear-gradient(
-  180deg,
-  rgba(14, 18, 16, 0.9) 0%,
-  rgba(9, 12, 11, 0.96) 100%
-  );
+    radial-gradient(
+      circle at top left,
+      rgba(176, 137, 104, 0.12),
+      transparent 26%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(14, 18, 16, 0.9) 0%,
+      rgba(9, 12, 11, 0.96) 100%
+    );
   box-shadow:
-  inset 0 1px 0 rgba(255, 255, 255, 0.05),
-  0 30px 60px rgba(0, 0, 0, 0.26);
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 30px 60px rgba(0, 0, 0, 0.26);
   color: #eef4ef;
 }
 
@@ -888,11 +887,11 @@ img {
   border-radius: 14px;
   font-weight: 700;
   transition:
-  transform 0.2s ease,
-  border-color 0.2s ease,
-  background-color 0.2s ease,
-  color 0.2s ease,
-  box-shadow 0.2s ease;
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    background-color 0.2s ease,
+    color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .landingFooterLink {
@@ -940,11 +939,11 @@ img {
   font-size: 0.95rem;
   font-weight: 700;
   transition:
-  background-color 0.2s ease,
-  border-color 0.2s ease,
-  color 0.2s ease,
-  transform 0.2s ease,
-  box-shadow 0.2s ease;
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .authBackLinkIcon {
@@ -981,11 +980,11 @@ img {
   border-radius: 30px;
   background: var(--shell-ring);
   -webkit-mask:
-  linear-gradient(#fff 0 0) content-box,
-  linear-gradient(#fff 0 0);
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
   mask:
-  linear-gradient(#fff 0 0) content-box,
-  linear-gradient(#fff 0 0);
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
   pointer-events: none;
@@ -1007,17 +1006,17 @@ img {
 .authBrandPanel {
   padding: 36px 40px;
   background:
-  radial-gradient(
-  circle at top left,
-  rgba(176, 137, 104, 0.18),
-  transparent 34%
-  ),
-  radial-gradient(
-  circle at bottom right,
-  rgba(76, 122, 91, 0.2),
-  transparent 32%
-  ),
-  linear-gradient(180deg, rgba(8, 15, 12, 0.12), rgba(8, 15, 12, 0.04));
+    radial-gradient(
+      circle at top left,
+      rgba(176, 137, 104, 0.18),
+      transparent 34%
+    ),
+    radial-gradient(
+      circle at bottom right,
+      rgba(76, 122, 91, 0.2),
+      transparent 32%
+    ),
+    linear-gradient(180deg, rgba(8, 15, 12, 0.12), rgba(8, 15, 12, 0.04));
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -1088,9 +1087,9 @@ img {
   border-radius: 18px;
   border: 1px solid var(--card-border);
   background: linear-gradient(
-  180deg,
-  rgba(255, 255, 255, 0.05) 0%,
-  rgba(255, 255, 255, 0.02) 100%
+    180deg,
+    rgba(255, 255, 255, 0.05) 0%,
+    rgba(255, 255, 255, 0.02) 100%
   );
 }
 
@@ -1128,9 +1127,9 @@ img {
   min-height: 100%;
   gap: 16px;
   background: linear-gradient(
-  180deg,
-  rgba(255, 255, 255, 0.02) 0%,
-  rgba(255, 255, 255, 0.01) 100%
+    180deg,
+    rgba(255, 255, 255, 0.02) 0%,
+    rgba(255, 255, 255, 0.01) 100%
   );
 }
 
@@ -1146,14 +1145,14 @@ img {
   box-sizing: border-box;
   align-content: start;
   background: linear-gradient(
-  180deg,
-  rgba(255, 255, 255, 0.06) 0%,
-  rgba(255, 255, 255, 0.02) 100%
+    180deg,
+    rgba(255, 255, 255, 0.06) 0%,
+    rgba(255, 255, 255, 0.02) 100%
   );
   border: 1px solid var(--card-border);
   box-shadow:
-  inset 0 1px 0 rgba(255, 255, 255, 0.04),
-  0 24px 50px rgba(0, 0, 0, 0.16);
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 24px 50px rgba(0, 0, 0, 0.16);
   backdrop-filter: blur(14px);
 }
 
@@ -1205,9 +1204,9 @@ img {
   color: var(--text-muted-strong);
   font-weight: 700;
   transition:
-  background-color 0.2s ease,
-  color 0.2s ease,
-  transform 0.2s ease;
+    background-color 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease;
 }
 
 .authModeButton.active {
@@ -1241,9 +1240,9 @@ img {
   color: var(--text-primary);
   outline: none;
   transition:
-  border-color 0.2s ease,
-  box-shadow 0.2s ease,
-  background-color 0.2s ease;
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background-color 0.2s ease;
 }
 
 .authInput::placeholder {
@@ -1306,16 +1305,16 @@ img {
   min-height: 50px;
   border-radius: 16px;
   background:
-  linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent 100%),
-  var(--color-primary);
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent 100%),
+    var(--color-primary);
   color: #f8fbf8;
   font-weight: 800;
   letter-spacing: 0.01em;
   box-shadow: 0 18px 34px rgba(76, 122, 91, 0.24);
   transition:
-  transform 0.2s ease,
-  box-shadow 0.2s ease,
-  background-color 0.2s ease;
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    background-color 0.2s ease;
 }
 
 .authPrimaryButton:hover:not(:disabled) {
@@ -1356,6 +1355,8 @@ img {
   margin: 0 auto;
   padding: var(--space-5) var(--space-5) var(--space-7);
   box-sizing: border-box;
+  min-height: calc(100vh - 72px);
+  background: transparent;
 }
 
 /* Shared shell styling */
@@ -1376,11 +1377,11 @@ img {
   padding: 1px;
   background: var(--shell-ring);
   -webkit-mask:
-  linear-gradient(#fff 0 0) content-box,
-  linear-gradient(#fff 0 0);
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
   mask:
-  linear-gradient(#fff 0 0) content-box,
-  linear-gradient(#fff 0 0);
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
   pointer-events: none;
@@ -1396,14 +1397,14 @@ img {
 }
 
 :root[data-theme="dark"]
-:is(
-.dashboardCard,
-.toolbarCard,
-.statsCard,
-.cowListCard,
-.cowRowCard,
-.card
-) {
+  :is(
+    .dashboardCard,
+    .toolbarCard,
+    .statsCard,
+    .cowListCard,
+    .cowRowCard,
+    .card
+  ) {
   background: var(--color-surface);
   border-color: var(--color-border);
   box-shadow: none;
@@ -1428,6 +1429,7 @@ body,
 
 html {
   box-sizing: border-box;
+  background: var(--page-bg);
 }
 
 *,
@@ -1439,6 +1441,8 @@ html {
 body {
   margin: 0;
   overflow-x: hidden;
+  min-height: 100%;
+  background: var(--page-bg);
 }
 
 :is(.cowDetailPage, .allCowsPage) {
@@ -1661,7 +1665,6 @@ body {
   }
 
   .navbar {
-    min-height: 72px;
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
@@ -1836,28 +1839,28 @@ body {
   }
 
   :is(
-  .navbar-left,
-  .navbarAccountName,
-  .navbarUserEmail,
-  .landingBrandName,
-  .landingBrandTag,
-  .landingTitle,
-  .landingLead,
-  .landingFeaturePill,
-  .landingShowcaseItem strong,
-  .landingShowcaseFooter p,
-  .landingFooterName,
-  .landingFooterTagline,
-  .landingFooterCopyright,
-  .authTitle,
-  .authLead,
-  .authFormTitle,
-  .authFormCopy,
-  .authHighlightValue,
-  .authHighlightLabel,
-  .authFeatureCard,
-  .authMessage,
-  .authFormFootnote
+    .navbar-left,
+    .navbarAccountName,
+    .navbarUserEmail,
+    .landingBrandName,
+    .landingBrandTag,
+    .landingTitle,
+    .landingLead,
+    .landingFeaturePill,
+    .landingShowcaseItem strong,
+    .landingShowcaseFooter p,
+    .landingFooterName,
+    .landingFooterTagline,
+    .landingFooterCopyright,
+    .authTitle,
+    .authLead,
+    .authFormTitle,
+    .authFormCopy,
+    .authHighlightValue,
+    .authHighlightLabel,
+    .authFeatureCard,
+    .authMessage,
+    .authFormFootnote
   ) {
     overflow-wrap: anywhere;
     word-break: break-word;
