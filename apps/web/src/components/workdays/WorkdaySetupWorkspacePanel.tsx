@@ -10,7 +10,7 @@ type WorkdaySetupWorkspacePanelProps = {
   removingActionId: string | null;
   assignments: WorkdayCowAssignment[];
   removingCowId: string | null;
-  actionInputRef: RefObject<HTMLInputElement>;
+  actionInputRef: RefObject<HTMLInputElement | null>;
   onActionNameChange: (value: string) => void;
   onAddAction: () => void;
   onRemoveAction: (actionId: string) => void;
