@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import type { KeyboardEvent } from "react";
+import type { KeyboardEvent, RefObject } from "react";
 import type { WorkdayAction, WorkdayCowAssignment } from "../../types/workday";
 
 type WorkdaySetupWorkspacePanelProps = {
@@ -10,6 +10,7 @@ type WorkdaySetupWorkspacePanelProps = {
   removingActionId: string | null;
   assignments: WorkdayCowAssignment[];
   removingCowId: string | null;
+  actionInputRef: RefObject<HTMLInputElement>;
   onActionNameChange: (value: string) => void;
   onAddAction: () => void;
   onRemoveAction: (actionId: string) => void;
@@ -25,6 +26,7 @@ function WorkdaySetupWorkspacePanel({
   removingActionId,
   assignments,
   removingCowId,
+  actionInputRef,
   onActionNameChange,
   onAddAction,
   onRemoveAction,
@@ -38,13 +40,13 @@ function WorkdaySetupWorkspacePanel({
           <h2 className="sectionTitle">Workday Actions</h2>
           <div className="workdayWorkspaceToolbar action-input-row">
             <input
+              ref={actionInputRef}
               type="text"
               className="searchInput workdayWorkspaceInput"
               placeholder="Add action (e.g. Vaccinate)"
               value={actionName}
               onChange={(event) => onActionNameChange(event.target.value)}
               onKeyDown={onActionInputKeyDown}
-              disabled={addingAction}
             />
             <button
               type="button"

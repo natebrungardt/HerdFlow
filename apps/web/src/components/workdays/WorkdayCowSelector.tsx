@@ -5,7 +5,6 @@ type WorkdayCowSelectorProps = {
   loading: boolean;
   error: string;
   searchTerm: string;
-  addingCowIds: string[];
   activeHealthStatuses: string[];
   activeLivestockGroups: string[];
   activeSexes: string[];
@@ -27,7 +26,6 @@ function WorkdayCowSelector({
   loading,
   error,
   searchTerm,
-  addingCowIds,
   activeHealthStatuses,
   activeLivestockGroups,
   activeSexes,
@@ -113,24 +111,12 @@ function WorkdayCowSelector({
           <p className="emptyState">No cows match your search.</p>
         ) : (
           cows.map((cow) => {
-            const isAdding = addingCowIds.includes(cow.id);
-            const rowClassName = `cowRowCard workdaySelectableRow cow-card ${
-              isAdding ? "workdaySelectableRowPending" : ""
-            }`.trim();
-
-            const badgeClassName = isAdding
-              ? "statusPill"
-              : "statusPill needsTreatment";
-
-            const badgeLabel = isAdding ? "Adding..." : "Add";
-
             return (
               <button
                 key={cow.id}
                 type="button"
-                className={rowClassName}
+                className="cowRowCard workdaySelectableRow cow-card"
                 onClick={() => onAddCow(cow.id)}
-                disabled={isAdding}
               >
                 <div className="cowRowMain cow-card-content">
                   <div className="cowRowTitle">Tag #{cow.tagNumber}</div>
@@ -146,7 +132,7 @@ function WorkdayCowSelector({
                 </div>
 
                 <div className="cowRowActions">
-                  <div className={badgeClassName}>{badgeLabel}</div>
+                  <div className="statusPill needsTreatment">Add</div>
                 </div>
               </button>
             );

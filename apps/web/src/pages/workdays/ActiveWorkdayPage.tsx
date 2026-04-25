@@ -39,7 +39,6 @@ type GridContainerProps = {
   completedCows: WorkdayCowAssignment[];
   completions: CompletionMap;
   onToggle: (cowId: string, actionId: string) => void;
-  onSelectAllActions: (cowId: string, markDone: boolean) => void;
   onDoneToggle: (cowId: string, nextDone: boolean) => void;
   openNoteCowId: string | null;
   noteText: string;
@@ -65,7 +64,6 @@ type GridBodyProps = {
   actions: WorkdayAction[];
   completions: CompletionMap;
   onToggle: (cowId: string, actionId: string) => void;
-  onSelectAllActions: (cowId: string, markDone: boolean) => void;
   onDoneToggle: (cowId: string, nextDone: boolean) => void;
   openNoteCowId: string | null;
   noteText: string;
@@ -83,7 +81,6 @@ type RowProps = {
   actions: WorkdayAction[];
   completions: CompletionMap;
   onToggle: (cowId: string, actionId: string) => void;
-  onSelectAllActions: (cowId: string, markDone: boolean) => void;
   onDoneToggle: (cowId: string, nextDone: boolean) => void;
   isNoteOpen: boolean;
   noteText: string;
@@ -193,9 +190,6 @@ function GridHeader({
       <div className="active-grid-done-header" role="columnheader">
         Complete
       </div>
-      <div className="active-grid-all-actions-header" role="columnheader">
-        All Actions
-      </div>
       <div className="active-grid-cow-header" role="columnheader">
         Tag #
       </div>
@@ -247,7 +241,6 @@ function Row({
   actions,
   completions,
   onToggle,
-  onSelectAllActions,
   onDoneToggle,
   isNoteOpen,
   noteText,
@@ -268,12 +261,6 @@ function Row({
     top: number;
     left: number;
   } | null>(null);
-  const actionIds = actions.map((action) => action.id);
-  const completedCount = actionIds.filter(
-    (actionId) => completions[cow.cowId]?.[actionId],
-  ).length;
-  const totalCount = actionIds.length;
-  const isAll = totalCount > 0 && completedCount === totalCount;
 
   useEffect(() => {
     if (!isNoteOpen) {
@@ -322,12 +309,6 @@ function Row({
     onDoneToggle(cow.cowId, !isDone);
   }
 
-  function handleAllActions() {
-    if (totalCount > 0 || isDone) {
-      onSelectAllActions(cow.cowId, !isDone);
-    }
-  }
-
   return (
     <div className="active-grid-row-shell" ref={rowContainerRef}>
       <div
@@ -345,15 +326,6 @@ function Row({
             className={`active-grid-circle${isDone ? " complete" : ""}`}
             onClick={handleDoneToggle}
           />
-        </div>
-        <div className="active-grid-all-actions">
-          <button
-            type="button"
-            className="active-grid-all-actions-btn"
-            onClick={handleAllActions}
-          >
-            {isAll ? "Clear" : "Select"}
-          </button>
         </div>
         <div
           className="active-grid-cow"
@@ -463,7 +435,6 @@ function GridBody({
   actions,
   completions,
   onToggle,
-  onSelectAllActions,
   onDoneToggle,
   openNoteCowId,
   noteText,
@@ -484,7 +455,6 @@ function GridBody({
           actions={actions}
           completions={completions}
           onToggle={onToggle}
-          onSelectAllActions={onSelectAllActions}
           onDoneToggle={onDoneToggle}
           isNoteOpen={openNoteCowId === cow.cowId}
           noteText={noteText}
@@ -499,15 +469,10 @@ function GridBody({
         />
       ))}
       {completedCows.length > 0 ? (
-        <div className="active-grid-row active-grid-divider-row" role="row">
-          <div className="active-grid-done active-grid-divider-sticky" />
-          <div className="active-grid-all-actions active-grid-divider-sticky" />
-          <div className="active-grid-cow active-grid-divider-label" role="rowheader">
+        <div className="active-grid-divider-row" role="separator">
+          <span className="active-grid-divider-label">
             Completed ({completedCows.length})
-          </div>
-          {actions.map((action) => (
-            <div key={action.id} className="active-grid-cell" role="gridcell" />
-          ))}
+          </span>
         </div>
       ) : null}
       {completedCows.map((cow) => (
@@ -517,7 +482,6 @@ function GridBody({
           actions={actions}
           completions={completions}
           onToggle={onToggle}
-          onSelectAllActions={onSelectAllActions}
           onDoneToggle={onDoneToggle}
           isNoteOpen={openNoteCowId === cow.cowId}
           noteText={noteText}
@@ -541,7 +505,6 @@ function GridContainer({
   completedCows,
   completions,
   onToggle,
-  onSelectAllActions,
   onDoneToggle,
   openNoteCowId,
   noteText,
@@ -611,7 +574,6 @@ function GridContainer({
           actions={actions}
           completions={completions}
           onToggle={onToggle}
-          onSelectAllActions={onSelectAllActions}
           onDoneToggle={onDoneToggle}
           openNoteCowId={openNoteCowId}
           noteText={noteText}
@@ -742,66 +704,6 @@ function ActiveWorkdayPage() {
         },
       };
     });
-  }
-
-  function handleSelectAllActions(
-    cowId: string,
-    markDone: boolean,
-  ) {
-    if (!isGuid(id)) {
-      return;
-    }
-
-    const actionIds = actions.map((action) => action.id);
-    const previousCompletionState = completions[cowId] ?? {};
-    const completedCount = actionIds.filter(
-      (actionId) => previousCompletionState[actionId],
-    ).length;
-    const totalCount = actionIds.length;
-    const shouldCompleteAll = completedCount < totalCount;
-
-    if (totalCount === 0) {
-      if (markDone) {
-        handleDoneToggle(cowId, true);
-      }
-
-      return;
-    }
-    setCompletions((prev) => {
-      return {
-        ...prev,
-        [cowId]: Object.fromEntries(
-          actionIds.map((actionId) => [actionId, shouldCompleteAll]),
-        ),
-      };
-    });
-
-    if (shouldCompleteAll && markDone) {
-      handleDoneToggle(cowId, true);
-    }
-
-    void (async () => {
-      try {
-        for (let i = 0; i < actionIds.length; i += 10) {
-          const batch = actionIds.slice(i, i + 10);
-
-          await Promise.all(
-            batch.map((actionId) =>
-              setEntryCompletion(id, cowId, actionId, shouldCompleteAll),
-            ),
-          );
-        }
-      } catch (err) {
-        setCompletions((prev) => ({
-          ...prev,
-          [cowId]: previousCompletionState,
-        }));
-
-        const message =
-          err instanceof Error ? err.message : "Failed to save completion";
-      setError(message);
-      }
-    })();
   }
 
   function handleDoneToggle(cowId: string, nextDone: boolean) {
@@ -992,7 +894,6 @@ function ActiveWorkdayPage() {
               completedCows={completedCows}
               completions={completions}
               onToggle={handleToggle}
-              onSelectAllActions={handleSelectAllActions}
               onDoneToggle={handleDoneToggle}
               openNoteCowId={openNoteCowId}
               noteText={noteText}

@@ -5,7 +5,6 @@ type WorkdayAddCowsPanelProps = {
   filteredAvailableCows: Cow[];
   loading: boolean;
   searchTerm: string;
-  addingCowIds: string[];
   activeHealthStatuses: string[];
   activeLivestockGroups: string[];
   activeSexes: string[];
@@ -26,7 +25,6 @@ function WorkdayAddCowsPanel({
   filteredAvailableCows,
   loading,
   searchTerm,
-  addingCowIds,
   activeHealthStatuses,
   activeLivestockGroups,
   activeSexes,
@@ -55,7 +53,6 @@ function WorkdayAddCowsPanel({
           loading={loading}
           error=""
           searchTerm={searchTerm}
-          addingCowIds={addingCowIds}
           activeHealthStatuses={activeHealthStatuses}
           activeLivestockGroups={activeLivestockGroups}
           activeSexes={activeSexes}

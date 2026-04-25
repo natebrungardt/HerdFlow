@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { Dispatch, SetStateAction } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Modal from "../../components/shared/Modal";
@@ -75,7 +75,6 @@ function WorkdayPage() {
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState("Saved");
-  const [addingCowIds, setAddingCowIds] = useState<string[]>([]);
   const [addingAction, setAddingAction] = useState(false);
   const [startingWorkday, setStartingWorkday] = useState(false);
   const [removingActionId, setRemovingActionId] = useState<string | null>(null);
@@ -85,6 +84,7 @@ function WorkdayPage() {
   >(null);
   const [removeSuccessMessage, setRemoveSuccessMessage] = useState("");
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const actionInputRef = useRef<HTMLInputElement>(null);
 
   const healthStatusFilters = ["Healthy", "Needs Treatment"];
   const livestockGroupFilters = livestockGroupOptions.map(
@@ -405,39 +405,41 @@ function WorkdayPage() {
     event.currentTarget.blur();
   }
 
-  async function handleAddCow(cowId: string) {
-    if (!workday || addingCowIds.includes(cowId) || assignedCowIds.has(cowId)) {
+  function handleAddCow(cowId: string) {
+    if (!workday || assignedCowIds.has(cowId)) {
       return;
     }
 
+    if (!appendAssignedCow(cowId)) {
+      return;
+    }
+
+    setError("");
     const startedAt = performance.now();
     logWorkdayMutation("addCow:start", { workdayId: workday.id, cowId });
-    setAddingCowIds((current) => [...current, cowId]);
-    setError("");
 
-    try {
-      await addCowsToWorkday(workday.id, [cowId]);
-      logWorkdayMutation("addCow:mutationResponse", {
-        workdayId: workday.id,
-        cowId,
-        elapsedMs: Math.round(performance.now() - startedAt),
+    void addCowsToWorkday(workday.id, [cowId])
+      .then(() => {
+        logWorkdayMutation("addCow:mutationResponse", {
+          workdayId: workday.id,
+          cowId,
+          elapsedMs: Math.round(performance.now() - startedAt),
+        });
+        void refreshWorkday();
+      })
+      .catch((err) => {
+        removeAssignedCow(cowId);
+        const message =
+          err instanceof Error ? err.message : "Failed to add cow to workday";
+        setError(message);
+      })
+      .finally(() => {
+        logWorkdayMutation("addCow:done", {
+          workdayId: workday.id,
+          cowId,
+          elapsedMs: Math.round(performance.now() - startedAt),
+        });
       });
-      appendAssignedCow(cowId);
-      void refreshWorkday();
-    } catch (err) {
-      const message =
-        err instanceof Error ? err.message : "Failed to add cows to workday";
-      setError(message);
-    } finally {
-      setAddingCowIds((current) =>
-        current.filter((currentCowId) => currentCowId !== cowId),
-      );
-      logWorkdayMutation("addCow:done", {
-        workdayId: workday.id,
-        cowId,
-        elapsedMs: Math.round(performance.now() - startedAt),
-      });
-    }
   }
 
   async function handleRemoveCow(cowId: string) {
@@ -476,7 +478,7 @@ function WorkdayPage() {
   }
 
   async function handleAddAction() {
-    if (!workday || actionName.trim().length === 0) return;
+    if (!workday || addingAction || actionName.trim().length === 0) return;
 
     const startedAt = performance.now();
     const trimmedActionName = actionName.trim();
@@ -504,6 +506,7 @@ function WorkdayPage() {
       setActionError(message);
     } finally {
       setAddingAction(false);
+      actionInputRef.current?.focus();
       logWorkdayMutation("addAction:done", {
         workdayId: workday.id,
         elapsedMs: Math.round(performance.now() - startedAt),
@@ -691,6 +694,7 @@ function WorkdayPage() {
                 removingActionId={removingActionId}
                 assignments={workday.workdayCows ?? []}
                 removingCowId={removingAssignedCowId}
+                actionInputRef={actionInputRef}
                 onActionNameChange={setActionName}
                 onAddAction={handleAddAction}
                 onRemoveAction={handleRemoveAction}
@@ -704,7 +708,6 @@ function WorkdayPage() {
             filteredAvailableCows={filteredAvailableCows}
             loading={cowLoading}
             searchTerm={searchTerm}
-            addingCowIds={addingCowIds}
             activeHealthStatuses={activeHealthStatuses}
             activeLivestockGroups={activeLivestockGroups}
             activeSexes={activeSexes}

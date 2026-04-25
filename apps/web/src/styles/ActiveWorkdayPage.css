@@ -155,29 +155,6 @@
   flex: 0 0 90px;
 }
 
-.active-grid-all-actions-header {
-  width: 90px;
-  min-width: 90px;
-  max-width: 90px;
-  position: sticky;
-  left: 90px;
-  background: var(--active-grid-sticky-bg);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  padding: 0 6px;
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  box-sizing: border-box;
-  border-right: 1px solid var(--color-border);
-  z-index: 30;
-  flex: 0 0 90px;
-  text-align: center;
-}
 
 .active-grid-row {
   display: flex;
@@ -228,16 +205,13 @@
 :root[data-theme="dark"] .completed-row > div,
 :root[data-theme="dark"] .completed-row .active-grid-cell,
 :root[data-theme="dark"] .completed-row .active-grid-cow,
-:root[data-theme="dark"] .completed-row .active-grid-done,
-:root[data-theme="dark"] .completed-row .active-grid-all-actions {
+:root[data-theme="dark"] .completed-row .active-grid-done {
   background-color: #0f1f17 !important;
 }
 
 .active-grid-done,
-.active-grid-all-actions,
 .active-grid-cow,
 .active-grid-done-header,
-.active-grid-all-actions-header,
 .active-grid-cow-header {
   background: var(--active-grid-sticky-bg) !important;
   opacity: 1 !important;
@@ -246,9 +220,6 @@
 }
 
 :root[data-theme="dark"] .active-grid-row.completed-row .active-grid-done,
-:root[data-theme="dark"]
-.active-grid-row.completed-row
-.active-grid-all-actions,
 :root[data-theme="dark"] .active-grid-row.completed-row .active-grid-cow {
   background-color: #0f1f17 !important;
 }
@@ -263,15 +234,11 @@
 :root[data-theme="dark"] .completed-row:hover > div,
 :root[data-theme="dark"] .completed-row:hover .active-grid-cell,
 :root[data-theme="dark"] .completed-row:hover .active-grid-cow,
-:root[data-theme="dark"] .completed-row:hover .active-grid-done,
-:root[data-theme="dark"] .completed-row:hover .active-grid-all-actions {
+:root[data-theme="dark"] .completed-row:hover .active-grid-done {
   background-color: #13261d !important;
 }
 
 :root[data-theme="dark"] .active-grid-row.completed-row:hover .active-grid-done,
-:root[data-theme="dark"]
-.active-grid-row.completed-row:hover
-.active-grid-all-actions,
 :root[data-theme="dark"] .active-grid-row.completed-row:hover .active-grid-cow {
   background-color: #13261d !important;
 }
@@ -303,7 +270,7 @@
 }
 
 .active-grid-cow {
-  left: 180px;
+  left: 90px;
   height: 100%;
   font-size: 14px;
   font-weight: 500;
@@ -364,7 +331,7 @@
 }
 
 .active-grid-cow-header {
-  left: 180px;
+  left: 90px;
   height: 100%;
   font-size: 13px;
   font-weight: 600;
@@ -380,60 +347,33 @@
 
 .active-grid-divider-row {
   display: flex;
-  align-items: stretch;
+  align-items: center;
   width: 100%;
-  min-width: max-content;
-  height: 30px;
-  border-top: none;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  background: rgba(0, 0, 0, 0.06);
+  min-width: 100%;
+  height: 36px;
   position: relative;
   z-index: 5;
+  padding: 0 16px;
+  box-sizing: border-box;
+  border-bottom: 1px solid var(--color-border);
 }
 
-:root[data-theme="dark"] .active-grid-divider-row {
-  background-color: #0c1a13 !important;
-}
-
-:root[data-theme="dark"] .active-grid-divider-sticky {
-  background-color: #0c1a13 !important;
-}
-
-:root[data-theme="dark"] .active-grid-divider-row > div {
-  background-color: #0c1a13 !important;
-}
-
-.active-grid-divider-row > div {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  flex-shrink: 0;
-}
-
-.active-grid-divider-sticky {
-  background: rgba(0, 0, 0, 0.06);
-}
-
-.active-grid-divider-row .active-grid-cell {
-  flex: 0 0 var(--active-grid-cell-width);
-  min-width: var(--active-grid-cell-width);
+.active-grid-divider-row::before,
+.active-grid-divider-row::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--color-border);
 }
 
 .active-grid-divider-label {
   font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;
-  opacity: 0.85;
-  letter-spacing: 0.06em;
   color: var(--text-secondary);
-  letter-spacing: 0.04em;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex: 0 0 var(--active-grid-cow-width);
-  background: inherit;
-  border-right: 1px solid var(--color-border);
+  letter-spacing: 0.06em;
+  padding: 0 12px;
+  white-space: nowrap;
 }
 
 .active-grid-done {
@@ -453,35 +393,6 @@
   box-shadow: 2px 0 6px rgba(0, 0, 0, 0.04);
 }
 
-.active-grid-all-actions {
-  width: 90px;
-  min-width: 90px;
-  max-width: 90px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: sticky;
-  left: 90px;
-  background: var(--active-grid-sticky-bg);
-  box-sizing: border-box;
-  border-right: 1px solid var(--color-border);
-  z-index: 21;
-  flex: 0 0 90px;
-  box-shadow: 2px 0 6px rgba(0, 0, 0, 0.04);
-}
-
-.active-grid-all-actions-btn {
-  font-size: 12px;
-  padding: 4px 8px;
-  border-radius: 999px;
-  border: 1px solid var(--color-border);
-  background: var(--color-surface);
-  cursor: pointer;
-}
-
-.active-grid-all-actions-btn:hover {
-  background: var(--color-hover);
-}
 
 .active-grid-cell {
   flex: 0 0 var(--active-grid-cell-width);
@@ -588,13 +499,6 @@
   --active-grid-complete: #22c55e;
 }
 
-:root[data-theme="light"] .active-grid-divider-row {
-  background: #e5e7eb;
-}
-
-:root[data-theme="light"] .active-grid-divider-sticky {
-  background: #e5e7eb;
-}
 
 .btn-ghost {
   background: none;
@@ -639,7 +543,6 @@
   :is(
   .active-grid-header-cell,
   .active-grid-done-header,
-  .active-grid-all-actions-header,
   .active-grid-cow-content span,
   .active-grid-divider-label,
   .active-grid-note-title,
@@ -686,23 +589,16 @@
   }
 
   .active-grid-done,
-  .active-grid-done-header,
-  .active-grid-all-actions,
-  .active-grid-all-actions-header {
+  .active-grid-done-header {
     width: 72px;
     min-width: 72px;
     max-width: 72px;
     flex-basis: 72px;
   }
 
-  .active-grid-all-actions,
-  .active-grid-all-actions-header {
-    left: 72px;
-  }
-
   .active-grid-cow,
   .active-grid-cow-header {
-    left: 144px;
+    left: 72px;
   }
 
   .active-grid-cow-content span {
