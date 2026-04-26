@@ -449,7 +449,7 @@ function CowDetailPage() {
           id="ownerName"
           name="ownerName"
           className="cardInput"
-          value={formData.ownerName}
+          value={formData.ownerName ?? ""}
           onChange={handleChange}
           placeholder="Enter owner name"
         />
