@@ -33,7 +33,7 @@ public class CowController : ControllerBase
     {
         var csv = await _cowService.ExportCowsCsvAsync();
         var fileName = $"herd-export-{DateOnly.FromDateTime(DateTime.UtcNow):yyyy-MM-dd}.csv";
-        return File(Encoding.UTF8.GetBytes(csv), "text/csv; charset=utf-8", fileName);
+        return File(new UTF8Encoding(true).GetBytes(csv), "text/csv; charset=utf-8", fileName);
     }
 
     [HttpGet("{id:guid}")]

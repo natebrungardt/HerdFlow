@@ -76,7 +76,10 @@ function buildExportFilename(defaultFileName: string, farmName?: string): string
   const extension =
     extensionIndex >= 0 ? defaultFileName.slice(extensionIndex) : ".csv";
 
-  return `${farmSlug}-herd-data${extension}`;
+  const dateMatch = defaultFileName.match(/(\d{4}-\d{2}-\d{2})/);
+  const datePart = dateMatch ? `-${dateMatch[1]}` : "";
+
+  return `${farmSlug}-herd-data${datePart}${extension}`;
 }
 
 function prependFarmMetadata(csvText: string, farmName?: string): string {
@@ -84,7 +87,8 @@ function prependFarmMetadata(csvText: string, farmName?: string): string {
     return csvText;
   }
 
-  return `Farm Name,${JSON.stringify(farmName)}\n\n${csvText}`;
+  const escaped = farmName.replace(/"/g, '""');
+  return `Farm Name,"${escaped}"\n\n${csvText}`;
 }
 
 export async function exportCowsCsv(

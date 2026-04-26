@@ -275,7 +275,6 @@ public class CowService
         foreach (var cow in cows)
         {
             var notes = string.Join(" | ", cow.Notes
-                .OrderBy(n => n.CreatedAt)
                 .Select(n => $"{n.CreatedAt:yyyy-MM-dd}: {n.Content.Trim()}"));
 
             builder.AppendLine(string.Join(",",
