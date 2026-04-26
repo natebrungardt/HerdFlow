@@ -15,7 +15,6 @@ function Finances() {
           <section className="dashboardCard">
             <div className="dataCardHeader">
               <h2 className="cardTitle">Coming Soon</h2>
-              <span className="cardSubtle">Post-launch roadmap</span>
             </div>
 
             <p className="emptyState">
