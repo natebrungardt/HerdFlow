@@ -185,6 +185,47 @@ export async function restoreCow(id: string): Promise<void> {
   });
 }
 
+export type ImportResult = {
+  importedCount: number;
+  skippedRows: ImportSkippedRow[];
+  warningRows: ImportWarningRow[];
+};
+
+export type ImportSkippedRow = {
+  rowNumber: number;
+  reason: string;
+  tagNumber: string | null;
+};
+
+export type ImportWarningRow = {
+  rowNumber: number;
+  field: string;
+  message: string;
+};
+
+export async function downloadImportTemplate(): Promise<void> {
+  const response = await apiFetch("/cows/import/template");
+  const blob = await response.blob();
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = "herd-import-template.csv";
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
+export async function importCowsCsv(file: File): Promise<ImportResult> {
+  const formData = new FormData();
+  formData.append("file", file);
+  const response = await apiFetch("/cows/import", {
+    method: "POST",
+    body: formData,
+  });
+  return response.json();
+}
+
 export async function updateCow(
   id: string,
   cowData: CreateCowInput,

@@ -606,6 +606,436 @@ public class CowService
         };
     }
 
+    public static string GetImportTemplateCsv()
+    {
+        var builder = new StringBuilder();
+        builder.AppendLine(string.Join(",",
+            EscapeCsv("Tag Number"),
+            EscapeCsv("Owner Name"),
+            EscapeCsv("Livestock Group"),
+            EscapeCsv("Sex"),
+            EscapeCsv("Breed"),
+            EscapeCsv("Name"),
+            EscapeCsv("Color"),
+            EscapeCsv("Date of Birth"),
+            EscapeCsv("Birth Weight"),
+            EscapeCsv("Ease of Birth"),
+            EscapeCsv("Sire"),
+            EscapeCsv("Dam"),
+            EscapeCsv("Health Status"),
+            EscapeCsv("Heat Status"),
+            EscapeCsv("Pregnancy Status"),
+            EscapeCsv("Has Calf"),
+            EscapeCsv("Purchase Price"),
+            EscapeCsv("Sale Price"),
+            EscapeCsv("Purchase Date"),
+            EscapeCsv("Sale Date"),
+            EscapeCsv("Notes")));
+
+        builder.AppendLine(string.Join(",",
+            EscapeCsv("T-101"),
+            EscapeCsv("Smith Ranch"),
+            EscapeCsv("Breeding"),
+            EscapeCsv("Female"),
+            EscapeCsv("Angus"),
+            EscapeCsv("Bessie"),
+            EscapeCsv("Black"),
+            EscapeCsv("2021-03-15"),
+            EscapeCsv("85"),
+            EscapeCsv("Easy"),
+            EscapeCsv("T-055"),
+            EscapeCsv("T-062"),
+            EscapeCsv("Healthy"),
+            EscapeCsv("None"),
+            EscapeCsv("Pregnant"),
+            EscapeCsv("No"),
+            EscapeCsv("1500"),
+            EscapeCsv(""),
+            EscapeCsv("2022-01-10"),
+            EscapeCsv(""),
+            EscapeCsv("First calf expected in spring")));
+
+        return builder.ToString();
+    }
+
+    public async Task<ImportResultDto> ImportCowsCsvAsync(IFormFile file)
+    {
+        var userId = GetCurrentUserId();
+        var result = new ImportResultDto();
+
+        string csvContent;
+        using (var reader = new StreamReader(file.OpenReadStream(), Encoding.UTF8))
+        {
+            csvContent = await reader.ReadToEndAsync();
+        }
+
+        var lines = csvContent.ReplaceLineEndings("\n").Split('\n');
+        if (lines.Length == 0)
+            return result;
+
+        var headerLine = lines[0];
+        var headers = ParseCsvLine(headerLine);
+        var columnMap = headers
+            .Select((h, i) => (Header: h.Trim(), Index: i))
+            .ToDictionary(x => x.Header, x => x.Index, StringComparer.OrdinalIgnoreCase);
+
+        if (!columnMap.ContainsKey("Tag Number"))
+        {
+            result.SkippedRows.Add(new ImportSkippedRowDto
+            {
+                RowNumber = 1,
+                Reason = "File does not appear to be a valid HerdFlow import template. \"Tag Number\" column not found.",
+            });
+            return result;
+        }
+
+        var existingTagNumbers = (await _context.Cows
+            .AsNoTracking()
+            .Where(c => c.UserId == userId)
+            .Select(c => c.TagNumber)
+            .ToListAsync())
+            .ToHashSet(StringComparer.Ordinal);
+
+        var cowsToInsert = new List<Cow>();
+        var notesToInsert = new List<(Cow Cow, string NoteContent)>();
+
+        for (var lineIndex = 1; lineIndex < lines.Length; lineIndex++)
+        {
+            var line = lines[lineIndex];
+            if (string.IsNullOrWhiteSpace(line))
+                continue;
+
+            var rowNumber = lineIndex + 1;
+            var fields = ParseCsvLine(line);
+            var warnings = new List<ImportWarningRowDto>();
+
+            string GetField(string columnName)
+            {
+                if (!columnMap.TryGetValue(columnName, out var idx) || idx >= fields.Count)
+                    return string.Empty;
+                return fields[idx].Trim();
+            }
+
+            var tagNumber = GetField("Tag Number");
+
+            if (string.IsNullOrWhiteSpace(tagNumber))
+            {
+                result.SkippedRows.Add(new ImportSkippedRowDto
+                {
+                    RowNumber = rowNumber,
+                    Reason = "Tag number is required.",
+                });
+                continue;
+            }
+
+            tagNumber = tagNumber.Trim();
+
+            if (!TagNumberPattern.IsMatch(tagNumber))
+            {
+                result.SkippedRows.Add(new ImportSkippedRowDto
+                {
+                    RowNumber = rowNumber,
+                    Reason = "Tag number contains invalid characters. Only letters, numbers, and dashes are allowed.",
+                    TagNumber = tagNumber,
+                });
+                continue;
+            }
+
+            if (existingTagNumbers.Contains(tagNumber))
+            {
+                result.SkippedRows.Add(new ImportSkippedRowDto
+                {
+                    RowNumber = rowNumber,
+                    Reason = "Tag number already exists.",
+                    TagNumber = tagNumber,
+                });
+                continue;
+            }
+
+            var ownerName = NullIfEmpty(GetField("Owner Name"));
+            var sex = NullIfEmpty(GetField("Sex"));
+            var breed = NullIfEmpty(GetField("Breed"));
+            var name = NullIfEmpty(GetField("Name"));
+            var color = NullIfEmpty(GetField("Color"));
+            var easeOfBirth = NullIfEmpty(GetField("Ease of Birth"));
+            var sireName = NullIfEmpty(GetField("Sire"));
+            var damName = NullIfEmpty(GetField("Dam"));
+            var pregnancyStatus = NullIfEmpty(GetField("Pregnancy Status"));
+            var notesValue = NullIfEmpty(GetField("Notes"));
+
+            LivestockGroupType? livestockGroup = null;
+            var livestockGroupStr = GetField("Livestock Group");
+            if (!string.IsNullOrWhiteSpace(livestockGroupStr))
+            {
+                if (Enum.TryParse<LivestockGroupType>(livestockGroupStr, ignoreCase: true, out var parsedGroup))
+                    livestockGroup = parsedGroup;
+                else
+                    warnings.Add(new ImportWarningRowDto
+                    {
+                        RowNumber = rowNumber,
+                        Field = "Livestock Group",
+                        Message = $"Unrecognized value \"{livestockGroupStr}\". Field was left blank.",
+                    });
+            }
+
+            var healthStatus = HealthStatusType.Healthy;
+            var healthStatusStr = GetField("Health Status");
+            if (!string.IsNullOrWhiteSpace(healthStatusStr) &&
+                !Enum.TryParse<HealthStatusType>(healthStatusStr, ignoreCase: true, out healthStatus))
+            {
+                healthStatus = HealthStatusType.Healthy;
+                warnings.Add(new ImportWarningRowDto
+                {
+                    RowNumber = rowNumber,
+                    Field = "Health Status",
+                    Message = $"Unrecognized value \"{healthStatusStr}\". Defaulted to Healthy.",
+                });
+            }
+
+            HeatStatusType? heatStatus = null;
+            var heatStatusStr = GetField("Heat Status");
+            if (!string.IsNullOrWhiteSpace(heatStatusStr))
+            {
+                if (Enum.TryParse<HeatStatusType>(heatStatusStr, ignoreCase: true, out var parsedHeat))
+                    heatStatus = parsedHeat;
+                else
+                    warnings.Add(new ImportWarningRowDto
+                    {
+                        RowNumber = rowNumber,
+                        Field = "Heat Status",
+                        Message = $"Unrecognized value \"{heatStatusStr}\". Field was left blank.",
+                    });
+            }
+
+            var hasCalf = false;
+            var hasCalfStr = GetField("Has Calf");
+            if (!string.IsNullOrWhiteSpace(hasCalfStr))
+            {
+                var lower = hasCalfStr.ToLowerInvariant();
+                if (lower is "yes" or "true" or "1")
+                    hasCalf = true;
+                else if (lower is "no" or "false" or "0")
+                    hasCalf = false;
+                else
+                    warnings.Add(new ImportWarningRowDto
+                    {
+                        RowNumber = rowNumber,
+                        Field = "Has Calf",
+                        Message = $"Unrecognized value \"{hasCalfStr}\". Defaulted to No.",
+                    });
+            }
+
+            DateOnly? dateOfBirth = null;
+            var dobStr = GetField("Date of Birth");
+            if (!string.IsNullOrWhiteSpace(dobStr))
+            {
+                dateOfBirth = TryParseDate(dobStr);
+                if (!dateOfBirth.HasValue)
+                    warnings.Add(new ImportWarningRowDto
+                    {
+                        RowNumber = rowNumber,
+                        Field = "Date of Birth",
+                        Message = $"Could not parse \"{dobStr}\". Expected YYYY-MM-DD or MM/DD/YYYY.",
+                    });
+            }
+
+            DateOnly? purchaseDate = null;
+            var purchaseDateStr = GetField("Purchase Date");
+            if (!string.IsNullOrWhiteSpace(purchaseDateStr))
+            {
+                purchaseDate = TryParseDate(purchaseDateStr);
+                if (!purchaseDate.HasValue)
+                    warnings.Add(new ImportWarningRowDto
+                    {
+                        RowNumber = rowNumber,
+                        Field = "Purchase Date",
+                        Message = $"Could not parse \"{purchaseDateStr}\". Expected YYYY-MM-DD or MM/DD/YYYY.",
+                    });
+            }
+
+            DateOnly? saleDate = null;
+            var saleDateStr = GetField("Sale Date");
+            if (!string.IsNullOrWhiteSpace(saleDateStr))
+            {
+                saleDate = TryParseDate(saleDateStr);
+                if (!saleDate.HasValue)
+                    warnings.Add(new ImportWarningRowDto
+                    {
+                        RowNumber = rowNumber,
+                        Field = "Sale Date",
+                        Message = $"Could not parse \"{saleDateStr}\". Expected YYYY-MM-DD or MM/DD/YYYY.",
+                    });
+            }
+
+            decimal? birthWeight = null;
+            var birthWeightStr = GetField("Birth Weight");
+            if (!string.IsNullOrWhiteSpace(birthWeightStr))
+            {
+                birthWeight = TryParseDecimal(birthWeightStr);
+                if (!birthWeight.HasValue)
+                    warnings.Add(new ImportWarningRowDto
+                    {
+                        RowNumber = rowNumber,
+                        Field = "Birth Weight",
+                        Message = $"Could not parse \"{birthWeightStr}\" as a number. Field was left blank.",
+                    });
+            }
+
+            decimal? purchasePrice = null;
+            var purchasePriceStr = GetField("Purchase Price");
+            if (!string.IsNullOrWhiteSpace(purchasePriceStr))
+            {
+                purchasePrice = TryParseDecimal(purchasePriceStr);
+                if (!purchasePrice.HasValue)
+                    warnings.Add(new ImportWarningRowDto
+                    {
+                        RowNumber = rowNumber,
+                        Field = "Purchase Price",
+                        Message = $"Could not parse \"{purchasePriceStr}\" as a number. Field was left blank.",
+                    });
+            }
+
+            decimal? salePrice = null;
+            var salePriceStr = GetField("Sale Price");
+            if (!string.IsNullOrWhiteSpace(salePriceStr))
+            {
+                salePrice = TryParseDecimal(salePriceStr);
+                if (!salePrice.HasValue)
+                    warnings.Add(new ImportWarningRowDto
+                    {
+                        RowNumber = rowNumber,
+                        Field = "Sale Price",
+                        Message = $"Could not parse \"{salePriceStr}\" as a number. Field was left blank.",
+                    });
+            }
+
+            var cow = new Cow
+            {
+                UserId = userId,
+                TagNumber = tagNumber,
+                OwnerName = ownerName,
+                LivestockGroup = livestockGroup,
+                Sex = sex,
+                Breed = breed,
+                Name = name,
+                Color = color,
+                DateOfBirth = dateOfBirth,
+                BirthWeight = birthWeight,
+                EaseOfBirth = easeOfBirth,
+                SireName = sireName,
+                DamName = damName,
+                HealthStatus = healthStatus,
+                HeatStatus = heatStatus,
+                PregnancyStatus = NormalizePregnancyStatus(pregnancyStatus),
+                HasCalf = hasCalf,
+                PurchasePrice = purchasePrice,
+                SalePrice = salePrice,
+                PurchaseDate = purchaseDate,
+                SaleDate = saleDate,
+            };
+
+            cowsToInsert.Add(cow);
+            existingTagNumbers.Add(tagNumber);
+            result.WarningRows.AddRange(warnings);
+
+            if (!string.IsNullOrWhiteSpace(notesValue))
+                notesToInsert.Add((cow, notesValue));
+        }
+
+        if (cowsToInsert.Count > 0)
+        {
+            _context.Cows.AddRange(cowsToInsert);
+
+            var now = DateTime.UtcNow;
+            foreach (var (cow, noteContent) in notesToInsert)
+            {
+                _context.Notes.Add(new Note
+                {
+                    UserId = userId,
+                    CowId = cow.Id,
+                    Content = noteContent.Length > 1000 ? noteContent[..1000] : noteContent,
+                    Source = "Import",
+                    CreatedAt = now,
+                    UpdatedAt = now,
+                });
+            }
+
+            await _context.SaveChangesAsync();
+        }
+
+        result.ImportedCount = cowsToInsert.Count;
+        return result;
+    }
+
+    private static List<string> ParseCsvLine(string line)
+    {
+        var fields = new List<string>();
+        var field = new StringBuilder();
+        var inQuotes = false;
+
+        for (var i = 0; i < line.Length; i++)
+        {
+            var c = line[i];
+            if (inQuotes)
+            {
+                if (c == '"')
+                {
+                    if (i + 1 < line.Length && line[i + 1] == '"')
+                    {
+                        field.Append('"');
+                        i++;
+                    }
+                    else
+                    {
+                        inQuotes = false;
+                    }
+                }
+                else
+                {
+                    field.Append(c);
+                }
+            }
+            else
+            {
+                if (c == '"')
+                    inQuotes = true;
+                else if (c == ',')
+                {
+                    fields.Add(field.ToString());
+                    field.Clear();
+                }
+                else
+                    field.Append(c);
+            }
+        }
+
+        fields.Add(field.ToString());
+        return fields;
+    }
+
+    private static DateOnly? TryParseDate(string value)
+    {
+        var trimmed = value.Trim();
+        string[] formats = ["yyyy-MM-dd", "M/d/yyyy", "MM/dd/yyyy"];
+        foreach (var format in formats)
+        {
+            if (DateOnly.TryParseExact(trimmed, format, CultureInfo.InvariantCulture, DateTimeStyles.None, out var date))
+                return date;
+        }
+        return null;
+    }
+
+    private static decimal? TryParseDecimal(string value)
+    {
+        var cleaned = value.Trim().TrimStart('$').TrimEnd('%').Trim();
+        return decimal.TryParse(cleaned, NumberStyles.Number, CultureInfo.InvariantCulture, out var d)
+            ? d
+            : null;
+    }
+
+    private static string? NullIfEmpty(string? value)
+        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
     private static string EscapeCsv(string? value)
     {
         var sanitizedValue = value ?? string.Empty;

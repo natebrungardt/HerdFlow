@@ -92,6 +92,27 @@ public class CowController : ControllerBase
         return Ok();
     }
 
+    [HttpGet("import/template")]
+    public IActionResult GetImportTemplate()
+    {
+        var csv = CowService.GetImportTemplateCsv();
+        return File(new UTF8Encoding(true).GetBytes(csv), "text/csv; charset=utf-8", "herd-import-template.csv");
+    }
+
+    [HttpPost("import")]
+    [RequestFormLimits(MultipartBodyLengthLimit = 5_242_880)]
+    public async Task<IActionResult> ImportCows([FromForm] IFormFile? file)
+    {
+        if (file is null || file.Length == 0)
+            return BadRequest("No file uploaded.");
+
+        if (!file.FileName.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
+            return BadRequest("Only .csv files are supported.");
+
+        var result = await _cowService.ImportCowsCsvAsync(file);
+        return Ok(result);
+    }
+
     [HttpGet("{id:guid}/activities")]
     public async Task<IActionResult> GetActivities(Guid id)
     {

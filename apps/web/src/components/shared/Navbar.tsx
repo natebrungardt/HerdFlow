@@ -9,6 +9,7 @@ import {
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useTheme } from "../../context/useTheme";
 import FeedbackModal from "./FeedbackModal";
+import ImportModal from "./ImportModal";
 import { getUserDisplayName, getUserFarmName } from "../../lib/account";
 import { supabase } from "../../lib/supabase";
 import { AuthContext } from "../../context/AuthContext";
@@ -20,6 +21,7 @@ function Navbar() {
   const { theme, toggleTheme } = useTheme();
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
   const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [exportError, setExportError] = useState("");
   const accountMenuRef = useRef<HTMLDivElement | null>(null);
@@ -66,6 +68,11 @@ function Navbar() {
   const handleOpenFeedback = () => {
     setIsAccountMenuOpen(false);
     setIsFeedbackModalOpen(true);
+  };
+
+  const handleOpenImport = () => {
+    setIsAccountMenuOpen(false);
+    setIsImportModalOpen(true);
   };
 
   const handleToggleTheme = () => {
@@ -224,6 +231,13 @@ function Navbar() {
                   </button>
                   <button
                     className="navbarMenuItem"
+                    onClick={handleOpenImport}
+                    type="button"
+                  >
+                    Import Herd Data
+                  </button>
+                  <button
+                    className="navbarMenuItem"
                     disabled={isExporting}
                     onClick={handleExportData}
                     type="button"
@@ -254,6 +268,10 @@ function Navbar() {
         isOpen={isFeedbackModalOpen}
         onClose={() => setIsFeedbackModalOpen(false)}
         user={user}
+      />
+      <ImportModal
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
       />
     </>
   );
