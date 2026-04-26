@@ -13,7 +13,7 @@ struct AllCowsView: View {
 
         return cows.filter { cow in
             cow.tagNumber.localizedCaseInsensitiveContains(searchText)
-            || cow.ownerName.localizedCaseInsensitiveContains(searchText)
+            || (cow.ownerName ?? "").localizedCaseInsensitiveContains(searchText)
         }
     }
 
@@ -96,13 +96,13 @@ struct CowCardView: View {
                     )
             }
 
-            Text("\(cow.livestockGroup) • \(cow.healthStatus) • \(cow.sexDisplay) • \(cow.statusDisplay)")
+            Text("\(cow.livestockGroup ?? "Unknown") • \(cow.healthStatus) • \(cow.sexDisplay) • \(cow.statusDisplay)")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
                 .lineLimit(1)
 
             VStack(alignment: .leading, spacing: 8) {
-                Label(cow.ownerName, systemImage: "person.fill")
+                Label(cow.ownerName ?? "No owner", systemImage: "person.fill")
                     .font(.subheadline)
                     .foregroundStyle(.primary)
 

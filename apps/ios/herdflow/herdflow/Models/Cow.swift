@@ -3,8 +3,8 @@ import Foundation
 struct Cow: Identifiable, Codable {
     let id: UUID
     let tagNumber: String
-    let ownerName: String
-    let livestockGroup: String
+    let ownerName: String?
+    let livestockGroup: String?
     let sex: String?
     let healthStatus: String
     let pregnancyStatus: String?
