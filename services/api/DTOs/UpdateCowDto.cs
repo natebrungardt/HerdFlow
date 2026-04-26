@@ -8,8 +8,7 @@ public class UpdateCowDto
     [Required]
     public string TagNumber { get; set; } = null!;
 
-    [Required]
-    public string OwnerName { get; set; } = null!;
+    public string? OwnerName { get; set; }
 
     [Required]
     [EnumDataType(typeof(LivestockGroupType))]

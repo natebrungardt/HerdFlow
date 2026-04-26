@@ -192,14 +192,11 @@ public class CowApiIntegrationTests
         await using var factory = new HerdFlowApiFactory();
         using var client = factory.CreateClientForUser("user-a");
 
-        var response = await client.PostAsJsonAsync("/api/cows", new
-        {
-            tagNumber = "A-100"
-        });
+        var response = await client.PostAsJsonAsync("/api/cows", new { });
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         var body = await response.Content.ReadAsStringAsync();
-        body.Should().Contain("OwnerName");
+        body.Should().Contain("TagNumber");
     }
 
     [Fact]

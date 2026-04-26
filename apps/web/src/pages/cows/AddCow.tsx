@@ -370,7 +370,6 @@ function AddCowPage() {
           value={formData.ownerName}
           onChange={handleChange}
           placeholder="Enter owner name"
-          required
         />
       ),
     },

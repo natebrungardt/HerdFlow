@@ -452,7 +452,6 @@ function CowDetailPage() {
           value={formData.ownerName}
           onChange={handleChange}
           placeholder="Enter owner name"
-          required
         />
       ) : (
         <span>{formatValue(formData.ownerName)}</span>

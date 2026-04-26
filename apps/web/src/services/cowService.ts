@@ -4,7 +4,7 @@ import { apiFetch } from "../lib/api";
 
 export type CreateCowInput = {
   tagNumber: string;
-  ownerName: string;
+  ownerName: string | null;
   livestockGroup: string;
   breed: string;
   sex: string;
