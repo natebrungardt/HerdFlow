@@ -1,8 +1,8 @@
 import Foundation
 
 final class AuthService {
-    private let supabaseURL = "https://dfsiotimlkgzdjomfkeo.supabase.co"
-    private let supabaseAnonKey = "sb_publishable_iAKQxQ-DGwwx6FH7v0M-uw_Ks9AoG8P"
+    private let supabaseURL = Config.supabaseURL
+    private let supabaseAnonKey = Config.supabaseAnonKey
 
     func signIn(email: String, password: String, completion: @escaping (Result<AuthSession, Error>) -> Void) {
         guard let url = URL(string: "\(supabaseURL)/auth/v1/token?grant_type=password") else {

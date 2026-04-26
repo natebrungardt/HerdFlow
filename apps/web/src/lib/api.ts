@@ -87,9 +87,15 @@ export async function apiFetch(
     data: { session },
   } = await supabase.auth.getSession();
 
+  console.log("WEB USER:", session?.user?.id, session?.user?.email);
+
   const headers = new Headers(init.headers);
 
-  if (!headers.has("Content-Type") && init.body && !(init.body instanceof FormData)) {
+  if (
+    !headers.has("Content-Type") &&
+    init.body &&
+    !(init.body instanceof FormData)
+  ) {
     headers.set("Content-Type", "application/json");
   }
 

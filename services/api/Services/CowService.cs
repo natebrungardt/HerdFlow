@@ -22,17 +22,20 @@ public class CowService
     private readonly ActivityLogService _activityLogService;
     private readonly CowChangeLogService _cowChangeLogService;
     private readonly IHttpContextAccessor _httpContextAccessor;
+    private readonly ILogger<CowService> _logger;
 
     public CowService(
         AppDbContext context,
         ActivityLogService activityLogService,
         CowChangeLogService cowChangeLogService,
-        IHttpContextAccessor httpContextAccessor)
+        IHttpContextAccessor httpContextAccessor,
+        ILogger<CowService> logger)
     {
         _context = context;
         _activityLogService = activityLogService;
         _cowChangeLogService = cowChangeLogService;
         _httpContextAccessor = httpContextAccessor;
+        _logger = logger;
     }
 
     private void ValidateCreateCow(CreateCowDto dto)
@@ -395,8 +398,14 @@ public class CowService
     private string GetCurrentUserId()
     {
         var user = _httpContextAccessor.HttpContext?.User;
-        var userId = user?.FindFirstValue(ClaimTypes.NameIdentifier)
-            ?? user?.FindFirstValue("sub");
+        var userId = user?.FindFirstValue("sub")
+            ?? user?.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        _logger.LogWarning(
+            "CowService userId debug: isAuthenticated={IsAuthenticated}, userId={UserId}, claims={Claims}",
+            user?.Identity?.IsAuthenticated ?? false,
+            string.IsNullOrWhiteSpace(userId) ? "<missing>" : userId,
+            user is null ? "<no user>" : string.Join(", ", user.Claims.Select(c => $"{c.Type}={c.Value}")));
 
         if (string.IsNullOrWhiteSpace(userId))
         {

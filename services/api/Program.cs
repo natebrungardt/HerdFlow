@@ -110,15 +110,15 @@ else
                     var userId = context.Principal?.FindFirstValue("sub")
                         ?? context.Principal?.FindFirstValue(ClaimTypes.NameIdentifier)
                         ?? "<missing>";
-                    var claimTypes = context.Principal is null
+                    var claimsDebug = context.Principal is null
                         ? "<no principal>"
-                        : string.Join(", ", context.Principal.Claims.Select(claim => claim.Type));
+                        : string.Join(", ", context.Principal.Claims.Select(c => $"{c.Type}={c.Value}"));
 
                     logger.LogWarning(
-                        "Temporary JWT auth debug: path={Path}, tokenUserId={TokenUserId}, claimTypes={ClaimTypes}",
+                        "Temporary JWT auth debug: path={Path}, tokenUserId={TokenUserId}, claims={Claims}",
                         context.HttpContext.Request.Path,
                         userId,
-                        claimTypes);
+                        claimsDebug);
 
                     return Task.CompletedTask;
                 },

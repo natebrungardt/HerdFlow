@@ -1,7 +1,7 @@
 import Foundation
 
 final class CowService {
-    let baseURL = "http://127.0.0.1:5062"
+    let baseURL = Config.baseURL
     private let decoder: JSONDecoder = {
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .custom { decoder in
@@ -58,6 +58,7 @@ final class CowService {
                     completion(cows)
                 }
             } catch {
+                print("DECODE ERROR:", error)
                 DispatchQueue.main.async {
                     completion([])
                 }
