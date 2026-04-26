@@ -8,7 +8,7 @@ public class CowResponseDto
     public string UserId { get; set; } = null!;
     public string TagNumber { get; set; } = null!;
     public string? OwnerName { get; set; }
-    public LivestockGroupType LivestockGroup { get; set; }
+    public LivestockGroupType? LivestockGroup { get; set; }
     public string? Sex { get; set; }
     public string? Breed { get; set; }
     public string? Name { get; set; }

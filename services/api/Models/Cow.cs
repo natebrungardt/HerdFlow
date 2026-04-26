@@ -19,8 +19,7 @@ public class Cow
 
     public string? OwnerName { get; set; }
 
-    [Required]
-    public LivestockGroupType LivestockGroup { get; set; }
+    public LivestockGroupType? LivestockGroup { get; set; }
 
     public string? Sex { get; set; }
     public string? Breed { get; set; }

@@ -59,17 +59,12 @@ public class CowService
 
     private void ValidateCowInput(
         string tagNumber,
-        LivestockGroupType livestockGroup,
+        LivestockGroupType? livestockGroup,
         Guid? sireId,
         string? sireName,
         Guid? damId,
         string? damName)
     {
-        if (livestockGroup == LivestockGroupType.None)
-        {
-            throw new ValidationException("Livestock group is required.");
-        }
-
         if (string.IsNullOrWhiteSpace(tagNumber))
         {
             throw new ValidationException("Tag number is required.");
@@ -280,7 +275,7 @@ public class CowService
             builder.AppendLine(string.Join(",",
                 EscapeCsv(cow.TagNumber),
                 EscapeCsv(cow.OwnerName),
-                EscapeCsv(cow.LivestockGroup.ToString()),
+                EscapeCsv(cow.LivestockGroup?.ToString()),
                 EscapeCsv(cow.Sex),
                 EscapeCsv(cow.Breed),
                 EscapeCsv(cow.Name),

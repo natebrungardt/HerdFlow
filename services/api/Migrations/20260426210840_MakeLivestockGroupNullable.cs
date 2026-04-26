@@ -5,13 +5,13 @@
 namespace HerdFlow.Api.Migrations
 {
     /// <inheritdoc />
-    public partial class MakeOwnerNameNullable : Migration
+    public partial class MakeLivestockGroupNullable : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AlterColumn<string>(
-                name: "OwnerName",
+                name: "LivestockGroup",
                 table: "Cows",
                 type: "text",
                 nullable: true,
@@ -23,7 +23,7 @@ namespace HerdFlow.Api.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AlterColumn<string>(
-                name: "OwnerName",
+                name: "LivestockGroup",
                 table: "Cows",
                 type: "text",
                 nullable: false,

@@ -158,7 +158,7 @@ function WorkdayPage() {
 
       const matchesLivestockGroup =
         activeLivestockGroups.length === 0 ||
-        activeLivestockGroups.includes(cow.livestockGroup);
+        (cow.livestockGroup != null && activeLivestockGroups.includes(cow.livestockGroup));
 
       const matchesSex =
         activeSexes.length === 0 || activeSexes.includes(cow.sex || "");

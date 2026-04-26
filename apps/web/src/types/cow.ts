@@ -2,7 +2,7 @@ export type Cow = {
   id: string;
   tagNumber: string;
   ownerName: string | null;
-  livestockGroup: string;
+  livestockGroup: string | null;
   sex: string;
   breed: string;
   name?: string | null;

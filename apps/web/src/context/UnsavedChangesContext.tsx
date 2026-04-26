@@ -58,9 +58,14 @@ export function UnsavedChangesProvider({
     return null;
   }, [registrations]);
 
+  const hasUnsavedChangesRef = useRef(false);
+  hasUnsavedChangesRef.current = Boolean(activeRegistration?.hasUnsavedChanges);
+
   const blocker = useBlocker(
-    Boolean(activeRegistration?.hasUnsavedChanges) &&
-      !allowNextNavigationRef.current,
+    useCallback(
+      () => hasUnsavedChangesRef.current && !allowNextNavigationRef.current,
+      [],
+    ),
   );
 
   useEffect(() => {

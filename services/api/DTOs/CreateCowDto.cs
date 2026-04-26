@@ -10,9 +10,7 @@ public class CreateCowDto
 
     public string? OwnerName { get; set; }
 
-    [Required]
-    [EnumDataType(typeof(LivestockGroupType))]
-    public LivestockGroupType LivestockGroup { get; set; }
+    public LivestockGroupType? LivestockGroup { get; set; }
     public string? Sex { get; set; }
     public string? Breed { get; set; }
     public string? Name { get; set; }

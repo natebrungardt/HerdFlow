@@ -121,7 +121,7 @@ function toCreateCowInput(cow: Cow): CreateCowInput {
   return {
     tagNumber: cow.tagNumber,
     ownerName: cow.ownerName,
-    livestockGroup: cow.livestockGroup,
+    livestockGroup: cow.livestockGroup || null,
     breed: cow.breed,
     sex: cow.sex,
     name: cow.name ?? null,
@@ -817,12 +817,11 @@ function CowDetailPage() {
                       id="livestockGroup"
                       name="livestockGroup"
                       className="metricFieldInput"
-                      value={formData.livestockGroup}
+                      value={formData.livestockGroup ?? ""}
                       onChange={handleChange}
-                      required
                     >
-                      <option value="" disabled>
-                        Select group
+                      <option value="">
+                        No group
                       </option>
                       {livestockGroupOptions.map((option) => (
                         <option key={option.value} value={option.value}>

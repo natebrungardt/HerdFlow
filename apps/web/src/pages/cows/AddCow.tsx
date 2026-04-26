@@ -320,7 +320,7 @@ function AddCowPage() {
         heatStatus: formData.heatStatus === "" ? null : formData.heatStatus,
         pregnancyStatus: formData.pregnancyStatus || "N/A",
         hasCalf: formData.hasCalf,
-        livestockGroup: formData.livestockGroup,
+        livestockGroup: formData.livestockGroup || null,
         dateOfBirth: formData.dateOfBirth || null,
         sireId: formData.sireId || null,
         sireName: formData.sireId ? null : formData.sireName.trim() || null,
@@ -670,10 +670,9 @@ function AddCowPage() {
                     className="metricFieldInput"
                     value={formData.livestockGroup}
                     onChange={handleChange}
-                    required
                   >
-                    <option value="" disabled>
-                      Select group
+                    <option value="">
+                      No group
                     </option>
                     {livestockGroupOptions.map((option) => (
                       <option key={option.value} value={option.value}>
