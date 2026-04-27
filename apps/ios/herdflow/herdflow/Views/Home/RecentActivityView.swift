@@ -23,15 +23,12 @@ struct RecentActivityView: View {
                 .textCase(.uppercase)
                 .padding(.horizontal, 20)
 
-            ScrollView(showsIndicators: false) {
-                VStack(alignment: .leading, spacing: 16) {
-                    ForEach(groups) { group in
-                        ActivityGroupSection(group: group)
-                    }
+            VStack(alignment: .leading, spacing: 16) {
+                ForEach(groups) { group in
+                    ActivityGroupSection(group: group)
                 }
-                .padding(.horizontal, 20)
             }
-            .frame(maxHeight: 240)
+            .padding(.horizontal, 20)
         }
     }
 }

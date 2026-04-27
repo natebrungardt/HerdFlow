@@ -45,7 +45,6 @@ struct MainTabView: View {
         ZStack(alignment: .bottom) {
             currentScreen
                 .frame(maxWidth: .infinity)
-                .padding(.bottom, dockClearance)
 
             BottomDock(
                 selectedTab: $selectedTab,
@@ -158,9 +157,9 @@ private struct BottomDock: View {
             )
             .overlay(
                 Capsule()
-                    .stroke(Color.white.opacity(0.12), lineWidth: 1)
+                    .stroke(Color.black.opacity(0.06), lineWidth: 0.5)
             )
-            .shadow(color: Color.black.opacity(0.08), radius: 10, x: 0, y: 4)
+            .shadow(color: Color.black.opacity(0.14), radius: 20, x: 0, y: 8)
 
             // Action button
             Button(action: onActionTap) {
