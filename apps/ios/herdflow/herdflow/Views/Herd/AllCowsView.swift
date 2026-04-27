@@ -96,7 +96,7 @@ struct CowCardView: View {
                     )
             }
 
-            Text("\(cow.livestockGroup ?? "Unknown") • \(cow.healthStatus) • \(cow.sexDisplay) • \(cow.statusDisplay)")
+            Text("\(cow.livestockGroup ?? "Unknown") • \(cow.healthStatusDisplay) • \(cow.sexDisplay) • \(cow.statusDisplay)")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
                 .lineLimit(1)
@@ -176,6 +176,10 @@ private extension Cow {
 
     var isHealthy: Bool {
         healthStatus == "Healthy"
+    }
+
+    var healthStatusDisplay: String {
+        healthStatus == "NeedsTreatment" ? "Needs Treatment" : healthStatus
     }
 }
 

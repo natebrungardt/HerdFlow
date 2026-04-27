@@ -86,7 +86,7 @@ function CowRowCard({
           </div>
           <div className="cowRowMeta">
             {cow.livestockGroup || "Unassigned"} •{" "}
-            {cow.healthStatus || "Unknown health status"} • {cow.sex || "Unknown sex"} •{" "}
+            {formatHealthStatus(cow.healthStatus)} • {cow.sex || "Unknown sex"} •{" "}
             {cow.pregnancyStatus || "No pregnancy status"}
           </div>
           <div className="cowRowOwner">
