@@ -59,9 +59,9 @@
   padding: 12px 16px;
   min-width: 140px;
   background: linear-gradient(
-  180deg,
-  var(--color-primary) 0%,
-  var(--color-primary-hover) 100%
+    180deg,
+    var(--color-primary) 0%,
+    var(--color-primary-hover) 100%
   );
   color: #f8fafc;
   font-weight: 700;
@@ -69,9 +69,9 @@
   cursor: pointer;
   box-shadow: none;
   transition:
-  transform 0.18s ease,
-  box-shadow 0.18s ease,
-  filter 0.18s ease;
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    filter 0.18s ease;
 }
 
 .addCowButton:hover {
@@ -105,9 +105,9 @@
   background: var(--surface-subtle);
   color: var(--text-primary);
   transition:
-  border-color 0.18s ease,
-  box-shadow 0.18s ease,
-  background 0.18s ease;
+    border-color 0.18s ease,
+    box-shadow 0.18s ease,
+    background 0.18s ease;
 }
 
 .searchInput::placeholder {
@@ -141,9 +141,9 @@
   font-size: 0.92rem;
   cursor: pointer;
   transition:
-  border-color 0.18s ease,
-  background 0.18s ease,
-  transform 0.18s ease;
+    border-color 0.18s ease,
+    background 0.18s ease,
+    transform 0.18s ease;
 }
 
 .filterChip:hover {
@@ -155,9 +155,9 @@
 
 .filterChip.active {
   background: linear-gradient(
-  180deg,
-  var(--color-primary) 0%,
-  var(--color-primary-hover) 100%
+    180deg,
+    var(--color-primary) 0%,
+    var(--color-primary-hover) 100%
   );
   border-color: rgba(134, 193, 151, 0.22);
   color: #f8fafc;
@@ -203,6 +203,45 @@
   gap: var(--space-3);
 }
 
+.activityList {
+  display: flex;
+  flex-direction: column;
+}
+
+.activityRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+}
+
+.activityRow:not(:last-child) {
+  border-bottom: 1px solid var(--border-color, #eee);
+}
+
+.activityRow:hover {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.activityDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #5b7f63;
+  flex-shrink: 0;
+  transform: translateY(-5px);
+}
+
+.activityRow .cowRowMain {
+  display: flex;
+  align-items: center;
+  line-height: 1;
+}
+
+.activityRow .cowRowTitle {
+  line-height: 1;
+}
+
 .dashboardListScrollable {
   max-height: 540px;
   overflow-y: auto;
@@ -227,8 +266,8 @@
   min-width: 0;
   border-color: var(--shell-border);
   box-shadow:
-  inset 0 1px 0 var(--surface-subtle-hover),
-  0 0 0 1px rgba(76, 122, 91, 0.04);
+    inset 0 1px 0 var(--surface-subtle-hover),
+    0 0 0 1px rgba(76, 122, 91, 0.04);
 }
 
 .statsFilterButton {
@@ -237,10 +276,10 @@
   appearance: none;
   cursor: pointer;
   transition:
-  transform 0.18s ease,
-  border-color 0.18s ease,
-  background 0.18s ease,
-  box-shadow 0.18s ease;
+    transform 0.18s ease,
+    border-color 0.18s ease,
+    background 0.18s ease,
+    box-shadow 0.18s ease;
 }
 
 .statsLinkCard {
@@ -248,10 +287,10 @@
   text-decoration: none;
   cursor: pointer;
   transition:
-  transform 0.18s ease,
-  border-color 0.18s ease,
-  background 0.18s ease,
-  box-shadow 0.18s ease;
+    transform 0.18s ease,
+    border-color 0.18s ease,
+    background 0.18s ease,
+    box-shadow 0.18s ease;
 }
 
 .statsLinkCard:hover {
@@ -284,8 +323,8 @@
   background: linear-gradient(180deg, #6ea97f 0%, #4c7a5b 100%);
   border-color: rgba(134, 193, 151, 0.22);
   box-shadow:
-  0 14px 28px rgba(76, 122, 91, 0.24),
-  0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+    0 14px 28px rgba(76, 122, 91, 0.24),
+    0 0 0 1px rgba(255, 255, 255, 0.05) inset;
 }
 
 .statsFilterButton.active .statLabel,
@@ -367,9 +406,9 @@
   padding: var(--space-3) var(--space-4);
   cursor: pointer;
   transition:
-  transform 0.18s ease,
-  border-color 0.18s ease,
-  box-shadow 0.18s ease;
+    transform 0.18s ease,
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
 }
 
 .cowCard {
@@ -407,12 +446,12 @@
 .workdayRowCardWorked {
   border-color: var(--success-border-subtle);
   background:
-  linear-gradient(
-  180deg,
-  rgba(76, 122, 91, 0.12) 0%,
-  rgba(76, 122, 91, 0.08) 100%
-  ),
-  var(--card-bg);
+    linear-gradient(
+      180deg,
+      rgba(76, 122, 91, 0.12) 0%,
+      rgba(76, 122, 91, 0.08) 100%
+    ),
+    var(--card-bg);
 }
 
 .cowRowMain {
@@ -686,9 +725,9 @@
   font-size: 0.95rem;
   outline: none;
   transition:
-  border-color 0.18s ease,
-  box-shadow 0.18s ease,
-  background 0.18s ease;
+    border-color 0.18s ease,
+    box-shadow 0.18s ease,
+    background 0.18s ease;
 }
 
 .workdayNotesInput:focus {
@@ -778,10 +817,10 @@
   align-items: center;
   justify-content: center;
   transition:
-  background-color 0.18s ease,
-  border-color 0.18s ease,
-  color 0.18s ease,
-  transform 0.18s ease;
+    background-color 0.18s ease,
+    border-color 0.18s ease,
+    color 0.18s ease,
+    transform 0.18s ease;
 }
 
 .workdaySelectionRemoveButton:hover {
@@ -876,8 +915,8 @@
   --action-chip-row-height: 42px;
   --action-chip-gap: var(--space-2);
   height: calc(
-  (var(--action-chip-row-height) * 2) + (var(--action-chip-gap) * 2) +
-  (var(--action-chip-row-height) / 2)
+    (var(--action-chip-row-height) * 2) + (var(--action-chip-gap) * 2) +
+      (var(--action-chip-row-height) / 2)
   );
   overflow-y: auto;
   padding-right: 4px;
@@ -902,8 +941,8 @@
   background: var(--surface-subtle);
   color: var(--text-primary);
   box-shadow:
-  inset 0 1px 0 var(--surface-subtle-hover),
-  0 8px 20px rgba(0, 0, 0, 0.08);
+    inset 0 1px 0 var(--surface-subtle-hover),
+    0 8px 20px rgba(0, 0, 0, 0.08);
 }
 
 .workdayActionContent {
@@ -936,9 +975,9 @@
   align-items: center;
   justify-content: center;
   transition:
-  background-color 0.18s ease,
-  color 0.18s ease,
-  transform 0.18s ease;
+    background-color 0.18s ease,
+    color 0.18s ease,
+    transform 0.18s ease;
 }
 
 .workdayActionChipRemove:hover {
@@ -950,11 +989,11 @@
 .workdayWorkspaceDivider {
   height: 1px;
   background: linear-gradient(
-  90deg,
-  transparent 0%,
-  var(--card-border) 8%,
-  var(--card-border) 92%,
-  transparent 100%
+    90deg,
+    transparent 0%,
+    var(--card-border) 8%,
+    var(--card-border) 92%,
+    transparent 100%
   );
 }
 
@@ -1004,8 +1043,8 @@
   border: 1px solid var(--card-border);
   background: var(--surface-subtle);
   box-shadow:
-  inset 0 1px 0 var(--surface-subtle-hover),
-  0 8px 18px rgba(0, 0, 0, 0.08);
+    inset 0 1px 0 var(--surface-subtle-hover),
+    0 8px 18px rgba(0, 0, 0, 0.08);
   cursor: default;
 }
 
@@ -1013,8 +1052,8 @@
   transform: none;
   border-color: var(--card-border);
   box-shadow:
-  inset 0 1px 0 var(--surface-subtle-hover),
-  0 8px 18px rgba(0, 0, 0, 0.08);
+    inset 0 1px 0 var(--surface-subtle-hover),
+    0 8px 18px rgba(0, 0, 0, 0.08);
 }
 
 .cow-card {
@@ -1237,23 +1276,25 @@
   width: 100%;
 }
 
-:root[data-theme="dark"] :is(
-.toolbarCard,
-.statsCard,
-.cowListCard,
-.cowRowCard,
-.dashboardCard,
-.workdayComposerCard,
-.workdaySelectedSummaryCard,
-.workdayWorkspacePanel,
-.workdayAddCowsCard
-) {
+:root[data-theme="dark"]
+  :is(
+    .toolbarCard,
+    .statsCard,
+    .cowListCard,
+    .cowRowCard,
+    .dashboardCard,
+    .workdayComposerCard,
+    .workdaySelectedSummaryCard,
+    .workdayWorkspacePanel,
+    .workdayAddCowsCard
+  ) {
   background: var(--color-surface);
   border-color: var(--color-border);
   box-shadow: none;
 }
 
-:root[data-theme="dark"] :is(.filterChip, .workdayActionChip, .workdaySelectionPill) {
+:root[data-theme="dark"]
+  :is(.filterChip, .workdayActionChip, .workdaySelectionPill) {
   background: var(--surface-faint);
   border-color: var(--color-border);
   color: var(--text-primary);
@@ -1539,23 +1580,23 @@
   }
 
   :is(
-  .pageTitle,
-  .pageSubtitle,
-  .dashboardFarmName,
-  .dashboardFarmFallback,
-  .sectionTitle,
-  .sectionSubtle,
-  .statLabel,
-  .statValue,
-  .statMeta,
-  .cowRowTitle,
-  .cowRowMeta,
-  .cowRowSupplementaryMeta,
-  .cowRowRelationship,
-  .cowRowOwner,
-  .workdaySaveStatus,
-  .workdaySelectionPillMeta,
-  .workdayActionName
+    .pageTitle,
+    .pageSubtitle,
+    .dashboardFarmName,
+    .dashboardFarmFallback,
+    .sectionTitle,
+    .sectionSubtle,
+    .statLabel,
+    .statValue,
+    .statMeta,
+    .cowRowTitle,
+    .cowRowMeta,
+    .cowRowSupplementaryMeta,
+    .cowRowRelationship,
+    .cowRowOwner,
+    .workdaySaveStatus,
+    .workdaySelectionPillMeta,
+    .workdayActionName
   ) {
     overflow-wrap: anywhere;
     word-break: break-word;

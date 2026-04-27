@@ -4,13 +4,33 @@ import { AuthContext } from "../context/AuthContext";
 import { getDashboardFarmLabel, getUserFarmName } from "../lib/account";
 import { getCows, getRemovedCows } from "../services/cowService";
 import {
-  getActiveWorkdays,
-  getCompletedWorkdays,
-} from "../services/workdayService";
+  getRecentActivity,
+  type RecentActivityEntry,
+} from "../services/activityService";
+import { getActiveWorkdays } from "../services/workdayService";
 import type { Cow } from "../types/cow";
 import type { Workday } from "../types/workday";
 import "../styles/AllCows.css";
 import "../styles/CowDetailPage.css";
+
+function formatActivityTime(dateStr: string) {
+  const date = new Date(dateStr);
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const yesterday = new Date(today.getTime() - 86400000);
+  const itemDay = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+
+  if (itemDay.getTime() === today.getTime()) {
+    return date.toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+    });
+  }
+  if (itemDay.getTime() === yesterday.getTime()) {
+    return "Yesterday";
+  }
+  return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+}
 
 function parseDateValue(dateValue: string) {
   const dateOnlyMatch = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dateValue);
@@ -68,7 +88,9 @@ function Dashboard() {
   const [cows, setCows] = useState<Cow[]>([]);
   const [archivedCows, setArchivedCows] = useState<Cow[]>([]);
   const [workdays, setWorkdays] = useState<Workday[]>([]);
-  const [completedWorkdays, setCompletedWorkdays] = useState<Workday[]>([]);
+  const [recentActivity, setRecentActivity] = useState<RecentActivityEntry[]>(
+    [],
+  );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const farmLabel = getDashboardFarmLabel(user);
@@ -78,18 +100,18 @@ function Dashboard() {
     async function loadDashboard() {
       try {
         setError("");
-        const [activeCows, removedCows, activeWorkdays, finishedWorkdays] =
+        const [activeCows, removedCows, activeWorkdays, activity] =
           await Promise.all([
             getCows(),
             getRemovedCows(),
             getActiveWorkdays(),
-            getCompletedWorkdays(),
+            getRecentActivity(10),
           ]);
 
         setCows(activeCows);
         setArchivedCows(removedCows);
         setWorkdays(activeWorkdays);
-        setCompletedWorkdays(finishedWorkdays);
+        setRecentActivity(activity);
       } catch (err) {
         const message =
           err instanceof Error ? err.message : "Failed to load dashboard";
@@ -163,24 +185,6 @@ function Dashboard() {
   const attentionCows = useMemo(() => {
     return cows.filter((cow) => cow.healthStatus !== "Healthy");
   }, [cows]);
-
-  const recentCompletedWorkdays = useMemo(() => {
-    return [...completedWorkdays].sort((leftWorkday, rightWorkday) => {
-      return (
-        new Date(rightWorkday.date).getTime() -
-        new Date(leftWorkday.date).getTime()
-      );
-    });
-  }, [completedWorkdays]);
-
-  const recentArchivedCows = useMemo(() => {
-    return [...archivedCows].sort((leftCow, rightCow) => {
-      return leftCow.tagNumber.localeCompare(rightCow.tagNumber, undefined, {
-        numeric: true,
-        sensitivity: "base",
-      });
-    });
-  }, [archivedCows]);
 
   return (
     <div className="allCowsPage">
@@ -335,84 +339,32 @@ function Dashboard() {
                 </section>
               </div>
 
-              <div className="dashboardSplitGrid">
-                <section className="dashboardCard">
-                  <div className="dataCardHeader">
-                    <h2 className="cardTitle">Completed Workdays</h2>
-                    <span className="cardSubtle">
-                      {completedWorkdays.length} completed
-                    </span>
+              <section className="dashboardCard">
+                <div className="dataCardHeader">
+                  <h2 className="cardTitle">Recent Activity</h2>
+                  <span className="cardSubtle">
+                    {recentActivity.length} events
+                  </span>
+                </div>
+
+                {recentActivity.length === 0 ? (
+                  <p className="emptyState">No recent activity yet.</p>
+                ) : (
+                  <div className="activityList">
+                    {recentActivity.map((item) => (
+                      <div key={item.id} className="activityRow">
+                        <div className="activityDot" />
+                        <div className="cowRowMain">
+                          <div className="cowRowTitle">{item.description}</div>
+                        </div>
+                        <span className="cardSubtle">
+                          {formatActivityTime(item.createdAt)}
+                        </span>
+                      </div>
+                    ))}
                   </div>
-
-                  {recentCompletedWorkdays.length === 0 ? (
-                    <p className="emptyState">No completed workdays found.</p>
-                  ) : (
-                    <div className="dashboardList dashboardListScrollable">
-                      {recentCompletedWorkdays.map((workday) => (
-                        <Link
-                          key={workday.id}
-                          className="cowRowCard"
-                          to={`/workdays/${workday.id}`}
-                        >
-                          <div className="cowRowMain">
-                            <div className="cowRowTitle">{workday.title}</div>
-                            <div className="cowRowMeta">
-                              {workday.summary?.trim() || "No summary yet."}
-                            </div>
-                            <div className="cowRowOwner">
-                              Completed workday record
-                            </div>
-                          </div>
-
-                          <div className="cowRowActions">
-                            <div className="statusPill">Completed</div>
-                          </div>
-                        </Link>
-                      ))}
-                    </div>
-                  )}
-                </section>
-
-                <section className="dashboardCard">
-                  <div className="dataCardHeader">
-                    <h2 className="cardTitle">Archived Herd</h2>
-                    <span className="cardSubtle">
-                      {archivedCows.length} archived
-                    </span>
-                  </div>
-
-                  {recentArchivedCows.length === 0 ? (
-                    <p className="emptyState">No archived cows found.</p>
-                  ) : (
-                    <div className="dashboardList dashboardListScrollable">
-                      {recentArchivedCows.map((cow) => (
-                        <Link
-                          key={cow.id}
-                          className="cowRowCard"
-                          to={`/cows/${cow.id}`}
-                        >
-                          <div className="cowRowMain">
-                            <div className="cowRowTitle">
-                              Tag #{cow.tagNumber}
-                            </div>
-                            <div className="cowRowMeta">
-                              {cow.livestockGroup || "Unassigned"} •{" "}
-                              {cow.healthStatus || "Unknown health status"}
-                            </div>
-                            <div className="cowRowOwner">
-                              Owner: {cow.ownerName || "Unknown owner"}
-                            </div>
-                          </div>
-
-                          <div className="cowRowActions">
-                            <div className="statusPill">Archived</div>
-                          </div>
-                        </Link>
-                      ))}
-                    </div>
-                  )}
-                </section>
-              </div>
+                )}
+              </section>
             </>
           )}
         </div>
