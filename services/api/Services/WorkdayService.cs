@@ -65,11 +65,6 @@ public class WorkdayService
             throw;
         }
 
-        if (!string.IsNullOrWhiteSpace(workday.Title))
-        {
-            await _activityLogService.LogAsync(null, $"{workday.Title} created", ActivityEventTypes.WorkdayCreated, workday.Id);
-        }
-
         return workday;
     }
 
@@ -696,11 +691,19 @@ public class WorkdayService
     {
         var workday = await FindWorkdayAsync(id);
 
-        workday.Title = dto.Title.Trim();
+        var originalTitle = workday.Title;
+        var updatedTitle = dto.Title.Trim();
+
+        workday.Title = updatedTitle;
         workday.Summary = dto.Summary;
         workday.Date = NormalizeWorkdayDate(dto.Date);
 
         await _context.SaveChangesAsync();
+
+        if (string.IsNullOrWhiteSpace(originalTitle) && !string.IsNullOrWhiteSpace(updatedTitle))
+        {
+            await _activityLogService.LogAsync(null, $"{updatedTitle} created", ActivityEventTypes.WorkdayCreated, workday.Id);
+        }
 
         return workday;
     }
