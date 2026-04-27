@@ -53,10 +53,10 @@ struct HomeView: View {
                     RecentActivityView(groups: activityGroups)
                 }
             }
-            .padding(.bottom, 24)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .background(Color(.systemGroupedBackground))
+        .ignoresSafeArea(.container, edges: .bottom)
         .onAppear { loadWorkdays(); loadCows(); loadActivity() }
         .onChange(of: authManager.accessToken) { loadWorkdays(); loadCows(); loadActivity() }
     }

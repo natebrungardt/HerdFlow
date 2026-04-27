@@ -44,7 +44,8 @@ struct MainTabView: View {
     var body: some View {
         ZStack(alignment: .bottom) {
             currentScreen
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+                .frame(maxWidth: .infinity)
+                .padding(.bottom, dockClearance)
 
             BottomDock(
                 selectedTab: $selectedTab,
