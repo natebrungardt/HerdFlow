@@ -18,7 +18,7 @@ struct WorkdaysView: View {
         }
 
         return workdays.filter { workday in
-            let title = workday.title.lowercased()
+            let title = workday.displayTitle.lowercased()
             let summary = workday.summaryText.lowercased()
             let dateString = WorkdaysView.dateFormatter.string(from: workday.dateValue).lowercased()
 
@@ -87,23 +87,39 @@ struct WorkdaysView: View {
 struct WorkdayCardView: View {
     let workday: Workday
 
+    private var statusLabel: String {
+        switch workday.status {
+        case "InProgress": return "In Progress"
+        case "Completed":  return "Completed"
+        default:           return "Planned"
+        }
+    }
+
+    private var statusColor: Color {
+        switch workday.status {
+        case "InProgress": return .blue
+        case "Completed":  return .green
+        default:           return Color(.systemGray4)
+        }
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
             HStack(alignment: .top, spacing: 12) {
-                Text(workday.title)
+                Text(workday.displayTitle)
                     .font(.system(size: 18, weight: .bold, design: .rounded))
                     .foregroundStyle(.primary)
 
                 Spacer(minLength: 12)
 
-                Text(WorkdaysView.dateFormatter.string(from: workday.dateValue))
+                Text(statusLabel)
                     .font(.caption.weight(.semibold))
                     .foregroundStyle(.white)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 8)
                     .background(
                         Capsule()
-                            .fill(Color.green)
+                            .fill(statusColor)
                     )
             }
 
@@ -112,8 +128,8 @@ struct WorkdayCardView: View {
                 .foregroundStyle(.secondary)
 
             Text("Scheduled for \(WorkdaysView.dateFormatter.string(from: workday.dateValue))")
-                    .font(.subheadline)
-                    .foregroundStyle(.primary)
+                .font(.subheadline.weight(.bold))
+                .foregroundStyle(.primary)
         }
         .padding(18)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -161,18 +177,20 @@ private struct EmptyStateView: View {
 
 struct Workday: Identifiable, Codable {
     let id: UUID
-    let title: String
+    let userId: UUID?
+    let title: String?
     let date: String
     let summary: String?
+    let status: String?
     let createdAt: Date
-    let isRemoved: Bool
+    let completedAt: Date?
     let workdayCows: [WorkdayCowAssignment]?
 }
 
 struct WorkdayCowAssignment: Identifiable, Codable {
     let id: UUID
-    let workdayId: UUID
-    let cowId: UUID
+    let workdayId: UUID?
+    let cowId: UUID?
     let status: String?
 }
 
@@ -228,7 +246,6 @@ final class WorkdayService {
                 }
                 return
             }
-
             do {
                 let workdays = try self.decoder.decode([Workday].self, from: data)
                 DispatchQueue.main.async {
@@ -252,6 +269,11 @@ private extension WorkdaysView {
 }
 
 private extension Workday {
+    var displayTitle: String {
+        let t = title?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        return t.isEmpty ? "Untitled Workday" : t
+    }
+
     var summaryText: String {
         summary?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
     }
