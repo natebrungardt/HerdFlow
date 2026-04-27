@@ -1,5 +1,6 @@
 using HerdFlow.Api.DTOs;
 using HerdFlow.Api.Models;
+using HerdFlow.Api.Models.Enums;
 
 namespace HerdFlow.Api.Services;
 
@@ -9,10 +10,21 @@ public class CowChangeLogService
     {
         var changes = new List<string>();
 
+        if (cow.HealthStatus != dto.HealthStatus)
+        {
+            changes.Add(dto.HealthStatus == HealthStatusType.Healthy
+                ? "Marked Healthy"
+                : "Marked Needs Treatment");
+        }
+
+        if (cow.LivestockGroup != dto.LivestockGroup)
+        {
+            var isCleared = !dto.LivestockGroup.HasValue || dto.LivestockGroup == LivestockGroupType.None;
+            changes.Add(isCleared ? "Livestock group cleared" : $"Moved to {dto.LivestockGroup!.Value} group");
+        }
+
         AddChange(changes, cow.TagNumber, dto.TagNumber, "Tag number");
         AddChange(changes, cow.OwnerName, dto.OwnerName, "Owner");
-        AddChange(changes, cow.LivestockGroup, dto.LivestockGroup, "Livestock group");
-        AddChange(changes, cow.HealthStatus, dto.HealthStatus, "Health status");
         AddChange(changes, cow.Breed, dto.Breed, "Breed");
         AddChange(changes, cow.Sex, dto.Sex, "Sex");
         AddChange(changes, cow.Name, dto.Name, "Name");
@@ -32,39 +44,31 @@ public class CowChangeLogService
         AddChange(changes, cow.PregnancyStatus, dto.PregnancyStatus, "Pregnancy status");
         AddChange(changes, cow.HasCalf, dto.HasCalf, "Has calf");
 
-        if (changes.Count == 0)
-        {
-            changes.Add("Cow updated");
-        }
-
         return changes;
     }
 
-    private static void AddChange<T>(
-        List<string> changes,
-        T currentValue,
-        T nextValue,
-        string label)
+    private static void AddChange<T>(List<string> changes, T currentValue, T nextValue, string label)
     {
-        if (EqualityComparer<T>.Default.Equals(currentValue, nextValue))
-        {
-            return;
-        }
+        if (EqualityComparer<T>.Default.Equals(currentValue, nextValue)) return;
 
-        changes.Add(
-            $"{label} changed from {FormatValue(currentValue)} to {FormatValue(nextValue)}");
+        if (currentValue is null)
+            changes.Add($"{label} set to {FormatValue(nextValue)}");
+        else if (nextValue is null)
+            changes.Add($"{label} cleared");
+        else
+            changes.Add($"{label} changed from {FormatValue(currentValue)} to {FormatValue(nextValue)}");
     }
 
     private static string FormatValue<T>(T value)
     {
         return value switch
         {
-            null => "—",
+            null => "none",
             bool boolean => boolean ? "Yes" : "No",
             DateOnly date => date.ToString("MMM dd, yyyy"),
             decimal amount => amount.ToString("0.##"),
             Guid guid => guid.ToString()[..8],
-            _ => value.ToString() ?? "—",
+            _ => value.ToString() ?? "none",
         };
     }
 }

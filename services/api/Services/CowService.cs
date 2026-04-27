@@ -121,28 +121,38 @@ public class CowService
     {
         var cow = await FindCowWithParentsAsync(id);
         ValidateUpdateCow(dto);
-        var normalizedTagNumber = dto.TagNumber.Trim();
-        await EnsureTagNumberIsUniqueAsync(normalizedTagNumber, id);
+        await EnsureTagNumberIsUniqueAsync(dto.TagNumber.Trim(), id);
         await ValidateParentReferencesAsync(dto.SireId, dto.DamId, id);
+
+        // Normalize DTO to match what will actually be saved, so BuildUpdateMessages
+        // compares identical representations on both sides.
+        dto.TagNumber = dto.TagNumber.Trim();
+        dto.Name = NormalizeOptionalText(dto.Name);
+        dto.Color = NormalizeOptionalText(dto.Color);
+        dto.EaseOfBirth = NormalizeOptionalText(dto.EaseOfBirth);
+        dto.SireName = dto.SireId is not null ? null : NormalizeOptionalText(dto.SireName);
+        dto.DamName = dto.DamId is not null ? null : NormalizeOptionalText(dto.DamName);
+        dto.PregnancyStatus = NormalizePregnancyStatus(dto.PregnancyStatus);
+
         var changes = _cowChangeLogService.BuildUpdateMessages(cow, dto);
 
-        cow.TagNumber = normalizedTagNumber;
+        cow.TagNumber = dto.TagNumber;
         cow.OwnerName = dto.OwnerName;
         cow.LivestockGroup = dto.LivestockGroup;
         cow.Sex = dto.Sex;
         cow.Breed = dto.Breed;
-        cow.Name = NormalizeOptionalText(dto.Name);
-        cow.Color = NormalizeOptionalText(dto.Color);
+        cow.Name = dto.Name;
+        cow.Color = dto.Color;
         cow.DateOfBirth = dto.DateOfBirth;
         cow.BirthWeight = dto.BirthWeight;
-        cow.EaseOfBirth = NormalizeOptionalText(dto.EaseOfBirth);
+        cow.EaseOfBirth = dto.EaseOfBirth;
         cow.SireId = dto.SireId;
-        cow.SireName = dto.SireId is not null ? null : NormalizeOptionalText(dto.SireName);
+        cow.SireName = dto.SireName;
         cow.DamId = dto.DamId;
-        cow.DamName = dto.DamId is not null ? null : NormalizeOptionalText(dto.DamName);
+        cow.DamName = dto.DamName;
         cow.HealthStatus = dto.HealthStatus;
         cow.HeatStatus = dto.HeatStatus;
-        cow.PregnancyStatus = NormalizePregnancyStatus(dto.PregnancyStatus);
+        cow.PregnancyStatus = dto.PregnancyStatus;
         cow.HasCalf = dto.HasCalf;
         cow.PurchasePrice = dto.PurchasePrice;
         cow.SalePrice = dto.SalePrice;
