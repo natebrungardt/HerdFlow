@@ -307,6 +307,29 @@ public class WorkdayService
             id,
             cowId,
             stopwatch.ElapsedMilliseconds);
+
+        var tag = await _context.Cows
+            .AsNoTracking()
+            .Where(c => c.Id == cowId)
+            .Select(c => c.TagNumber)
+            .FirstOrDefaultAsync();
+
+        if (string.IsNullOrWhiteSpace(tag))
+        {
+            return;
+        }
+
+        var workdayTitle = await _context.Workdays
+            .AsNoTracking()
+            .Where(w => w.Id == id)
+            .Select(w => w.Title)
+            .FirstOrDefaultAsync() ?? "workday";
+
+        await _activityLogService.LogAsync(
+            cowId,
+            $"Tag {tag} removed from {workdayTitle}",
+            "CowRemovedFromWorkday",
+            id);
     }
 
     public async Task UpdateCowWorkdayStatus(Guid id, Guid cowId, bool isWorked)
@@ -434,27 +457,6 @@ public class WorkdayService
 
         entry.IsCompleted = completed;
         await _context.SaveChangesAsync();
-
-        if (completed)
-        {
-            var tag = await _context.Cows
-                .AsNoTracking()
-                .Where(c => c.Id == cowId)
-                .Select(c => c.TagNumber)
-                .FirstOrDefaultAsync();
-
-            var actionName = await _context.WorkdayActions
-                .AsNoTracking()
-                .Where(a => a.Id == actionId)
-                .Select(a => a.Name)
-                .FirstOrDefaultAsync();
-
-            await _activityLogService.LogAsync(
-                cowId,
-                $"Tag {tag} {actionName?.ToLower()}",
-                "WorkdayActionCompleted",
-                workdayId);
-        }
     }
 
     public async Task StartWorkday(Guid workdayId)
@@ -513,6 +515,8 @@ public class WorkdayService
         }
 
         await _context.SaveChangesAsync();
+
+        await _activityLogService.LogAsync(null, $"{workday.Title} reset", "WorkdayReset", workdayId);
     }
 
     public async Task DeleteWorkday(Guid id)

@@ -162,10 +162,12 @@ public class CowService
         await _context.SaveChangesAsync();
         foreach (var change in changes)
         {
+            var eventType = GetEventType(change);
+            if (eventType == null) continue;
             var description = string.IsNullOrEmpty(change)
                 ? $"Tag {cow.TagNumber}"
                 : $"Tag {cow.TagNumber} {char.ToLower(change[0])}{change[1..]}";
-            await _activityLogService.LogAsync(cow.Id, description, GetEventType(change));
+            await _activityLogService.LogAsync(cow.Id, description, eventType);
         }
 
         var updatedCow = await FindCowWithParentsAsync(id, asNoTracking: true);
@@ -428,20 +430,15 @@ public class CowService
         return userId;
     }
 
-    private static string GetEventType(string change)
+    private static string? GetEventType(string change)
     {
         var normalized = change.ToLowerInvariant();
         return normalized switch
         {
-            var d when d.Contains("marked as")                              => ActivityEventTypes.HealthStatusChanged,
-            var d when d.StartsWith("pregnancy status")                     => ActivityEventTypes.PregnancyStatusChanged,
-            var d when d.StartsWith("has calf")                             => ActivityEventTypes.HasCalfChanged,
-            var d when d.StartsWith("tag number")                           => "TagChanged",
-            var d when d.StartsWith("owner")                                => "OwnerChanged",
-            var d when d.StartsWith("sale price")                           => "SalePriceChanged",
-            var d when d.StartsWith("purchase price")                       => "PurchasePriceChanged",
-            var d when d.StartsWith("moved to") || d.StartsWith("livestock group") => "LivestockGroupChanged",
-            _ => "UnknownChange", // fallback — consider structured event types in future
+            var d when d.Contains("marked as")          => ActivityEventTypes.HealthStatusChanged,
+            var d when d.StartsWith("pregnancy status") => ActivityEventTypes.PregnancyStatusChanged,
+            var d when d.StartsWith("has calf")         => ActivityEventTypes.HasCalfChanged,
+            _ => null,
         };
     }
 
