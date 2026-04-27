@@ -27,8 +27,6 @@ type HerdStatFilter =
   | "Market"
   | "Calf";
 
-type HerdStatLabel = "Total Cows" | HerdStatFilter;
-
 const HERD_FILTER_VALUES: HerdStatFilter[] = [
   "All",
   "Healthy",
@@ -39,7 +37,9 @@ const HERD_FILTER_VALUES: HerdStatFilter[] = [
   "Calf",
 ];
 
-function getFilterFromSearchParams(searchParams: URLSearchParams): HerdStatFilter {
+function getFilterFromSearchParams(
+  searchParams: URLSearchParams,
+): HerdStatFilter {
   const filter = searchParams.get("filter");
 
   if (!filter) {
@@ -62,7 +62,10 @@ function getNormalizedTagNumber(tagNumber: string) {
 }
 
 function normalizeSearchValue(value: string) {
-  return value.trim().toLowerCase().replace(/[^a-z0-9\s]/g, "");
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, "");
 }
 
 function defaultSortCows(cows: Cow[]) {
@@ -189,36 +192,43 @@ function HerdListView({
     return sortCows(matchingCows);
   }, [cows, searchTerm, selectedFilter, sortCows]);
 
-  const stats = useMemo(
-    () => [
-      { label: "Total Cows" as HerdStatLabel, value: cows.length },
-      {
-        label: "Healthy" as HerdStatLabel,
-        value: cows.filter((cow) => cow.healthStatus === "Healthy").length,
-      },
-      {
-        label: "Needs Treatment" as HerdStatLabel,
-        value: cows.filter((cow) => cow.healthStatus !== "Healthy").length,
-      },
-      {
-        label: "Breeding" as HerdStatLabel,
-        value: cows.filter((cow) => cow.livestockGroup === "Breeding").length,
-      },
-      {
-        label: "Feeder" as HerdStatLabel,
-        value: cows.filter((cow) => cow.livestockGroup === "Feeder").length,
-      },
-      {
-        label: "Market" as HerdStatLabel,
-        value: cows.filter((cow) => cow.livestockGroup === "Market").length,
-      },
-      {
-        label: "Calf" as HerdStatLabel,
-        value: cows.filter((cow) => cow.livestockGroup === "Calf").length,
-      },
-    ],
-    [cows],
-  );
+  const stats: { label: string; value: number; filter: HerdStatFilter }[] =
+    useMemo(
+      () => [
+        { label: "Total Cows", filter: "All", value: cows.length },
+        {
+          label: "Healthy",
+          filter: "Healthy",
+          value: cows.filter((cow) => cow.healthStatus === "Healthy").length,
+        },
+        {
+          label: "Needs Treatment",
+          filter: "Needs Treatment",
+          value: cows.filter((cow) => cow.healthStatus !== "Healthy").length,
+        },
+        {
+          label: "Breeding",
+          filter: "Breeding",
+          value: cows.filter((cow) => cow.livestockGroup === "Breeding").length,
+        },
+        {
+          label: "Feeder",
+          filter: "Feeder",
+          value: cows.filter((cow) => cow.livestockGroup === "Feeder").length,
+        },
+        {
+          label: "Market",
+          filter: "Market",
+          value: cows.filter((cow) => cow.livestockGroup === "Market").length,
+        },
+        {
+          label: "Calves",
+          filter: "Calf",
+          value: cows.filter((cow) => cow.livestockGroup === "Calf").length,
+        },
+      ],
+      [cows],
+    );
 
   return (
     <div className="allCowsPage">
@@ -252,17 +262,8 @@ function HerdListView({
               <button
                 key={stat.label}
                 type="button"
-                className={`statsCard statsFilterButton ${
-                  selectedFilter === stat.label ||
-                  (stat.label === "Total Cows" && selectedFilter === "All")
-                    ? "active"
-                    : ""
-                }`.trim()}
-                onClick={() =>
-                  updateSelectedFilter(
-                    stat.label === "Total Cows" ? "All" : stat.label,
-                  )
-                }
+                className={`statsCard statsFilterButton ${selectedFilter === stat.filter ? "active" : ""}`.trim()}
+                onClick={() => updateSelectedFilter(stat.filter)}
               >
                 <div className="statLabel">{stat.label}</div>
                 <div className="statValue">{stat.value}</div>

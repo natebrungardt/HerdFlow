@@ -3,8 +3,14 @@ import SwiftUI
 struct HomeView: View {
     @EnvironmentObject private var authManager: AuthManager
     @State private var workdays: [Workday] = []
+    @State private var cows: [Cow] = []
 
     private let workdayService = WorkdayService()
+    private let cowService = CowService()
+
+    private var needsTreatmentCount: Int { cows.filter { $0.healthStatus == "NeedsTreatment" }.count }
+    private var totalCowsCount: Int { cows.count }
+    private var calvesCount: Int { cows.filter { $0.livestockGroup == "Calf" }.count }
 
     private var upcomingWorkday: Workday? {
         let now = Date()
@@ -24,9 +30,9 @@ struct HomeView: View {
                     .padding(.horizontal, 20)
 
                 HStack(spacing: 14) {
-                    SmallDashboardCard(title: "Herd Summary", subtitle: "Coming soon", icon: "tray.full")
-                    SmallDashboardCard(title: "Active Workdays", subtitle: "Coming soon", icon: "calendar.badge.clock")
-                    SmallDashboardCard(title: "Notes", subtitle: "Coming soon", icon: "note.text")
+                    StatCard(count: needsTreatmentCount, label: "Needs Treatment")
+                    StatCard(count: totalCowsCount, label: "Total Cows")
+                    StatCard(count: calvesCount, label: "Calves")
                 }
                 .padding(.horizontal, 20)
             }
@@ -34,8 +40,8 @@ struct HomeView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .background(Color(.systemGroupedBackground))
-        .onAppear { loadWorkdays() }
-        .onChange(of: authManager.accessToken) { loadWorkdays() }
+        .onAppear { loadWorkdays(); loadCows() }
+        .onChange(of: authManager.accessToken) { loadWorkdays(); loadCows() }
     }
 
     private func loadWorkdays() {
@@ -45,6 +51,16 @@ struct HomeView: View {
         }
         workdayService.fetchWorkdays(accessToken: token) { fetched in
             workdays = fetched
+        }
+    }
+
+    private func loadCows() {
+        guard let token = authManager.accessToken, !token.isEmpty else {
+            cows = []
+            return
+        }
+        cowService.fetchCows(accessToken: token) { fetched in
+            cows = fetched
         }
     }
 }
@@ -130,30 +146,25 @@ private struct UpcomingWorkdayCard: View {
     }
 }
 
-private struct SmallDashboardCard: View {
-    let title: String
-    let subtitle: String
-    let icon: String
+private struct StatCard: View {
+    let count: Int
+    let label: String
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Image(systemName: icon)
-                .font(.title3)
-                .foregroundStyle(.secondary)
+        VStack(alignment: .leading, spacing: 6) {
+            Text("\(count)")
+                .font(.system(size: 32, weight: .bold, design: .rounded))
+                .foregroundStyle(.primary)
 
             Spacer(minLength: 0)
 
-            Text(title)
-                .font(.system(size: 13, weight: .bold, design: .rounded))
-                .foregroundStyle(.primary)
-                .lineLimit(2)
-
-            Text(subtitle)
-                .font(.caption)
+            Text(label)
+                .font(.system(size: 12, weight: .semibold))
                 .foregroundStyle(.secondary)
+                .lineLimit(2)
         }
         .padding(14)
-        .frame(maxWidth: .infinity, minHeight: 110, alignment: .leading)
+        .frame(maxWidth: .infinity, minHeight: 100, alignment: .leading)
         .background(
             RoundedRectangle(cornerRadius: 18, style: .continuous)
                 .fill(Color(.secondarySystemBackground))
