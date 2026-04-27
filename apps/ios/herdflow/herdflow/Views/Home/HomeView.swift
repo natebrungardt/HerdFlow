@@ -8,6 +8,18 @@ struct HomeView: View {
     private let workdayService = WorkdayService()
     private let cowService = CowService()
 
+    private let activityGroups: [ActivityGroup] = [
+        ActivityGroup(label: "Today", items: [
+            ActivityItem(message: "Tag T-101 marked Needs Treatment", time: "2:14 PM"),
+            ActivityItem(message: "Tag T-88 moved to Calf group", time: "11:30 AM"),
+        ]),
+        ActivityGroup(label: "Yesterday", items: [
+            ActivityItem(message: "Tag T-55 owner changed to John Smith", time: "4:00 PM"),
+            ActivityItem(message: "Tag T-22 sale price set to $1,400", time: "1:15 PM"),
+            ActivityItem(message: "Tag T-10 marked Healthy", time: "9:00 AM"),
+        ]),
+    ]
+
     private var needsTreatmentCount: Int { cows.filter { $0.healthStatus == "NeedsTreatment" }.count }
     private var totalCowsCount: Int { cows.count }
     private var calvesCount: Int { cows.filter { $0.livestockGroup == "Calf" }.count }
@@ -35,6 +47,8 @@ struct HomeView: View {
                     StatCard(count: calvesCount, label: "Calves")
                 }
                 .padding(.horizontal, 20)
+
+                RecentActivityView(groups: activityGroups)
             }
             .padding(.bottom, 24)
         }
