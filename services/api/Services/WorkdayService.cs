@@ -18,15 +18,18 @@ public class WorkdayService
     private readonly AppDbContext _context;
     private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly ILogger<WorkdayService> _logger;
+    private readonly ActivityLogService _activityLogService;
 
     public WorkdayService(
         AppDbContext context,
         IHttpContextAccessor httpContextAccessor,
-        ILogger<WorkdayService> logger)
+        ILogger<WorkdayService> logger,
+        ActivityLogService activityLogService)
     {
         _context = context;
         _httpContextAccessor = httpContextAccessor;
         _logger = logger;
+        _activityLogService = activityLogService;
     }
 
     // CREATE
@@ -62,6 +65,7 @@ public class WorkdayService
             throw;
         }
 
+        await _activityLogService.LogAsync(null, $"{workday.Title} created", "WorkdayCreated", workday.Id);
         return workday;
     }
 
@@ -260,6 +264,7 @@ public class WorkdayService
             result.InsertedAssignmentCount);
 
         await EnsureWorkdayEntryGridAsync(id, userId);
+        await LogCowsAddedToWorkdayAsync(id, distinctCowIds);
     }
 
     public async Task RemoveCowFromWorkday(Guid id, Guid cowId)
@@ -430,6 +435,27 @@ public class WorkdayService
 
         entry.IsCompleted = completed;
         await _context.SaveChangesAsync();
+
+        if (completed)
+        {
+            var tag = await _context.Cows
+                .AsNoTracking()
+                .Where(c => c.Id == cowId)
+                .Select(c => c.TagNumber)
+                .FirstOrDefaultAsync();
+
+            var actionName = await _context.WorkdayActions
+                .AsNoTracking()
+                .Where(a => a.Id == actionId)
+                .Select(a => a.Name)
+                .FirstOrDefaultAsync();
+
+            await _activityLogService.LogAsync(
+                cowId,
+                $"Tag {tag} {actionName?.ToLower()}",
+                "WorkdayActionCompleted",
+                workdayId);
+        }
     }
 
     public async Task StartWorkday(Guid workdayId)
@@ -487,6 +513,32 @@ public class WorkdayService
 
         _context.Workdays.Remove(workday);
         await _context.SaveChangesAsync();
+    }
+
+    private async Task LogCowsAddedToWorkdayAsync(Guid workdayId, List<Guid> cowIds)
+    {
+        if (cowIds.Count == 0) return;
+
+        var workdayTitle = await _context.Workdays
+            .AsNoTracking()
+            .Where(w => w.Id == workdayId)
+            .Select(w => w.Title)
+            .FirstOrDefaultAsync() ?? "workday";
+
+        var cowTags = await _context.Cows
+            .AsNoTracking()
+            .Where(c => cowIds.Contains(c.Id))
+            .Select(c => new { c.Id, c.TagNumber })
+            .ToListAsync();
+
+        foreach (var cow in cowTags)
+        {
+            await _activityLogService.LogAsync(
+                cow.Id,
+                $"Tag {cow.TagNumber} added to {workdayTitle}",
+                "CowAddedToWorkday",
+                workdayId);
+        }
     }
 
     private async Task<Workday> FindWorkdayAsync(Guid id)
@@ -745,6 +797,8 @@ public class WorkdayService
                 "WorkdayService.AddCowsToWorkday after SaveChangesAsync for workday {WorkdayId} in {ElapsedMilliseconds}ms",
                 id,
                 stopwatch.ElapsedMilliseconds);
+
+        await LogCowsAddedToWorkdayAsync(id, newCowIds);
         }
         catch (DbUpdateException ex)
         {

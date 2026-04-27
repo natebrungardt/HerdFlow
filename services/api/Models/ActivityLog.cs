@@ -9,9 +9,14 @@ public class ActivityLogEntry
     [Required]
     public string UserId { get; set; } = null!;
 
-    [Required]
-    public Guid CowId { get; set; }
+    public Guid? CowId { get; set; }
     public Cow? Cow { get; set; }
+
+    public Guid? WorkdayId { get; set; }
+    public Workday? Workday { get; set; }
+
+    [Required]
+    public string EventType { get; set; } = null!;
 
     public string Description { get; set; } = string.Empty;
 

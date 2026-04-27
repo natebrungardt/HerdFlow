@@ -162,7 +162,10 @@ public class CowService
         await _context.SaveChangesAsync();
         foreach (var change in changes)
         {
-            await _activityLogService.LogAsync(cow.Id, change);
+            var description = string.IsNullOrEmpty(change)
+                ? $"Tag {cow.TagNumber}"
+                : $"Tag {cow.TagNumber} {char.ToLower(change[0])}{change[1..]}";
+            await _activityLogService.LogAsync(cow.Id, description, GetEventType(change));
         }
 
         var updatedCow = await FindCowWithParentsAsync(id, asNoTracking: true);
@@ -226,7 +229,7 @@ public class CowService
         cow.IsRemoved = true;
         cow.RemovedAt = DateTime.UtcNow;
         await _context.SaveChangesAsync();
-        await _activityLogService.LogAsync(cow.Id, "Cow archived from herd");
+        await _activityLogService.LogAsync(cow.Id, "Cow archived from herd", "CowArchived");
     }
 
     public async Task<List<CowResponseDto>> GetRemovedCowsAsync()
@@ -319,7 +322,7 @@ public class CowService
         cow.IsRemoved = false;
         cow.RemovedAt = null;
         await _context.SaveChangesAsync();
-        await _activityLogService.LogAsync(cow.Id, "Cow restored to herd");
+        await _activityLogService.LogAsync(cow.Id, "Cow restored to herd", "CowRestored");
     }
 
     private async Task<Cow> FindCowAsync(Guid id)
@@ -425,6 +428,18 @@ public class CowService
         return userId;
     }
 
+    private static string GetEventType(string change) => change switch
+    {
+        var d when d.StartsWith("Marked")           => "HealthStatusChanged",
+        var d when d.StartsWith("Tag number")       => "TagChanged",
+        var d when d.StartsWith("Owner")            => "OwnerChanged",
+        var d when d.StartsWith("Sale price")       => "SalePriceChanged",
+        var d when d.StartsWith("Purchase price")   => "PurchasePriceChanged",
+        var d when d.StartsWith("Moved to")
+                || d.StartsWith("Livestock group")  => "LivestockGroupChanged",
+        _                                           => "UnknownChange",
+    };
+
     private static bool WasDuplicatePrimaryKeyInsert(DbUpdateException exception)
     {
         return exception.InnerException is PostgresException postgresException
@@ -493,7 +508,7 @@ public class CowService
             throw new ConflictException("Tag number already exists.");
         }
 
-        await _activityLogService.LogAsync(cow.Id, "Cow record created");
+        await _activityLogService.LogAsync(cow.Id, "Cow record created", "CowCreated");
         var createdCow = await FindCowWithParentsAsync(cow.Id, asNoTracking: true);
         return MapCowResponse(createdCow);
     }

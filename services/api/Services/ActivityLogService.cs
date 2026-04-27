@@ -18,11 +18,13 @@ public class ActivityLogService
         _httpContextAccessor = httpContextAccessor;
     }
 
-    public async Task LogAsync(Guid cowId, string description)
+    public async Task LogAsync(Guid? cowId, string description, string eventType, Guid? workdayId = null)
     {
         var entry = new ActivityLogEntry
         {
             CowId = cowId,
+            WorkdayId = workdayId,
+            EventType = eventType,
             Description = description,
             UserId = GetCurrentUserId(),
         };
@@ -44,6 +46,10 @@ public class ActivityLogService
             throw;
         }
     }
+
+    // Backward-compat wrapper
+    public Task LogAsync(Guid cowId, string description)
+        => LogAsync(cowId, description, "CowUpdate");
 
     public async Task<List<ActivityLogEntry>> GetByCowIdAsync(Guid cowId)
     {
