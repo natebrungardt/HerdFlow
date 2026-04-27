@@ -78,7 +78,7 @@ struct WorkdaysView: View {
 
         workdayService.fetchWorkdays(accessToken: token) { fetchedWorkdays in
             workdays = fetchedWorkdays.sorted {
-                $0.createdAt > $1.createdAt
+                ($0.createdAt ?? .distantPast) > ($1.createdAt ?? .distantPast)
             }
         }
     }
@@ -179,10 +179,10 @@ struct Workday: Identifiable, Codable {
     let id: UUID
     let userId: UUID?
     let title: String?
-    let date: String
+    let date: String?
     let summary: String?
     let status: String?
-    let createdAt: Date
+    let createdAt: Date?
     let completedAt: Date?
     let workdayCows: [WorkdayCowAssignment]?
 }
@@ -268,7 +268,7 @@ private extension WorkdaysView {
     }()
 }
 
-private extension Workday {
+extension Workday {
     var displayTitle: String {
         let t = title?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
         return t.isEmpty ? "Untitled Workday" : t
@@ -283,7 +283,10 @@ private extension Workday {
     }
 
     var dateValue: Date {
-        Self.dateOnlyFormatter.date(from: date) ?? createdAt
+        if let d = date, let parsed = Self.dateOnlyFormatter.date(from: d) {
+            return parsed
+        }
+        return createdAt ?? Date()
     }
 
     static let dateOnlyFormatter: DateFormatter = {
