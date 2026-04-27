@@ -428,17 +428,22 @@ public class CowService
         return userId;
     }
 
-    private static string GetEventType(string change) => change switch
+    private static string GetEventType(string change)
     {
-        var d when d.StartsWith("Marked")           => "HealthStatusChanged",
-        var d when d.StartsWith("Tag number")       => "TagChanged",
-        var d when d.StartsWith("Owner")            => "OwnerChanged",
-        var d when d.StartsWith("Sale price")       => "SalePriceChanged",
-        var d when d.StartsWith("Purchase price")   => "PurchasePriceChanged",
-        var d when d.StartsWith("Moved to")
-                || d.StartsWith("Livestock group")  => "LivestockGroupChanged",
-        _                                           => "UnknownChange",
-    };
+        var normalized = change.ToLowerInvariant();
+        return normalized switch
+        {
+            var d when d.Contains("marked as")                              => ActivityEventTypes.HealthStatusChanged,
+            var d when d.StartsWith("pregnancy status")                     => ActivityEventTypes.PregnancyStatusChanged,
+            var d when d.StartsWith("has calf")                             => ActivityEventTypes.HasCalfChanged,
+            var d when d.StartsWith("tag number")                           => "TagChanged",
+            var d when d.StartsWith("owner")                                => "OwnerChanged",
+            var d when d.StartsWith("sale price")                           => "SalePriceChanged",
+            var d when d.StartsWith("purchase price")                       => "PurchasePriceChanged",
+            var d when d.StartsWith("moved to") || d.StartsWith("livestock group") => "LivestockGroupChanged",
+            _ => "UnknownChange", // fallback — consider structured event types in future
+        };
+    }
 
     private static bool WasDuplicatePrimaryKeyInsert(DbUpdateException exception)
     {
@@ -508,7 +513,7 @@ public class CowService
             throw new ConflictException("Tag number already exists.");
         }
 
-        await _activityLogService.LogAsync(cow.Id, "Cow record created", "CowCreated");
+        await _activityLogService.LogAsync(cow.Id, "Cow record created", ActivityEventTypes.CowCreated);
         var createdCow = await FindCowWithParentsAsync(cow.Id, asNoTracking: true);
         return MapCowResponse(createdCow);
     }

@@ -65,7 +65,7 @@ public class WorkdayService
             throw;
         }
 
-        await _activityLogService.LogAsync(null, $"{workday.Title} created", "WorkdayCreated", workday.Id);
+        await _activityLogService.LogAsync(null, $"{workday.Title} created", ActivityEventTypes.WorkdayCreated, workday.Id);
         return workday;
     }
 
@@ -471,6 +471,14 @@ public class WorkdayService
         {
             throw new NotFoundException("Workday not found.");
         }
+
+        var title = await _context.Workdays
+            .AsNoTracking()
+            .Where(w => w.Id == workdayId && w.UserId == userId)
+            .Select(w => w.Title)
+            .FirstOrDefaultAsync() ?? "Workday";
+
+        await _activityLogService.LogAsync(null, $"{title} started", ActivityEventTypes.WorkdayStarted, workdayId);
     }
 
     public async Task CompleteWorkday(Guid workdayId)
@@ -479,6 +487,7 @@ public class WorkdayService
         workday.Status = WorkdayStatus.Completed;
         workday.CompletedAt = DateTime.UtcNow;
         await _context.SaveChangesAsync();
+        await _activityLogService.LogAsync(null, $"{workday.Title} completed", ActivityEventTypes.WorkdayCompleted, workdayId);
     }
 
     public async Task ResetWorkdayAsync(Guid workdayId)
