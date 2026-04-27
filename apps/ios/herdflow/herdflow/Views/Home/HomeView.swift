@@ -4,21 +4,12 @@ struct HomeView: View {
     @EnvironmentObject private var authManager: AuthManager
     @State private var workdays: [Workday] = []
     @State private var cows: [Cow] = []
+    @State private var activityGroups: [ActivityGroup] = []
+    @State private var isLoadingActivity = false
 
     private let workdayService = WorkdayService()
     private let cowService = CowService()
-
-    private let activityGroups: [ActivityGroup] = [
-        ActivityGroup(label: "Today", items: [
-            ActivityItem(message: "Tag T-101 marked Needs Treatment", time: "2:14 PM"),
-            ActivityItem(message: "Tag T-88 moved to Calf group", time: "11:30 AM"),
-        ]),
-        ActivityGroup(label: "Yesterday", items: [
-            ActivityItem(message: "Tag T-55 owner changed to John Smith", time: "4:00 PM"),
-            ActivityItem(message: "Tag T-22 sale price set to $1,400", time: "1:15 PM"),
-            ActivityItem(message: "Tag T-10 marked Healthy", time: "9:00 AM"),
-        ]),
-    ]
+    private let activityService = ActivityService()
 
     private var needsTreatmentCount: Int { cows.filter { $0.healthStatus == "NeedsTreatment" }.count }
     private var totalCowsCount: Int { cows.count }
@@ -48,14 +39,42 @@ struct HomeView: View {
                 }
                 .padding(.horizontal, 20)
 
-                RecentActivityView(groups: activityGroups)
+                if isLoadingActivity && activityGroups.isEmpty {
+                    ProgressView()
+                        .frame(maxWidth: .infinity)
+                        .padding(.top, 12)
+                } else if activityGroups.isEmpty {
+                    Text("No recent activity")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .frame(maxWidth: .infinity)
+                        .padding(.top, 12)
+                } else {
+                    RecentActivityView(groups: activityGroups)
+                }
             }
             .padding(.bottom, 24)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .background(Color(.systemGroupedBackground))
-        .onAppear { loadWorkdays(); loadCows() }
-        .onChange(of: authManager.accessToken) { loadWorkdays(); loadCows() }
+        .onAppear { loadWorkdays(); loadCows(); loadActivity() }
+        .onChange(of: authManager.accessToken) { loadWorkdays(); loadCows(); loadActivity() }
+    }
+
+    private func loadActivity() {
+        guard let token = authManager.accessToken, !token.isEmpty else {
+            activityGroups = []
+            return
+        }
+        isLoadingActivity = true
+        Task {
+            let responses = await activityService.fetchActivity(accessToken: token, limit: 10)
+            let groups = groupActivity(responses)
+            await MainActor.run {
+                activityGroups = groups
+                isLoadingActivity = false
+            }
+        }
     }
 
     private func loadWorkdays() {
