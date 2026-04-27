@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Dispatch, SetStateAction } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Modal from "../../components/shared/Modal";
@@ -85,6 +85,7 @@ function WorkdayPage() {
   const [removeSuccessMessage, setRemoveSuccessMessage] = useState("");
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const actionInputRef = useRef<HTMLInputElement>(null);
+  const titleDebounceRef = useRef<number | null>(null);
 
   const healthStatusFilters = ["Healthy", "Needs Treatment"];
   const livestockGroupFilters = livestockGroupOptions.map(
@@ -112,7 +113,7 @@ function WorkdayPage() {
         setTitle(workdayData.title);
         setDate(formatDateInput(workdayData.date));
         setSummary(workdayData.summary ?? "");
-        setSaveStatus("Saved");
+        setSaveStatus(workdayData.title.trim() ? "Saved" : "Unsaved");
         setAllCows(cowsData);
       } catch (err) {
         const message =
@@ -208,8 +209,20 @@ function WorkdayPage() {
 
     return JSON.stringify(currentDetails) !== JSON.stringify(savedDetails);
   }, [date, summary, title, workday]);
+  const isUnsaved = !title.trim();
+  const handleDraftConfirm = useCallback(async () => {
+    if (workday) {
+      await deleteWorkday(workday.id);
+    }
+  }, [workday]);
   const { allowNavigation } = useUnsavedChangesGuard({
-    hasUnsavedChanges,
+    hasUnsavedChanges: isUnsaved || hasUnsavedChanges,
+    title: isUnsaved ? "Unsaved Draft" : undefined,
+    message: isUnsaved
+      ? "You haven't entered a workday name. This draft will not be saved."
+      : undefined,
+    confirmText: isUnsaved ? "Leave" : undefined,
+    onConfirm: isUnsaved ? handleDraftConfirm : undefined,
   });
 
   function toggleFilter(
@@ -344,6 +357,11 @@ function WorkdayPage() {
 
   async function handleSaveDetails() {
     if (!workday) return;
+
+    if (titleDebounceRef.current !== null) {
+      window.clearTimeout(titleDebounceRef.current);
+      titleDebounceRef.current = null;
+    }
 
     const normalizedCurrent = normalizeWorkdayDetails({
       title,
@@ -584,6 +602,49 @@ function WorkdayPage() {
     }
   }
 
+  function handleWorkdayFieldChange(
+    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) {
+    const { name, value } = event.target;
+    setError("");
+
+    if (name === "title") {
+      setTitle(value);
+      const trimmed = value.trim();
+      setSaveStatus(trimmed ? "Saving..." : "Unsaved");
+
+      if (titleDebounceRef.current !== null) {
+        window.clearTimeout(titleDebounceRef.current);
+      }
+
+      if (trimmed && workday) {
+        titleDebounceRef.current = window.setTimeout(() => {
+          void updateWorkday(workday.id, {
+            title: trimmed,
+            date: date || "",
+            summary: summary.trim() || null,
+          })
+            .then((updated) => {
+              setWorkday((current) => ({
+                ...updated,
+                workdayCows: current?.workdayCows ?? updated.workdayCows,
+                actions: current?.actions ?? updated.actions,
+              }));
+              setTitle(updated.title);
+              setSaveStatus("Saved");
+            })
+            .catch(() => {
+              setSaveStatus("Unsaved changes");
+            });
+        }, 400);
+      }
+    } else {
+      setSaveStatus("Unsaved changes");
+      if (name === "date") setDate(value);
+      if (name === "summary") setSummary(value);
+    }
+  }
+
   function handleBackClick() {
     navigate("/workdays");
   }
@@ -672,14 +733,7 @@ function WorkdayPage() {
                 saveStatus={saveStatus}
                 heading="Workday Details"
                 subtle="Update the basics for this workday before the crew heads out."
-                onChange={(event) => {
-                  const { name, value } = event.target;
-                  setError("");
-                  setSaveStatus("Unsaved changes");
-                  if (name === "title") setTitle(value);
-                  if (name === "date") setDate(value);
-                  if (name === "summary") setSummary(value);
-                }}
+                onChange={handleWorkdayFieldChange}
                 onCommit={handleSaveDetails}
                 onKeyDown={handleWorkdayFieldKeyDown}
               />

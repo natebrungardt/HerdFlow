@@ -4,9 +4,9 @@ namespace HerdFlow.Api.DTOs;
 
 public class CreateWorkdayDto
 {
-    [Required]
+
     [MaxLength(120)]
-    public string Title { get; set; } = string.Empty;
+    public string? Title { get; set; } = string.Empty;
 
     public DateOnly? Date { get; set; }
 

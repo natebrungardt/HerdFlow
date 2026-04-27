@@ -116,6 +116,12 @@ public class AppDbContext : DbContext
             .WithMany(a => a.Entries)
             .HasForeignKey(e => e.ActionId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<ActivityLogEntry>()
+            .HasOne(a => a.Workday)
+            .WithMany()
+            .HasForeignKey(a => a.WorkdayId)
+            .OnDelete(DeleteBehavior.SetNull);
     }
 
 }

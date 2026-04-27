@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { createWorkday } from "../../services/workdayService";
 import "../../styles/AllCows.css";
 
-const DEFAULT_WORKDAY_TITLE = "New Workday";
+const DEFAULT_WORKDAY_TITLE = "";
 
 function AddWorkdayPage() {
   const navigate = useNavigate();

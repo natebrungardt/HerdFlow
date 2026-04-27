@@ -65,7 +65,11 @@ public class WorkdayService
             throw;
         }
 
-        await _activityLogService.LogAsync(null, $"{workday.Title} created", ActivityEventTypes.WorkdayCreated, workday.Id);
+        if (!string.IsNullOrWhiteSpace(workday.Title))
+        {
+            await _activityLogService.LogAsync(null, $"{workday.Title} created", ActivityEventTypes.WorkdayCreated, workday.Id);
+        }
+
         return workday;
     }
 

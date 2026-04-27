@@ -16,6 +16,8 @@ type UnsavedChangesRegistration = {
   hasUnsavedChanges: boolean;
   title?: string;
   message?: string;
+  confirmText?: string;
+  onConfirm?: () => Promise<void> | void;
 };
 
 type UnsavedChangesContextValue = {
@@ -150,7 +152,7 @@ export function UnsavedChangesProvider({
         isOpen={showUnsavedModal}
         title={activeRegistration?.title ?? DEFAULT_TITLE}
         message={activeRegistration?.message ?? DEFAULT_MESSAGE}
-        confirmText="Leave Without Saving"
+        confirmText={activeRegistration?.confirmText ?? "Leave Without Saving"}
         confirmVariant="danger"
         onCancel={() => {
           setShowUnsavedModal(false);
@@ -159,8 +161,17 @@ export function UnsavedChangesProvider({
             blocker.reset();
           }
         }}
-        onConfirm={() => {
+        onConfirm={async () => {
           setShowUnsavedModal(false);
+
+          try {
+            if (activeRegistration?.onConfirm) {
+              await activeRegistration.onConfirm();
+            }
+          } catch {
+            // onConfirm failure must not block navigation
+          }
+
           allowNextNavigationRef.current = true;
 
           if (blocker.state === "blocked") {
@@ -176,12 +187,16 @@ type UseUnsavedChangesGuardOptions = {
   hasUnsavedChanges: boolean;
   message?: string;
   title?: string;
+  confirmText?: string;
+  onConfirm?: () => Promise<void> | void;
 };
 
 export function useUnsavedChangesGuard({
   hasUnsavedChanges,
   title = DEFAULT_TITLE,
   message = DEFAULT_MESSAGE,
+  confirmText,
+  onConfirm,
 }: UseUnsavedChangesGuardOptions) {
   const context = useContext(UnsavedChangesContext);
 
@@ -192,18 +207,22 @@ export function useUnsavedChangesGuard({
   }
 
   const id = useId();
+  const onConfirmRef = useRef(onConfirm);
+  onConfirmRef.current = onConfirm;
 
   useEffect(() => {
     context.setRegistration(id, {
       hasUnsavedChanges,
       title,
       message,
+      confirmText,
+      onConfirm: onConfirmRef.current ? () => onConfirmRef.current?.() : undefined,
     });
 
     return () => {
       context.clearRegistration(id);
     };
-  }, [context, hasUnsavedChanges, id, message, title]);
+  }, [context, hasUnsavedChanges, id, message, title, confirmText]);
 
   return {
     allowNavigation: context.allowNavigation,

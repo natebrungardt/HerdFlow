@@ -3,6 +3,7 @@ using System;
 using HerdFlow.Api.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace HerdFlow.Api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260427173747_FixActivityLogWorkdayFk")]
+    partial class FixActivityLogWorkdayFk
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -251,7 +254,7 @@ namespace HerdFlow.Api.Migrations
                         .HasMaxLength(120)
                         .HasColumnType("character varying(120)");
 
-                    b.Property<Guid?>("WorkdayId")
+                    b.Property<Guid>("WorkdayId")
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
@@ -391,7 +394,8 @@ namespace HerdFlow.Api.Migrations
                     b.HasOne("HerdFlow.Api.Models.Workday", "Workday")
                         .WithMany("Actions")
                         .HasForeignKey("WorkdayId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Workday");
                 });

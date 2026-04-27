@@ -7,7 +7,7 @@ public class WorkdayAction
 {
     public Guid Id { get; set; } = Guid.NewGuid();
 
-    public Guid WorkdayId { get; set; }
+    public Guid? WorkdayId { get; set; }
 
     [JsonIgnore]
     public Workday Workday { get; set; } = null!;
