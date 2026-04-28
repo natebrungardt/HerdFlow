@@ -93,8 +93,17 @@ function Dashboard() {
   );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [refreshKey, setRefreshKey] = useState(0);
   const farmLabel = getDashboardFarmLabel(user);
   const hasFarmName = Boolean(getUserFarmName(user));
+
+  useEffect(() => {
+    function handleHerdImported() {
+      setRefreshKey((k) => k + 1);
+    }
+    window.addEventListener("herd:imported", handleHerdImported);
+    return () => window.removeEventListener("herd:imported", handleHerdImported);
+  }, []);
 
   useEffect(() => {
     async function loadDashboard() {
@@ -122,7 +131,7 @@ function Dashboard() {
     }
 
     void loadDashboard();
-  }, []);
+  }, [refreshKey]);
 
   const upcomingWorkdays = useMemo(() => {
     return [...workdays].sort((leftWorkday, rightWorkday) => {

@@ -29,7 +29,6 @@ const TEMPLATE_FIELDS: { label: string; required?: true }[] = [
   { label: "Health Status" },
   { label: "Heat Status" },
   { label: "Pregnancy Status" },
-  { label: "Has Calf" },
   { label: "Purchase Price" },
   { label: "Sale Price" },
   { label: "Purchase Date" },
@@ -143,6 +142,9 @@ export default function ImportModal({ isOpen, onClose }: ImportModalProps) {
       const importResult = await importCowsCsv(file);
       setResult(importResult);
       setStep("results");
+      if (importResult.importedCount > 0) {
+        window.dispatchEvent(new CustomEvent("herd:imported"));
+      }
     } catch (err) {
       setUploadError(
         err instanceof Error ? err.message : "Import failed. Please try again.",

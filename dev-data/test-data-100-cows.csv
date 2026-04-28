@@ -1,101 +1,101 @@
 Tag Number,Owner Name,Livestock Group,Sex,Breed,Name,Color,Date of Birth,Birth Weight,Ease of Birth,Sire,Dam,Health Status,Heat Status,Pregnancy Status,Has Calf,Purchase Price,Sale Price,Purchase Date,Sale Date,Notes
-C-001,Smith Ranch,Lactating,Female,Hereford,Bessie,Black,2019-04-03,73,Easy,S-018,D-003,Healthy,,Unknown,Yes,1183,,2019-03-03,,Watch for pinkeye
-C-002,Smith Ranch,Dry,Female,Angus,Daisy,White,2020-07-08,102,Easy,S-001,D-025,Healthy,,Open,No,1436,,2020-07-23,,
+C-001,Smith Ranch,Feeder,Female,Hereford,Bessie,Black,2019-04-03,73,Easy,S-018,D-003,Healthy,WatchHeat,Unknown,No,1695,,2019-07-11,,
+C-002,Smith Ranch,Calf,Female,Angus,Daisy,White,2020-07-08,102,Easy,S-001,D-025,Healthy,NotInHeat,Open,No,1436,,2020-07-23,,
 C-003,Smith Ranch,Breeding,Female,Brahman,Rosie,Red,2018-07-18,87,Easy,S-020,D-009,Healthy,,Pregnant,No,2350,3439.28,2019-09-13,2021-11-01,
-C-004,Smith Ranch,Breeding,Female,Brahman,Maggie,White,2021-09-16,79,Easy,S-003,D-028,Healthy,,Open,Yes,3403,,2021-07-17,,First calf expected in spring
-C-005,Smith Ranch,Replacement,Female,Brahman,Lucy,Brown,2019-07-01,69,Difficult,S-006,D-018,Treated - Recovered,,Open,Yes,3421,,2020-07-06,,Top performer in herd
-C-006,Smith Ranch,Replacement,Female,Brahman,Molly,Black,2022-07-07,85,Moderate,S-009,D-003,Healthy,0.0,Open,No,2844,,2022-09-04,,
-C-007,Smith Ranch,Lactating,Female,Red Angus,Nellie,Black Baldy,2019-05-21,100,Difficult,S-009,D-024,Healthy,,Unknown,Yes,2435,,2022-04-10,,First calf expected in spring
+C-004,Smith Ranch,Breeding,Female,Brahman,Maggie,White,2021-09-16,79,Easy,S-003,D-028,Healthy,,Open,No,2657,,2020-07-23,,Strong maternal instincts
+C-005,Smith Ranch,Feeder,Female,Simmental,Lucy,Brown,2021-10-04,82,Easy,S-020,D-021,Healthy,InHeat,Open,No,2693,,2019-12-01,,
+C-006,Smith Ranch,Breeding,Female,Charolais,Molly,Brown,2022-08-11,67,Easy,S-013,D-009,Healthy,,Pregnant,Yes,2088,,2023-11-30,,Calm disposition
+C-007,Smith Ranch,Market,Female,Shorthorn,Nellie,Brindle,2018-10-13,80,Difficult,S-018,D-009,Healthy,,Unknown,No,2282,,2021-03-28,,First calf expected in spring
 C-008,Smith Ranch,Breeding,Female,Red Angus,Belle,Red,2018-11-10,105,Easy,S-014,D-020,Healthy,,Pregnant,No,2967,,2021-08-16,,Watch for pinkeye
-C-009,Smith Ranch,Lactating,Female,Angus,Clara,Red,2019-11-28,72,Easy,S-014,D-006,Treated - Recovered,,Confirmed Bred,Yes,1878,,2023-01-18,,
-C-010,Smith Ranch,Lactating,Female,Simmental,Dolly,Red,2020-11-05,103,Easy,S-005,D-012,Treated - Recovered,,Open,Yes,2972,,2023-05-14,,
-C-011,Smith Ranch,Breeding,Female,Brahman,Flora,Brindle,2023-03-18,88,Easy,S-008,D-002,Healthy,0.0,Open,No,1083,,2021-09-22,,Watch for pinkeye
-C-012,Smith Ranch,Dry,Female,Simmental,Grace,Black Baldy,2018-12-05,81,Difficult,S-020,D-014,Under Observation,1.0,Open,No,2076,,2022-12-31,,
-C-013,Smith Ranch,Dry,Female,Brahman,Harriet,Brindle,2019-05-23,79,Easy,S-011,D-001,Healthy,,Unknown,No,829,702.25,2020-03-27,2024-04-07,Excellent milker
-C-014,Smith Ranch,Breeding,Female,Angus,Iris,Brown,2019-05-03,82,Moderate,S-007,D-018,Under Observation,1.0,Open,No,1795,,2021-08-26,,
-C-015,Smith Ranch,Breeding,Female,Shorthorn,Jasmine,White,2021-09-11,92,Easy,S-014,D-014,Healthy,,Confirmed Bred,No,3446,4764.34,2022-08-31,2024-04-14,
-C-016,Smith Ranch,Replacement,Female,Hereford,Katy,White,2021-01-03,93,Easy,S-014,D-006,Healthy,,Pregnant,No,2615,,2019-06-04,,Watch for pinkeye
-C-017,Smith Ranch,Breeding,Female,Hereford,Lulu,Black,2023-03-13,80,Easy,S-014,D-016,Healthy,1.0,Confirmed Bred,Yes,2352,2380.61,2019-12-04,2022-08-09,
-C-018,Smith Ranch,Dry,Female,Red Angus,Mabel,Roan,2023-05-15,100,Moderate,S-005,D-007,Treated - Recovered,1.0,Pregnant,Yes,1049,,2022-01-15,,Good temperament
-C-019,Smith Ranch,Replacement,Female,Angus,Nora,Brindle,2023-05-22,97,Easy,S-006,D-003,Healthy,0.0,Unknown,Yes,3133,,2019-09-03,,
-C-020,Smith Ranch,Dry,Female,Angus,Olive,Red,2021-04-10,101,Difficult,S-011,D-030,Treated - Recovered,0.0,Pregnant,Yes,2421,2517.83,2020-06-27,2024-08-06,Strong maternal instincts
-C-021,Smith Ranch,Dry,Female,Hereford,Penny,Black,2021-02-27,71,Easy,S-018,D-007,Under Observation,,Unknown,No,1081,,2020-12-15,,Strong maternal instincts
-C-022,Smith Ranch,Dry,Female,Limousin,Quinn,Black Baldy,2021-12-11,84,Difficult,S-017,D-001,Under Observation,0.0,Unknown,No,1350,,2023-12-04,,Excellent milker
-C-023,Smith Ranch,Lactating,Female,Simmental,Ruby,Roan,2019-03-08,86,Easy,S-009,D-017,Under Observation,,Confirmed Bred,Yes,1008,1475.19,2023-09-29,2024-10-29,Good temperament
-C-024,Smith Ranch,Replacement,Female,Angus,Sally,Brown,2023-06-30,81,Easy,S-015,D-018,Treated - Recovered,,Confirmed Bred,No,1410,,2019-06-04,,Strong maternal instincts
-C-025,Smith Ranch,Replacement,Female,Simmental,Tilly,Dun,2019-09-24,88,Easy,S-012,D-007,Healthy,,Open,No,3093,,2023-05-17,,Excellent conformation
-C-026,Smith Ranch,Replacement,Female,Simmental,Uma,White,2022-12-11,91,Easy,S-006,D-024,Healthy,1.0,Pregnant,No,1816,,2023-07-19,,
-C-027,Smith Ranch,Breeding,Female,Hereford,Violet,Dun,2019-04-01,77,Moderate,S-012,D-010,Healthy,,Open,Yes,2432,,2020-01-31,,Excellent milker
-C-028,Smith Ranch,Dry,Female,Limousin,Winnie,Brown,2022-09-24,99,Easy,S-001,D-004,Treated - Recovered,,Pregnant,Yes,956,1029.18,2020-06-27,2023-06-01,
-C-029,Smith Ranch,Breeding,Female,Brahman,Xena,Dun,2023-01-17,101,Easy,S-009,D-002,Healthy,,Confirmed Bred,Yes,3005,,2023-07-10,,
-C-030,Smith Ranch,Dry,Female,Charolais,Yola,Brown,2023-04-28,86,Difficult,S-011,D-022,Healthy,1.0,Pregnant,No,2472,,2022-09-27,,
-C-031,Smith Ranch,Replacement,Female,Limousin,Zelda,Black Baldy,2021-09-23,89,Easy,S-020,D-019,Healthy,,Pregnant,No,2044,,2019-01-01,,Excellent conformation
-C-032,Smith Ranch,Dry,Female,Brahman,Annie,Brindle,2021-10-15,78,Difficult,S-016,D-026,Healthy,,Open,No,3392,,2021-11-21,,Excellent milker
-C-033,Smith Ranch,Replacement,Female,Charolais,Betty,Roan,2018-10-29,66,Easy,S-008,D-016,Healthy,,Unknown,Yes,3379,,2023-12-20,,
-C-034,Smith Ranch,Dry,Female,Shorthorn,Cora,Brindle,2018-10-30,65,Easy,S-014,D-008,Healthy,,Open,No,3083,,2019-04-13,,Excellent milker
-C-035,Smith Ranch,Dry,Female,Red Angus,Dottie,Black Baldy,2020-12-23,100,Difficult,S-011,D-025,Treated - Recovered,1.0,Confirmed Bred,No,3044,,2021-05-23,,First calf expected in spring
-C-036,Smith Ranch,Lactating,Female,Red Angus,Ellie,Brindle,2022-09-17,105,Easy,S-017,D-016,Healthy,,Open,Yes,1970,,2019-06-08,,Strong maternal instincts
-C-037,Smith Ranch,Replacement,Female,Brahman,Faye,Red,2019-04-19,89,Easy,S-007,D-003,Healthy,,Confirmed Bred,No,2503,2782.29,2021-08-12,2024-06-17,
-C-038,Smith Ranch,Dry,Female,Angus,Greta,Dun,2023-04-15,87,Easy,S-013,D-028,Healthy,1.0,Confirmed Bred,No,1703,,2022-05-20,,Monitor weight gain
-C-039,Smith Ranch,Breeding,Female,Shorthorn,Hazel,Brindle,2019-11-20,90,Easy,S-015,D-030,Healthy,,Open,No,3224,,2021-03-17,,Good temperament
-C-040,Smith Ranch,Replacement,Female,Hereford,Ivy,Dun,2019-01-08,68,Easy,S-013,D-011,Healthy,,Open,No,2352,,2023-04-08,,Excellent conformation
-C-041,Smith Ranch,Dry,Female,Limousin,June,Red,2022-03-15,99,Easy,S-012,D-008,Healthy,,Pregnant,No,1812,,2019-03-05,,Good temperament
-C-042,Smith Ranch,Replacement,Female,Simmental,Kitty,White,2021-10-03,72,Difficult,S-007,D-015,Healthy,,Pregnant,No,1269,,2022-05-28,,First calf expected in spring
-C-043,Smith Ranch,Breeding,Female,Limousin,Lena,Red,2021-03-25,89,Moderate,S-007,D-003,Healthy,0.0,Unknown,No,2035,,2022-11-28,,
-C-044,Smith Ranch,Lactating,Female,Hereford,Mae,Black,2020-05-27,88,Easy,S-017,D-021,Under Observation,,Pregnant,Yes,2807,3672.87,2021-05-10,2023-11-17,Calm disposition
-C-045,Smith Ranch,Replacement,Female,Simmental,Nancy,Dun,2020-12-04,82,Difficult,S-018,D-025,Treated - Recovered,,Confirmed Bred,No,3226,,2023-02-06,,Top performer in herd
-C-046,Smith Ranch,Dry,Female,Hereford,Opal,Roan,2022-03-17,94,Difficult,S-020,D-022,Healthy,,Confirmed Bred,No,2131,,2023-10-09,,Top performer in herd
-C-047,Smith Ranch,Lactating,Female,Brahman,Patsy,Roan,2022-12-08,103,Easy,S-018,D-001,Healthy,0.0,Unknown,Yes,2464,,2023-01-14,,
-C-048,Smith Ranch,Dry,Female,Charolais,Queenie,Brindle,2022-06-12,66,Easy,S-010,D-008,Healthy,,Confirmed Bred,No,3182,,2022-09-21,,Watch for pinkeye
-C-049,Smith Ranch,Lactating,Female,Brahman,Ruth,Dun,2021-12-10,94,Easy,S-010,D-009,Healthy,,Open,Yes,2092,3264.99,2020-01-30,2023-07-30,
-C-050,Smith Ranch,Replacement,Female,Simmental,Stella,White,2020-09-18,82,Difficult,S-017,D-020,Treated - Recovered,0.0,Pregnant,Yes,1534,,2021-01-09,,
-C-051,Smith Ranch,Breeding,Female,Simmental,Trudy,Roan,2021-02-07,83,Easy,S-016,D-004,Healthy,,Pregnant,No,2604,,2021-09-07,,Good temperament
-C-052,Smith Ranch,Breeding,Female,Limousin,Una,Brindle,2020-03-31,96,Easy,S-019,D-021,Healthy,,Pregnant,Yes,2044,1828.89,2022-02-26,2023-05-06,
-C-053,Smith Ranch,Dry,Female,Shorthorn,Vera,White,2023-02-04,93,Easy,S-019,D-014,Healthy,1.0,Pregnant,No,1206,,2023-02-24,,Top performer in herd
-C-054,Smith Ranch,Breeding,Female,Charolais,Wanda,Roan,2019-05-07,76,Difficult,S-003,D-006,Healthy,,Pregnant,No,2724,,2022-05-01,,Top performer in herd
-C-055,Smith Ranch,Dry,Female,Limousin,Xyla,Roan,2021-11-08,79,Easy,S-019,D-022,Healthy,,Open,No,3452,5044.42,2020-04-05,2022-03-30,Excellent milker
-C-056,Smith Ranch,Lactating,Female,Angus,Yvette,Black Baldy,2022-03-14,101,Easy,S-015,D-004,Under Observation,1.0,Confirmed Bred,Yes,2849,,2020-07-11,,Calm disposition
-C-057,Smith Ranch,Dry,Female,Hereford,Zora,Black,2019-10-23,103,Easy,S-001,D-003,Treated - Recovered,1.0,Open,No,1903,,2019-02-12,,
-C-058,Smith Ranch,Dry,Female,Simmental,Ada,Brindle,2019-01-07,102,Moderate,S-016,D-003,Healthy,,Confirmed Bred,No,1228,,2020-10-19,,Strong maternal instincts
-C-059,Smith Ranch,Lactating,Female,Shorthorn,Bea,Brindle,2023-04-20,90,Difficult,S-002,D-015,Treated - Recovered,,Pregnant,Yes,1274,,2020-10-24,,Excellent conformation
-C-060,Smith Ranch,Dry,Female,Angus,Cleo,Brindle,2019-01-20,98,Easy,S-020,D-025,Healthy,,Confirmed Bred,No,1633,,2019-04-16,,First calf expected in spring
-C-061,Smith Ranch,Dry,Female,Limousin,Dina,Brindle,2018-03-01,105,Difficult,S-008,D-023,Healthy,,Open,No,2471,3781.48,2022-02-05,2024-12-12,Calm disposition
-C-062,Smith Ranch,Dry,Female,Hereford,Eva,Black Baldy,2019-08-21,97,Easy,S-014,D-027,Treated - Recovered,,Confirmed Bred,No,1392,,2022-02-02,,
-C-063,Smith Ranch,Lactating,Female,Simmental,Fern,Red,2019-11-28,97,Easy,S-001,D-010,Healthy,1.0,Pregnant,Yes,2805,,2022-09-13,,Calm disposition
-C-064,Smith Ranch,Lactating,Female,Red Angus,Gwen,Brown,2022-04-12,99,Moderate,S-015,D-030,Under Observation,1.0,Pregnant,Yes,3142,,2020-05-04,,
-C-065,Smith Ranch,Lactating,Female,Shorthorn,Hope,Black,2020-08-26,89,Moderate,S-005,D-016,Treated - Recovered,,Pregnant,Yes,2159,,2022-04-23,,Calm disposition
-C-066,Smith Ranch,Breeding,Female,Hereford,Ida,Brindle,2018-10-23,91,Easy,S-003,D-016,Treated - Recovered,0.0,Pregnant,No,2145,,2019-06-14,,Watch for pinkeye
-C-067,Smith Ranch,Dry,Female,Shorthorn,Jean,Brown,2018-03-15,104,Easy,S-008,D-021,Under Observation,0.0,Pregnant,Yes,3395,,2019-07-21,,Excellent milker
-C-068,Smith Ranch,Lactating,Female,Red Angus,Kim,Black Baldy,2018-04-05,85,Easy,S-010,D-012,Healthy,,Pregnant,Yes,2975,,2020-05-15,,
-C-069,Smith Ranch,Replacement,Female,Simmental,Lea,Black Baldy,2021-06-02,89,Difficult,S-008,D-016,Healthy,,Unknown,Yes,1840,,2022-07-30,,
-C-070,Smith Ranch,Lactating,Female,Angus,Mia,Brindle,2021-01-24,75,Easy,S-015,D-012,Treated - Recovered,,Unknown,Yes,1824,,2021-05-18,,Monitor weight gain
-C-071,Smith Ranch,Dry,Female,Charolais,Nina,Dun,2019-05-01,89,Difficult,S-012,D-019,Healthy,,Pregnant,No,3496,,2023-08-27,,Good temperament
-C-072,Smith Ranch,Lactating,Female,Angus,Ora,Brindle,2021-05-28,87,Easy,S-007,D-020,Healthy,1.0,Pregnant,Yes,1360,,2022-09-12,,
-C-073,Smith Ranch,Dry,Female,Angus,Pam,Roan,2021-04-01,88,Easy,S-003,D-030,Healthy,0.0,Pregnant,No,3009,,2019-09-28,,Strong maternal instincts
-C-074,Smith Ranch,Lactating,Female,Limousin,Rae,Black Baldy,2023-06-05,83,Easy,S-004,D-015,Healthy,,Pregnant,Yes,2427,,2020-04-07,,
-C-075,Smith Ranch,Dry,Female,Brahman,Sue,Red,2019-06-26,99,Easy,S-015,D-012,Healthy,,Pregnant,No,2321,2732.24,2022-07-31,2023-09-23,
-C-076,Smith Ranch,Breeding,Female,Brahman,Tam,White,2022-08-15,94,Easy,S-014,D-004,Treated - Recovered,0.0,Open,Yes,1275,1568.3,2021-10-05,2024-09-27,Excellent conformation
-C-077,Smith Ranch,Dry,Female,Red Angus,Ursa,Brown,2022-03-01,74,Moderate,S-004,D-027,Under Observation,,Confirmed Bred,No,934,,2020-07-26,,Top performer in herd
-C-078,Smith Ranch,Replacement,Female,Red Angus,Val,Brindle,2018-07-23,88,Difficult,S-012,D-002,Healthy,,Confirmed Bred,No,2662,3496.17,2019-09-08,2021-05-14,
-C-079,Smith Ranch,Lactating,Female,Angus,Wren,Black,2018-09-15,101,Easy,S-003,D-027,Healthy,,Unknown,Yes,1754,,2020-03-18,,First calf expected in spring
-C-080,Smith Ranch,Replacement,Female,Angus,Xia,Roan,2021-01-11,81,Easy,S-004,D-022,Healthy,,Pregnant,Yes,1774,,2023-06-06,,Good temperament
-C-081,Smith Ranch,Breeding,Female,Simmental,Yara,Roan,2022-02-28,91,Difficult,S-004,D-024,Healthy,,Pregnant,No,2902,,2021-01-11,,Calm disposition
-C-082,Smith Ranch,Lactating,Female,Charolais,Zena,Black,2021-08-10,66,Easy,S-016,D-028,Healthy,,Confirmed Bred,Yes,2808,,2019-08-10,,Calm disposition
-C-083,Smith Ranch,Lactating,Female,Hereford,Ava,Red,2018-10-31,69,Easy,S-009,D-020,Under Observation,,Unknown,Yes,2360,,2020-10-27,,Watch for pinkeye
-C-084,Smith Ranch,Dry,Female,Limousin,Babs,Brindle,2022-06-13,72,Difficult,S-007,D-014,Healthy,,Confirmed Bred,Yes,2657,,2023-08-22,,
-C-085,Smith Ranch,Dry,Female,Hereford,Cora,Brown,2021-09-24,81,Easy,S-005,D-022,Healthy,,Confirmed Bred,Yes,1181,,2019-06-24,,
-C-086,Smith Ranch,Breeding,Female,Brahman,Dawn,Black Baldy,2023-05-14,100,Difficult,S-011,D-022,Under Observation,,Pregnant,No,2532,,2022-09-24,,
-C-087,Smith Ranch,Lactating,Female,Angus,Eden,Roan,2018-08-01,101,Difficult,S-007,D-005,Healthy,,Confirmed Bred,Yes,2234,,2019-08-10,,Strong maternal instincts
-C-088,Smith Ranch,Replacement,Female,Hereford,Flo,Roan,2022-09-27,100,Difficult,S-020,D-022,Healthy,1.0,Unknown,Yes,1895,2581.29,2022-11-21,2024-02-23,Monitor weight gain
-C-089,Smith Ranch,Breeding,Female,Brahman,Gem,Brown,2022-11-17,74,Difficult,S-013,D-003,Healthy,0.0,Open,No,2972,,2023-03-09,,Excellent conformation
-C-090,Smith Ranch,Replacement,Female,Red Angus,Hedy,Brown,2019-10-01,85,Difficult,S-020,D-003,Healthy,,Pregnant,Yes,1003,,2022-06-19,,Monitor weight gain
-C-091,Smith Ranch,Dry,Female,Red Angus,Ina,Dun,2020-06-24,91,Easy,S-007,D-025,Under Observation,,Unknown,Yes,1960,,2019-08-16,,
-C-092,Smith Ranch,Breeding,Female,Red Angus,Joy,Roan,2020-03-20,103,Easy,S-001,D-007,Healthy,1.0,Pregnant,Yes,2143,2995.08,2020-08-15,2023-11-26,First calf expected in spring
-C-093,Smith Ranch,Replacement,Female,Simmental,Kay,Dun,2021-02-18,87,Easy,S-013,D-028,Under Observation,,Pregnant,No,2082,,2019-06-09,,
-C-094,Smith Ranch,Lactating,Female,Shorthorn,Lou,Dun,2020-04-09,66,Easy,S-006,D-026,Healthy,,Unknown,Yes,2282,2269.8,2022-11-13,2023-08-28,
-C-095,Smith Ranch,Dry,Female,Shorthorn,Meg,Red,2022-03-08,86,Easy,S-011,D-025,Healthy,,Open,Yes,2973,,2019-08-22,,
-C-096,Smith Ranch,Replacement,Female,Brahman,Nan,Brown,2018-07-30,74,Easy,S-007,D-006,Healthy,1.0,Unknown,Yes,3372,,2019-12-29,,
-C-097,Smith Ranch,Lactating,Female,Red Angus,Ona,Brown,2020-06-19,69,Moderate,S-015,D-021,Healthy,1.0,Pregnant,Yes,2878,3342.89,2020-12-21,2024-01-20,Good temperament
-C-098,Smith Ranch,Breeding,Female,Brahman,Peg,Roan,2022-11-05,70,Difficult,S-020,D-017,Treated - Recovered,,Confirmed Bred,No,968,,2023-06-10,,
-C-099,Smith Ranch,Dry,Female,Charolais,Rita,Brown,2018-11-05,68,Moderate,S-004,D-026,Under Observation,,Pregnant,No,1506,2398.74,2022-08-16,2024-05-05,Watch for pinkeye
-C-100,Smith Ranch,Lactating,Female,Simmental,Sable,Brown,2020-03-04,91,Easy,S-020,D-002,Healthy,,Pregnant,Yes,3085,,2019-07-13,,Monitor weight gain
+C-009,Smith Ranch,Feeder,Female,Angus,Clara,Red,2018-08-17,83,Moderate,S-006,D-015,Healthy,,Pregnant,No,2850,,2020-06-23,,Watch for pinkeye
+C-010,Smith Ranch,Market,Female,Hereford,Dolly,Roan,2020-02-05,75,Difficult,S-017,D-030,Healthy,,Pregnant,No,1258,,2019-02-09,,
+C-011,Smith Ranch,Breeding,Female,Limousin,Flora,White,2022-12-04,101,Easy,S-003,D-024,Healthy,,N/A,No,1315,2048.08,2023-04-18,2024-06-14,First calf expected in spring
+C-012,Smith Ranch,Market,Female,Limousin,Grace,Dun,2022-03-27,77,Easy,S-013,D-022,NeedsTreatment,,Confirmed Bred,No,1295,,2021-07-13,,Excellent milker
+C-013,Smith Ranch,Market,Female,Brahman,Harriet,Black,2019-03-28,65,Easy,S-002,D-008,NeedsTreatment,NotInHeat,Pregnant,No,2905,,2019-05-26,,
+C-014,Smith Ranch,Market,Female,Red Angus,Iris,White,2021-03-26,95,Easy,S-016,D-026,NeedsTreatment,WatchHeat,N/A,Yes,2565,,2022-09-11,,Excellent conformation
+C-015,Smith Ranch,Breeding,Female,Red Angus,Jasmine,Black,2020-04-04,86,Easy,S-008,D-007,Healthy,InHeat,Open,No,1551,,2021-05-14,,Top performer in herd
+C-016,Smith Ranch,Breeding,Female,Hereford,Katy,Brindle,2021-08-28,99,Easy,S-003,D-030,Healthy,,Open,Yes,1675,,2021-09-12,,Good temperament
+C-017,Smith Ranch,Breeding,Female,Simmental,Lulu,Dun,2019-06-28,94,Easy,S-014,D-023,Healthy,,Unknown,No,1577,,2019-11-14,,Good temperament
+C-018,Smith Ranch,Breeding,Female,Angus,Mabel,Brown,2021-04-11,95,Difficult,S-017,D-006,Healthy,WatchHeat,Pregnant,No,1561,2092.01,2023-10-10,2024-05-11,Top performer in herd
+C-019,Smith Ranch,Market,Female,Shorthorn,Nora,Red,2021-05-02,67,Difficult,S-003,D-014,NeedsTreatment,NotInHeat,Unknown,No,1636,,2020-06-18,,Strong maternal instincts
+C-020,Smith Ranch,Calf,Female,Charolais,Olive,Roan,2021-10-07,84,Moderate,S-011,D-030,Healthy,,Pregnant,Yes,1209,1456.49,2022-02-27,2023-04-01,First calf expected in spring
+C-021,Smith Ranch,Market,Female,Brahman,Penny,Red,2019-08-07,75,Moderate,S-018,D-023,Healthy,,Confirmed Bred,No,832,,2021-12-19,,Watch for pinkeye
+C-022,Smith Ranch,Market,Female,Limousin,Quinn,Red,2018-08-25,71,Difficult,S-005,D-009,Healthy,,Confirmed Bred,No,1633,,2020-12-03,,Monitor weight gain
+C-023,Smith Ranch,Breeding,Female,Red Angus,Ruby,Roan,2021-07-23,92,Easy,S-002,D-001,Healthy,,Confirmed Bred,No,1461,,2020-06-20,,Watch for pinkeye
+C-024,Smith Ranch,Breeding,Female,Shorthorn,Sally,Black,2023-04-20,74,Difficult,S-002,D-027,Healthy,InHeat,Confirmed Bred,No,1322,2008.36,2021-05-30,2023-12-12,
+C-025,Smith Ranch,Market,Female,Angus,Tilly,Brown,2021-09-27,71,Easy,S-018,D-029,Healthy,,N/A,No,1769,,2019-11-13,,
+C-026,Smith Ranch,Breeding,Female,Simmental,Uma,Dun,2022-02-17,86,Moderate,S-008,D-009,Healthy,WatchHeat,Open,No,958,,2021-02-22,,Top performer in herd
+C-027,Smith Ranch,Feeder,Female,Charolais,Violet,Brindle,2022-08-08,79,Easy,S-001,D-022,Healthy,NotInHeat,Open,No,1084,,2023-11-06,,Monitor weight gain
+C-028,Smith Ranch,Feeder,Female,Brahman,Winnie,Dun,2018-08-25,81,Easy,S-019,D-009,Healthy,,Pregnant,Yes,2084,,2020-12-08,,Watch for pinkeye
+C-029,Smith Ranch,Market,Female,Hereford,Xena,Dun,2018-04-01,92,Easy,S-017,D-030,Healthy,,Unknown,No,1607,,2023-02-18,,Excellent milker
+C-030,Smith Ranch,Breeding,Female,Brahman,Yola,Brown,2020-11-04,84,Moderate,S-011,D-013,Healthy,InHeat,Confirmed Bred,No,2352,,2021-05-11,,First calf expected in spring
+C-031,Smith Ranch,Breeding,Female,Limousin,Zelda,Dun,2019-08-11,78,Moderate,S-019,D-020,Healthy,,Confirmed Bred,No,1675,,2022-10-15,,
+C-032,Smith Ranch,Feeder,Female,Simmental,Annie,Red,2021-09-21,105,Difficult,S-011,D-003,NeedsTreatment,InHeat,Open,No,1615,1608.34,2023-07-10,2024-01-29,Calm disposition
+C-033,Smith Ranch,Calf,Female,Hereford,Betty,Brindle,2019-02-03,89,Moderate,S-013,D-008,NeedsTreatment,WatchHeat,Open,No,1236,,2023-03-18,,Top performer in herd
+C-034,Smith Ranch,Breeding,Female,Simmental,Cora,Brindle,2019-05-26,72,Moderate,S-005,D-026,NeedsTreatment,,N/A,No,2099,,2022-05-04,,Calm disposition
+C-035,Smith Ranch,Market,Female,Shorthorn,Dottie,Brindle,2020-07-10,81,Easy,S-009,D-025,Healthy,InHeat,Unknown,No,2601,2568.73,2020-07-16,2022-08-20,Strong maternal instincts
+C-036,Smith Ranch,Market,Female,Brahman,Ellie,Red,2019-04-19,89,Easy,S-007,D-003,Healthy,,N/A,No,2503,2782.29,2021-08-12,2024-06-17,
+C-037,Smith Ranch,Calf,Female,Angus,Faye,Dun,2023-04-15,87,Easy,S-013,D-028,Healthy,,N/A,No,3270,,2022-01-23,,Calm disposition
+C-038,Smith Ranch,Calf,Female,Charolais,Greta,Roan,2018-03-01,89,Easy,S-013,D-024,Healthy,InHeat,Open,No,2987,3803.99,2022-06-28,2024-02-01,
+C-039,Smith Ranch,Calf,Female,Angus,Hazel,Red,2022-11-11,94,Easy,S-002,D-009,Healthy,,N/A,No,2182,,2020-10-31,,Excellent conformation
+C-040,Smith Ranch,Feeder,Female,Limousin,Ivy,Dun,2020-08-21,66,Difficult,S-002,D-012,Healthy,,Open,No,927,,2019-03-24,,Top performer in herd
+C-041,Smith Ranch,Market,Female,Angus,June,Black Baldy,2020-08-27,72,Difficult,S-007,D-015,Healthy,InHeat,Confirmed Bred,No,3287,,2022-05-25,,
+C-042,Smith Ranch,Feeder,Female,Hereford,Kitty,Black Baldy,2021-03-31,66,Easy,S-019,D-022,Healthy,,N/A,No,1111,,2020-02-11,,
+C-043,Smith Ranch,Feeder,Female,Charolais,Lena,Red,2022-07-08,72,Difficult,S-002,D-012,NeedsTreatment,NotInHeat,Unknown,No,2872,,2019-05-22,,Good temperament
+C-044,Smith Ranch,Breeding,Female,Shorthorn,Mae,Brindle,2023-05-22,88,Moderate,S-005,D-014,Healthy,,Open,No,3322,,2020-07-07,,Watch for pinkeye
+C-045,Smith Ranch,Calf,Female,Red Angus,Nancy,Brindle,2019-07-04,85,Easy,S-003,D-009,NeedsTreatment,,N/A,Yes,3299,,2022-03-13,,Strong maternal instincts
+C-046,Smith Ranch,Feeder,Female,Angus,Opal,Brindle,2020-09-25,78,Easy,S-009,D-011,Healthy,,Confirmed Bred,No,1931,,2023-12-08,,Watch for pinkeye
+C-047,Smith Ranch,Market,Female,Charolais,Patsy,Red,2020-09-27,100,Easy,S-016,D-021,Healthy,WatchHeat,N/A,No,2005,,2019-07-10,,
+C-048,Smith Ranch,Feeder,Female,Charolais,Queenie,Roan,2021-02-07,98,Easy,S-014,D-024,Healthy,,Unknown,No,1909,,2021-07-18,,Top performer in herd
+C-049,Smith Ranch,Feeder,Female,Hereford,Ruth,White,2022-03-02,99,Easy,S-007,D-007,Healthy,,N/A,Yes,2948,,2023-04-06,,Excellent milker
+C-050,Smith Ranch,Market,Female,Charolais,Stella,Roan,2019-01-03,84,Easy,S-018,D-005,Healthy,WatchHeat,Confirmed Bred,Yes,1996,,2022-02-07,,First calf expected in spring
+C-051,Smith Ranch,Breeding,Female,Red Angus,Trudy,Red,2019-08-06,95,Moderate,S-015,D-011,NeedsTreatment,NotInHeat,Open,No,2756,3088.28,2023-10-31,2024-05-14,Excellent milker
+C-052,Smith Ranch,Market,Female,Angus,Una,Black Baldy,2023-04-28,84,Easy,S-008,D-004,NeedsTreatment,,Unknown,No,3333,,2022-05-05,,Watch for pinkeye
+C-053,Smith Ranch,Calf,Female,Shorthorn,Vera,Brindle,2022-10-28,102,Moderate,S-010,D-019,Healthy,,Unknown,Yes,1651,,2019-07-23,,Monitor weight gain
+C-054,Smith Ranch,Market,Female,Hereford,Wanda,Black Baldy,2021-02-04,69,Easy,S-001,D-014,Healthy,,N/A,No,933,,2020-08-19,,
+C-055,Smith Ranch,Breeding,Female,Limousin,Xyla,Brindle,2023-03-08,81,Difficult,S-007,D-014,Healthy,,Pregnant,No,1888,,2019-11-02,,Excellent milker
+C-056,Smith Ranch,Feeder,Female,Angus,Yvette,Black Baldy,2022-03-14,101,Easy,S-015,D-004,NeedsTreatment,,N/A,No,1915,,2021-04-04,,Calm disposition
+C-057,Smith Ranch,Breeding,Female,Red Angus,Zora,Red,2022-02-13,85,Difficult,S-009,D-001,Healthy,,Pregnant,Yes,3156,,2023-09-09,,Good temperament
+C-058,Smith Ranch,Market,Female,Limousin,Ada,Black,2020-11-28,93,Easy,S-006,D-019,Healthy,,N/A,No,2725,,2019-07-06,,Strong maternal instincts
+C-059,Smith Ranch,Market,Female,Brahman,Bea,Red,2020-04-23,96,Easy,S-013,D-027,Healthy,WatchHeat,Unknown,Yes,1833,,2020-10-06,,
+C-060,Smith Ranch,Calf,Female,Shorthorn,Cleo,Black,2018-04-22,77,Difficult,S-012,D-020,Healthy,WatchHeat,N/A,No,1893,,2020-02-21,,Monitor weight gain
+C-061,Smith Ranch,Breeding,Female,Red Angus,Dina,Brindle,2023-06-17,105,Difficult,S-008,D-023,Healthy,WatchHeat,Open,No,2471,3781.48,2022-02-05,2024-12-12,Calm disposition
+C-062,Smith Ranch,Calf,Female,Hereford,Eva,Black Baldy,2020-11-08,82,Moderate,S-016,D-016,Healthy,InHeat,Open,No,1580,,2021-02-24,,Watch for pinkeye
+C-063,Smith Ranch,Feeder,Female,Simmental,Fern,Red,2019-11-28,97,Easy,S-001,D-010,Healthy,,Confirmed Bred,No,2805,,2022-09-13,,Calm disposition
+C-064,Smith Ranch,Feeder,Female,Red Angus,Gwen,Brown,2022-04-12,99,Moderate,S-015,D-030,NeedsTreatment,,Confirmed Bred,No,3142,,2020-05-04,,
+C-065,Smith Ranch,Feeder,Female,Shorthorn,Hope,Black,2021-12-15,89,Moderate,S-005,D-016,Healthy,,Pregnant,Yes,1211,,2020-11-10,,Calm disposition
+C-066,Smith Ranch,Breeding,Female,Hereford,Ida,Brindle,2020-04-19,74,Easy,S-016,D-026,Healthy,,Confirmed Bred,No,3461,5128.76,2021-03-25,2023-07-25,Watch for pinkeye
+C-067,Smith Ranch,Calf,Female,Shorthorn,Jean,Brown,2018-03-15,104,Easy,S-008,D-021,NeedsTreatment,,Confirmed Bred,No,2577,,2019-07-05,,
+C-068,Smith Ranch,Market,Female,Hereford,Kim,Brindle,2023-01-25,66,Easy,S-011,D-026,Healthy,NotInHeat,Pregnant,Yes,1396,,2021-06-01,,Excellent conformation
+C-069,Smith Ranch,Market,Female,Simmental,Lea,Black Baldy,2021-06-02,89,Difficult,S-008,D-016,Healthy,,Unknown,Yes,1840,,2022-07-30,,
+C-070,Smith Ranch,Feeder,Female,Angus,Mia,Brindle,2018-11-20,69,Moderate,S-012,D-019,NeedsTreatment,,Confirmed Bred,No,1824,,2022-11-14,,Monitor weight gain
+C-071,Smith Ranch,Calf,Female,Charolais,Nina,Dun,2019-05-01,89,Difficult,S-012,D-019,Healthy,NotInHeat,Confirmed Bred,No,3496,,2019-02-14,,Good temperament
+C-072,Smith Ranch,Feeder,Female,Angus,Ora,Brindle,2021-05-28,87,Easy,S-007,D-020,Healthy,,Confirmed Bred,No,3500,,2023-04-21,,First calf expected in spring
+C-073,Smith Ranch,Feeder,Female,Hereford,Pam,Black,2018-03-10,102,Easy,S-005,D-003,Healthy,,Confirmed Bred,No,1622,2434.9,2019-12-26,2023-07-02,Strong maternal instincts
+C-074,Smith Ranch,Feeder,Female,Limousin,Rae,Black Baldy,2023-06-05,83,Easy,S-004,D-015,Healthy,InHeat,Pregnant,Yes,2427,,2023-10-28,,
+C-075,Smith Ranch,Calf,Female,Brahman,Sue,Red,2019-06-26,99,Easy,S-015,D-012,Healthy,,Confirmed Bred,No,1243,,2021-01-30,,Calm disposition
+C-076,Smith Ranch,Market,Female,Angus,Tam,Brown,2021-07-25,94,Easy,S-014,D-004,Healthy,WatchHeat,Open,Yes,2817,4253.13,2020-09-15,2022-07-07,First calf expected in spring
+C-077,Smith Ranch,Feeder,Female,Shorthorn,Ursa,Brindle,2020-05-08,102,Easy,S-014,D-021,NeedsTreatment,,Pregnant,No,1945,1894.07,2021-04-15,2023-11-09,Calm disposition
+C-078,Smith Ranch,Breeding,Female,Charolais,Val,Brown,2021-01-20,87,Easy,S-013,D-009,Healthy,,Open,No,1668,,2019-07-07,,
+C-079,Smith Ranch,Feeder,Female,Angus,Wren,Black,2018-09-15,101,Easy,S-003,D-027,Healthy,InHeat,Unknown,Yes,1754,,2023-07-24,,First calf expected in spring
+C-080,Smith Ranch,Market,Female,Angus,Xia,Roan,2021-01-11,81,Easy,S-004,D-022,Healthy,NotInHeat,Pregnant,Yes,1774,,2023-06-06,,Good temperament
+C-081,Smith Ranch,Breeding,Female,Simmental,Yara,Roan,2022-02-28,91,Difficult,S-004,D-024,Healthy,NotInHeat,Pregnant,No,3231,3157.46,2021-11-17,2023-10-13,
+C-082,Smith Ranch,Calf,Female,Angus,Zena,Roan,2018-05-05,95,Moderate,S-014,D-022,Healthy,,Pregnant,No,1130,,2019-05-31,,First calf expected in spring
+C-083,Smith Ranch,Feeder,Female,Hereford,Ava,Black Baldy,2021-07-20,102,Difficult,S-011,D-013,NeedsTreatment,,Unknown,No,3279,,2021-11-01,,
+C-084,Smith Ranch,Calf,Female,Hereford,Babs,White,2022-12-24,79,Moderate,S-011,D-027,Healthy,,N/A,No,2080,,2019-07-14,,
+C-085,Smith Ranch,Market,Female,Limousin,Cora,Brown,2018-05-18,70,Easy,S-003,D-014,Healthy,NotInHeat,Pregnant,No,1332,,2023-07-21,,
+C-086,Smith Ranch,Calf,Female,Brahman,Dawn,Red,2022-11-25,92,Easy,S-010,D-020,Healthy,,Confirmed Bred,No,1671,,2021-11-05,,Calm disposition
+C-087,Smith Ranch,Feeder,Female,Charolais,Eden,Red,2020-01-23,72,Easy,S-019,D-008,NeedsTreatment,,N/A,No,3432,,2022-06-10,,
+C-088,Smith Ranch,Market,Female,Limousin,Flo,Black,2021-12-10,84,Easy,S-012,D-001,Healthy,,Open,No,2441,3850.55,2022-09-08,2024-12-14,Excellent milker
+C-089,Smith Ranch,Calf,Female,Charolais,Gem,Dun,2019-11-30,75,Easy,S-010,D-024,Healthy,,Confirmed Bred,No,1147,,2022-05-06,,First calf expected in spring
+C-090,Smith Ranch,Breeding,Female,Simmental,Hedy,Black,2020-06-26,92,Moderate,S-020,D-015,Healthy,,N/A,Yes,2213,,2019-08-22,,Monitor weight gain
+C-091,Smith Ranch,Breeding,Female,Red Angus,Ina,Roan,2020-03-20,103,Easy,S-001,D-007,Healthy,InHeat,Confirmed Bred,No,1846,,2023-04-15,,Excellent milker
+C-092,Smith Ranch,Calf,Female,Angus,Joy,Brindle,2018-09-22,89,Difficult,S-008,D-017,Healthy,NotInHeat,Unknown,No,2426,,2019-05-28,,Good temperament
+C-093,Smith Ranch,Calf,Female,Shorthorn,Kay,Black,2022-11-01,85,Difficult,S-014,D-019,Healthy,,N/A,No,1271,,2020-08-15,,Strong maternal instincts
+C-094,Smith Ranch,Feeder,Female,Simmental,Lou,Brindle,2020-06-13,71,Easy,S-014,D-019,Healthy,,N/A,No,2070,,2023-11-18,,Top performer in herd
+C-095,Smith Ranch,Breeding,Female,Brahman,Meg,Black Baldy,2021-07-20,72,Difficult,S-017,D-007,NeedsTreatment,,Confirmed Bred,No,1404,,2023-07-28,,First calf expected in spring
+C-096,Smith Ranch,Market,Female,Limousin,Nan,White,2018-11-10,69,Easy,S-016,D-015,NeedsTreatment,,Unknown,No,3112,,2022-10-26,,
+C-097,Smith Ranch,Market,Female,Brahman,Ona,Brown,2018-05-20,95,Moderate,S-010,D-026,Healthy,NotInHeat,Confirmed Bred,No,1103,,2021-11-05,,Calm disposition
+C-098,Smith Ranch,Feeder,Female,Angus,Peg,Black,2018-06-07,70,Difficult,S-020,D-017,Healthy,,N/A,No,968,,2023-06-10,,
+C-099,Smith Ranch,Calf,Female,Charolais,Rita,Brown,2018-11-05,68,Moderate,S-004,D-026,NeedsTreatment,WatchHeat,Confirmed Bred,No,3446,,2021-10-30,,Top performer in herd
+C-100,Smith Ranch,Market,Female,Red Angus,Sable,Brindle,2020-02-03,83,Moderate,S-014,D-025,Healthy,WatchHeat,Confirmed Bred,No,3384,,2023-06-05,,Excellent milker

@@ -31,7 +31,16 @@ function AllCowPage() {
   const [isSelecting, setIsSelecting] = useState(false);
   const [selectedCowIds, setSelectedCowIds] = useState<string[]>([]);
   const [isRemoveModalOpen, setIsRemoveModalOpen] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    function handleHerdImported() {
+      setRefreshKey((k) => k + 1);
+    }
+    window.addEventListener("herd:imported", handleHerdImported);
+    return () => window.removeEventListener("herd:imported", handleHerdImported);
+  }, []);
 
   useEffect(() => {
     async function loadCows() {
@@ -49,7 +58,7 @@ function AllCowPage() {
     }
 
     loadCows();
-  }, []);
+  }, [refreshKey]);
 
   function handleToggleSelect(cowId: string) {
     setSelectedCowIds((prev) =>
