@@ -19,17 +19,20 @@ public class WorkdayService
     private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly ILogger<WorkdayService> _logger;
     private readonly ActivityLogService _activityLogService;
+    private readonly IServiceProvider _serviceProvider;
 
     public WorkdayService(
         AppDbContext context,
         IHttpContextAccessor httpContextAccessor,
         ILogger<WorkdayService> logger,
-        ActivityLogService activityLogService)
+        ActivityLogService activityLogService,
+        IServiceProvider serviceProvider)
     {
         _context = context;
         _httpContextAccessor = httpContextAccessor;
         _logger = logger;
         _activityLogService = activityLogService;
+        _serviceProvider = serviceProvider;
     }
 
     // CREATE
@@ -72,22 +75,28 @@ public class WorkdayService
     public async Task<List<Workday>> GetActiveWorkdays()
     {
         var userId = GetCurrentUserId();
-        return await _context.Workdays
+        var sw = Stopwatch.StartNew();
+        var result = await _context.Workdays
             .AsNoTracking()
             .Where(w => w.UserId == userId && w.Status != WorkdayStatus.Completed)
             .OrderByDescending(w => w.CreatedAt)
             .ToListAsync();
+        _logger.LogInformation("[GetWorkdays] GetActiveWorkdays query: {ms} ms", sw.ElapsedMilliseconds);
+        return result;
     }
 
     // READ - Completed Workdays
     public async Task<List<Workday>> GetCompletedWorkdays()
     {
         var userId = GetCurrentUserId();
-        return await _context.Workdays
+        var sw = Stopwatch.StartNew();
+        var result = await _context.Workdays
             .AsNoTracking()
             .Where(w => w.UserId == userId && w.Status == WorkdayStatus.Completed)
             .OrderByDescending(w => w.CompletedAt ?? w.CreatedAt)
             .ToListAsync();
+        _logger.LogInformation("[GetWorkdays] GetCompletedWorkdays query: {ms} ms", sw.ElapsedMilliseconds);
+        return result;
     }
 
     public async Task<ActiveWorkdayDto> GetActiveWorkdayById(Guid id)
@@ -484,11 +493,33 @@ public class WorkdayService
 
     public async Task CompleteWorkday(Guid workdayId)
     {
+        var sw = Stopwatch.StartNew();
+
         var workday = await FindWorkdayAsync(workdayId);
+        _logger.LogInformation("[CompleteWorkday] FindWorkday: {ms} ms", sw.ElapsedMilliseconds);
+        sw.Restart();
+
         workday.Status = WorkdayStatus.Completed;
         workday.CompletedAt = DateTime.UtcNow;
         await _context.SaveChangesAsync();
-        await _activityLogService.LogAsync(null, $"{workday.Title} completed", ActivityEventTypes.WorkdayCompleted, workdayId);
+        _logger.LogInformation("[CompleteWorkday] SaveChanges: {ms} ms", sw.ElapsedMilliseconds);
+        sw.Restart();
+
+        var title = workday.Title;
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                using var scope = _serviceProvider.CreateScope();
+                var activityService = scope.ServiceProvider.GetRequiredService<ActivityLogService>();
+                await activityService.LogAsync(null, $"{title} completed", ActivityEventTypes.WorkdayCompleted, workdayId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "[CompleteWorkday] Background log failed");
+            }
+        });
+        _logger.LogInformation("[CompleteWorkday] LogAsync (fire-and-forget dispatched): {ms} ms", sw.ElapsedMilliseconds);
     }
 
     public async Task ResetWorkdayAsync(Guid workdayId)
