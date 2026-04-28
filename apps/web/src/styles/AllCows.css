@@ -247,7 +247,11 @@
 }
 
 .bulkActionButtons .danger {
-  background: linear-gradient(180deg, var(--color-danger) 0%, var(--color-danger-hover) 100%);
+  background: linear-gradient(
+    180deg,
+    var(--color-danger) 0%,
+    var(--color-danger-hover) 100%
+  );
   color: white;
   box-shadow: 0 4px 14px rgba(199, 70, 82, 0.4);
 }
@@ -425,6 +429,7 @@
   max-height: 240px;
   overflow-y: auto;
   padding-right: 6px;
+  padding-top: 8px;
 }
 
 .dashboardListScrollable::-webkit-scrollbar {
@@ -1288,7 +1293,9 @@
 .workdaySelectableRow .addCowPill {
   background: linear-gradient(180deg, #44c767 0%, #2eaa53 100%);
   box-shadow: 0 6px 16px rgba(68, 199, 103, 0.18);
-  transition: filter 0.15s ease, transform 0.15s ease;
+  transition:
+    filter 0.15s ease,
+    transform 0.15s ease;
 }
 
 .workdaySelectableRow:hover .addCowPill {
@@ -1402,11 +1409,10 @@
 }
 
 .statusPill.workdayStatusPill.inProgress {
-  --status-bg: rgba(52, 120, 246, 0.10);
+  --status-bg: rgba(52, 120, 246, 0.1);
   --status-text: #3478f6;
-  --status-border: rgba(52, 120, 246, 0.20);
+  --status-border: rgba(52, 120, 246, 0.2);
 }
-
 
 .emptyState {
   color: var(--text-note);
@@ -1574,7 +1580,6 @@
   --status-text: #4cde7a;
   --status-border: rgba(46, 160, 67, 0.35);
 }
-
 
 :root[data-theme="dark"] .statusPill.workdayStatusPill.inProgress,
 :root[data-theme="dark"] .statusPill.market {

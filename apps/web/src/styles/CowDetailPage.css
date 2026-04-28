@@ -142,9 +142,9 @@
   font-size: 1rem;
   cursor: pointer;
   transition:
-  transform 0.18s ease,
-  box-shadow 0.18s ease,
-  filter 0.18s ease;
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    filter 0.18s ease;
 }
 
 .metricToggleButton:disabled {
@@ -318,18 +318,20 @@ select.metricFieldInput {
   border-radius: 12px;
   background-color: var(--surface-subtle);
   background-image:
-  linear-gradient(45deg, transparent 50%, var(--text-muted-soft) 50%),
-  linear-gradient(135deg, var(--text-muted-soft) 50%, transparent 50%);
+    linear-gradient(45deg, transparent 50%, var(--text-muted-soft) 50%),
+    linear-gradient(135deg, var(--text-muted-soft) 50%, transparent 50%);
   background-position:
-  calc(100% - 18px) calc(50% - 3px),
-  calc(100% - 12px) calc(50% - 3px);
-  background-size: 6px 6px, 6px 6px;
+    calc(100% - 18px) calc(50% - 3px),
+    calc(100% - 12px) calc(50% - 3px);
+  background-size:
+    6px 6px,
+    6px 6px;
   background-repeat: no-repeat;
   box-shadow: var(--card-shadow);
   transition:
-  border-color 0.18s ease,
-  box-shadow 0.18s ease,
-  background-color 0.18s ease;
+    border-color 0.18s ease,
+    box-shadow 0.18s ease,
+    background-color 0.18s ease;
 }
 
 select.cardInput:hover,
@@ -429,8 +431,8 @@ select.metricFieldInput:focus {
   border: 1px solid var(--input-border);
   border-radius: 14px;
   background:
-  linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent 100%),
-  var(--surface-subtle);
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent 100%),
+    var(--surface-subtle);
   box-shadow: var(--card-shadow);
   transition: all 0.18s ease;
 }
@@ -469,12 +471,16 @@ select.metricFieldInput:focus {
 }
 
 .parentSegmentButton.isActive {
-  background: linear-gradient(180deg, rgba(76, 122, 91, 0.38) 0%, rgba(61, 139, 64, 0.28) 100%);
+  background: linear-gradient(
+    180deg,
+    rgba(76, 122, 91, 0.38) 0%,
+    rgba(61, 139, 64, 0.28) 100%
+  );
   color: #254332;
   font-weight: 700;
   box-shadow:
-  inset 0 0 0 1px rgba(76, 122, 91, 0.32),
-  0 1px 2px rgba(0, 0, 0, 0.08);
+    inset 0 0 0 1px rgba(76, 122, 91, 0.32),
+    0 1px 2px rgba(0, 0, 0, 0.08);
 }
 
 .parentSegmentButton:focus-visible {
@@ -508,9 +514,9 @@ select.metricFieldInput:focus {
   background-color: var(--surface-subtle);
   box-shadow: var(--card-shadow);
   transition:
-  border-color 0.18s ease,
-  box-shadow 0.18s ease,
-  background-color 0.18s ease;
+    border-color 0.18s ease,
+    box-shadow 0.18s ease,
+    background-color 0.18s ease;
 }
 
 .parentSearchInput {
@@ -536,12 +542,14 @@ select.metricFieldInput:focus {
   -moz-appearance: none;
   padding: 0.72rem 2.6rem 0.72rem 0.95rem;
   background-image:
-  linear-gradient(45deg, transparent 50%, var(--text-muted-soft) 50%),
-  linear-gradient(135deg, var(--text-muted-soft) 50%, transparent 50%);
+    linear-gradient(45deg, transparent 50%, var(--text-muted-soft) 50%),
+    linear-gradient(135deg, var(--text-muted-soft) 50%, transparent 50%);
   background-position:
-  calc(100% - 18px) calc(50% - 3px),
-  calc(100% - 12px) calc(50% - 3px);
-  background-size: 6px 6px, 6px 6px;
+    calc(100% - 18px) calc(50% - 3px),
+    calc(100% - 12px) calc(50% - 3px);
+  background-size:
+    6px 6px,
+    6px 6px;
   background-repeat: no-repeat;
 }
 
@@ -561,14 +569,15 @@ select.metricFieldInput:focus {
   border-radius: 14px;
   background: #fff;
   box-shadow:
-  0 10px 24px rgba(20, 27, 18, 0.12),
-  0 2px 6px rgba(20, 27, 18, 0.06);
+    0 10px 24px rgba(20, 27, 18, 0.12),
+    0 2px 6px rgba(20, 27, 18, 0.06);
 }
 
 .parentAutocompleteOption {
   width: 100%;
   border: 0;
-  border-bottom: 1px solid color-mix(in srgb, var(--input-border) 72%, transparent);
+  border-bottom: 1px solid
+    color-mix(in srgb, var(--input-border) 72%, transparent);
   background: transparent;
   color: var(--text-primary);
   font: inherit;
@@ -576,8 +585,8 @@ select.metricFieldInput:focus {
   padding: 0.72rem 0.95rem;
   cursor: pointer;
   transition:
-  background-color 0.18s ease,
-  color 0.18s ease;
+    background-color 0.18s ease,
+    color 0.18s ease;
 }
 
 .parentAutocompleteOption:last-child {
@@ -1015,8 +1024,8 @@ select.metricFieldInput:focus {
   cursor: pointer;
   font-size: 0.9rem;
   transition:
-  color 0.2s ease,
-  transform 0.2s ease;
+    color 0.2s ease,
+    transform 0.2s ease;
 }
 
 .noteItem button:hover {
@@ -1235,39 +1244,42 @@ input[type="date"]::-webkit-datetime-edit-fields-wrapper {
   gap: 10px;
 }
 
-:root[data-theme="dark"] :is(
-.dashboardCard,
-.heroCard,
-.metricCard,
-.infoTile,
-.activityCard,
-.notesPanel,
-.calvesCard
-) {
+:root[data-theme="dark"]
+  :is(
+    .dashboardCard,
+    .heroCard,
+    .metricCard,
+    .infoTile,
+    .activityCard,
+    .notesPanel,
+    .calvesCard
+  ) {
   background: var(--color-surface);
   border-color: var(--color-border);
   box-shadow: none;
 }
 
-:root[data-theme="dark"] :is(
-.cardInput,
-.metricFieldInput,
-.heroTitleInput,
-.parentSearchInput,
-.workdayNotesInput
-) {
+:root[data-theme="dark"]
+  :is(
+    .cardInput,
+    .metricFieldInput,
+    .heroTitleInput,
+    .parentSearchInput,
+    .workdayNotesInput
+  ) {
   background: var(--color-surface);
   border-color: var(--input-border);
   color: var(--text-primary);
 }
 
-:root[data-theme="dark"] :is(
-.cardInput,
-.metricFieldInput,
-.heroTitleInput,
-.parentSearchInput,
-.workdayNotesInput
-):focus {
+:root[data-theme="dark"]
+  :is(
+    .cardInput,
+    .metricFieldInput,
+    .heroTitleInput,
+    .parentSearchInput,
+    .workdayNotesInput
+  ):focus {
   border-color: var(--input-focus);
   box-shadow: 0 0 0 3px var(--focus-ring);
 }
@@ -1404,24 +1416,24 @@ input[type="date"]::-webkit-datetime-edit-fields-wrapper {
   }
 
   :is(
-  .cowTitle,
-  .cowSubtitle,
-  .metricLabel,
-  .metricValue,
-  .infoLabel,
-  .infoValue,
-  .ownerName,
-  .ownerRole,
-  .kpiLabel,
-  .kpiValue,
-  .activityText,
-  .activityMeta,
-  .calfListPrimary,
-  .calfListSecondary,
-  .noteContent,
-  .noteContent span,
-  .noteTimestamp,
-  .detailHelperText
+    .cowTitle,
+    .cowSubtitle,
+    .metricLabel,
+    .metricValue,
+    .infoLabel,
+    .infoValue,
+    .ownerName,
+    .ownerRole,
+    .kpiLabel,
+    .kpiValue,
+    .activityText,
+    .activityMeta,
+    .calfListPrimary,
+    .calfListSecondary,
+    .noteContent,
+    .noteContent span,
+    .noteTimestamp,
+    .detailHelperText
   ) {
     overflow-wrap: anywhere;
     word-break: break-word;
