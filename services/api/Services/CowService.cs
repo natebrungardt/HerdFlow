@@ -275,8 +275,8 @@ public class CowService
         var logEntries = cows
             .Select(cow => dto.Action switch
             {
-                "markHealthy" => ((Guid?)cow.Id, $"Tag {cow.TagNumber} marked as healthy", ActivityEventTypes.HealthStatusChanged),
-                "markNeedsTreatment" => ((Guid?)cow.Id, $"Tag {cow.TagNumber} marked as needs treatment", ActivityEventTypes.HealthStatusChanged),
+                "markHealthy" => ((Guid?)cow.Id, $"Tag {cow.TagNumber} was marked as healthy", ActivityEventTypes.HealthStatusChanged),
+                "markNeedsTreatment" => ((Guid?)cow.Id, $"Tag {cow.TagNumber} was marked as needs treatment", ActivityEventTypes.HealthStatusChanged),
                 "archive" => ((Guid?)cow.Id, $"Tag {cow.TagNumber} archived from herd", ActivityEventTypes.CowArchived),
                 _ => ((Guid?)null, (string?)null, (string?)null)
             })

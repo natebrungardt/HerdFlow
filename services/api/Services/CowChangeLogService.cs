@@ -12,9 +12,8 @@ public class CowChangeLogService
 
         if (cow.HealthStatus != dto.HealthStatus)
         {
-            var cowLabel = !string.IsNullOrEmpty(cow.TagNumber) ? $"Tag {cow.TagNumber}" : "Cow";
-            var statusLabel = dto.HealthStatus == HealthStatusType.Healthy ? "Healthy" : "Needs Treatment";
-            changes.Add($"{cowLabel} was marked as {statusLabel}");
+            var statusLabel = dto.HealthStatus == HealthStatusType.Healthy ? "healthy" : "needs treatment";
+            changes.Add($"was marked as {statusLabel}");
         }
 
         if (cow.LivestockGroup != dto.LivestockGroup)
