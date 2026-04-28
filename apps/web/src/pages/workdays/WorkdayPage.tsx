@@ -82,7 +82,6 @@ function WorkdayPage() {
   const [selectedCowIds, setSelectedCowIds] = useState<Set<string>>(new Set());
   const [isAdding, setIsAdding] = useState(false);
   const actionInputRef = useRef<HTMLInputElement>(null);
-  const titleDebounceRef = useRef<number | null>(null);
 
   const healthStatusFilters = ["Healthy", "Needs Treatment"];
   const livestockGroupFilters = ["Calf", "Breeding", "Feeder", "Market"];
@@ -104,7 +103,7 @@ function WorkdayPage() {
         setTitle(workdayData.title);
         setDate(formatDateInput(workdayData.date));
         setSummary(workdayData.summary ?? "");
-        setSaveStatus(workdayData.title.trim() ? "Saved" : "Unsaved");
+        setSaveStatus(workdayData.title.trim() ? "Saved" : "Unsaved changes");
         setAllCows(cowsData);
       } catch (err) {
         const message =
@@ -349,11 +348,6 @@ function WorkdayPage() {
   async function handleSaveDetails() {
     if (!workday) return;
 
-    if (titleDebounceRef.current !== null) {
-      window.clearTimeout(titleDebounceRef.current);
-      titleDebounceRef.current = null;
-    }
-
     const normalizedCurrent = normalizeWorkdayDetails({
       title,
       date,
@@ -570,8 +564,12 @@ function WorkdayPage() {
     void handleAddAction();
   }
 
-  function handleStartWorkday() {
+  async function handleStartWorkday() {
     if (!workday || !canStartWorkday) return;
+
+    if (hasUnsavedChanges) {
+      await handleSaveDetails();
+    }
 
     setStartingWorkday(true);
     setError("");
@@ -607,34 +605,7 @@ function WorkdayPage() {
 
     if (name === "title") {
       setTitle(value);
-      const trimmed = value.trim();
-      setSaveStatus(trimmed ? "Saving..." : "Unsaved");
-
-      if (titleDebounceRef.current !== null) {
-        window.clearTimeout(titleDebounceRef.current);
-      }
-
-      if (trimmed && workday) {
-        titleDebounceRef.current = window.setTimeout(() => {
-          void updateWorkday(workday.id, {
-            title: trimmed,
-            date: date || "",
-            summary: summary.trim() || null,
-          })
-            .then((updated) => {
-              setWorkday((current) => ({
-                ...updated,
-                workdayCows: current?.workdayCows ?? updated.workdayCows,
-                actions: current?.actions ?? updated.actions,
-              }));
-              setTitle(updated.title);
-              setSaveStatus("Saved");
-            })
-            .catch(() => {
-              setSaveStatus("Unsaved changes");
-            });
-        }, 400);
-      }
+      setSaveStatus("Unsaved changes");
     } else {
       setSaveStatus("Unsaved changes");
       if (name === "date") setDate(value);

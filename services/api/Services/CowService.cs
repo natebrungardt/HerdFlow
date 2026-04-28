@@ -235,7 +235,7 @@ public class CowService
         await _activityLogService.LogAsync(
             cow.Id,
             $"Tag {cow.TagNumber} archived from herd",
-            "CowArchived");
+            ActivityEventTypes.CowArchived);
     }
 
     public async Task BulkUpdateCowsAsync(BulkUpdateCowsDto dto)
@@ -277,26 +277,14 @@ public class CowService
             {
                 "markHealthy" => ((Guid?)cow.Id, $"Tag {cow.TagNumber} marked as healthy", ActivityEventTypes.HealthStatusChanged),
                 "markNeedsTreatment" => ((Guid?)cow.Id, $"Tag {cow.TagNumber} marked as needs treatment", ActivityEventTypes.HealthStatusChanged),
-                "archive" => ((Guid?)cow.Id, $"Tag {cow.TagNumber} archived from herd", "CowArchived"),
+                "archive" => ((Guid?)cow.Id, $"Tag {cow.TagNumber} archived from herd", ActivityEventTypes.CowArchived),
                 _ => ((Guid?)null, (string?)null, (string?)null)
             })
             .Where(e => e.Item2 is not null)
             .Select(e => (e.Item1, e.Item2!, e.Item3!))
             .ToList();
 
-        _ = Task.Run(async () =>
-        {
-            try
-            {
-                using var scope = _serviceProvider.CreateScope();
-                var activityService = scope.ServiceProvider.GetRequiredService<ActivityLogService>();
-                await activityService.LogBulkAsync(logEntries);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"[BulkUpdate] Background log failed: {ex.Message}");
-            }
-        });
+        await _activityLogService.LogBulkAsync(logEntries);
     }
 
     public async Task<List<CowResponseDto>> GetRemovedCowsAsync()

@@ -18,18 +18,18 @@ public class WorkdayService
     private readonly AppDbContext _context;
     private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly ILogger<WorkdayService> _logger;
-    private readonly IServiceProvider _serviceProvider;
+    private readonly ActivityLogService _activityLogService;
 
     public WorkdayService(
         AppDbContext context,
         IHttpContextAccessor httpContextAccessor,
         ILogger<WorkdayService> logger,
-        IServiceProvider serviceProvider)
+        ActivityLogService activityLogService)
     {
         _context = context;
         _httpContextAccessor = httpContextAccessor;
         _logger = logger;
-        _serviceProvider = serviceProvider;
+        _activityLogService = activityLogService;
     }
 
     // CREATE
@@ -451,19 +451,7 @@ public class WorkdayService
             .Select(w => w.Title)
             .FirstOrDefaultAsync() ?? "Workday";
 
-        _ = Task.Run(async () =>
-        {
-            try
-            {
-                using var scope = _serviceProvider.CreateScope();
-                var activityService = scope.ServiceProvider.GetRequiredService<ActivityLogService>();
-                await activityService.LogAsync(null, $"{title} started", ActivityEventTypes.WorkdayStarted, workdayId);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "[StartWorkday] Background log failed");
-            }
-        });
+        await _activityLogService.LogAsync(null, $"{title} started", ActivityEventTypes.WorkdayStarted, workdayId);
     }
 
     public async Task CompleteWorkday(Guid workdayId)
@@ -481,20 +469,7 @@ public class WorkdayService
         sw.Restart();
 
         var title = workday.Title;
-        _ = Task.Run(async () =>
-        {
-            try
-            {
-                using var scope = _serviceProvider.CreateScope();
-                var activityService = scope.ServiceProvider.GetRequiredService<ActivityLogService>();
-                await activityService.LogAsync(null, $"{title} completed", ActivityEventTypes.WorkdayCompleted, workdayId);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "[CompleteWorkday] Background log failed");
-            }
-        });
-        _logger.LogInformation("[CompleteWorkday] Activity log dispatched");
+        await _activityLogService.LogAsync(null, $"{title} completed", ActivityEventTypes.WorkdayCompleted, workdayId);
     }
 
     public async Task ResetWorkdayAsync(Guid workdayId)
@@ -721,20 +696,7 @@ public class WorkdayService
 
         if (string.IsNullOrWhiteSpace(originalTitle) && !string.IsNullOrWhiteSpace(updatedTitle))
         {
-            var workdayId = workday.Id;
-            _ = Task.Run(async () =>
-            {
-                try
-                {
-                    using var scope = _serviceProvider.CreateScope();
-                    var activityService = scope.ServiceProvider.GetRequiredService<ActivityLogService>();
-                    await activityService.LogAsync(null, $"{updatedTitle} created", ActivityEventTypes.WorkdayCreated, workdayId);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "[UpdateWorkday] Background log failed");
-                }
-            });
+            await _activityLogService.LogAsync(null, $"{updatedTitle} created", ActivityEventTypes.WorkdayCreated, workday.Id);
         }
 
         return workday;
