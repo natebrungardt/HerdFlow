@@ -156,12 +156,23 @@ export async function toggleWorkdayEntry(
   });
 }
 
+export async function duplicateWorkday(id: string): Promise<Workday> {
+  const response = await apiFetch(`${WORKDAY_API_BASE_PATH}/${id}/duplicate`, {
+    method: "POST",
+  });
+  return response.json();
+}
+
 export async function bulkCompleteWorkdays(ids: string[]): Promise<void> {
   await Promise.all(ids.map((id) => completeWorkday(id)));
 }
 
 export async function bulkDeleteWorkdays(ids: string[]): Promise<void> {
   await Promise.all(ids.map((id) => deleteWorkday(id)));
+}
+
+export async function bulkDuplicateWorkdays(ids: string[]): Promise<void> {
+  await Promise.all(ids.map((id) => duplicateWorkday(id)));
 }
 
 export async function setEntryCompletion(

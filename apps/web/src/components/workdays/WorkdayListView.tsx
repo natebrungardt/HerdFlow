@@ -22,6 +22,7 @@ type WorkdayListViewProps = {
   onToggleSelect?: (id: string) => void;
   onSelectAll?: () => void;
   onBulkComplete?: () => void;
+  onBulkDuplicate?: () => void;
   onBulkDelete?: () => void;
 };
 
@@ -45,6 +46,7 @@ function WorkdayListView({
   onToggleSelect,
   onSelectAll,
   onBulkComplete,
+  onBulkDuplicate,
   onBulkDelete,
 }: WorkdayListViewProps) {
   const [searchTerm, setSearchTerm] = useState("");
@@ -167,18 +169,30 @@ function WorkdayListView({
             {selectedWorkdayIds.length} selected
           </span>
           <div className="bulkActionButtons">
-            <button
-              className="bulkActionButton bulkActionHealthy"
-              onClick={onBulkComplete}
-            >
-              Mark Complete
-            </button>
-            <button
-              className="bulkActionButton danger"
-              onClick={onBulkDelete}
-            >
-              Delete
-            </button>
+            {onBulkComplete && (
+              <button
+                className="bulkActionButton bulkActionHealthy"
+                onClick={onBulkComplete}
+              >
+                Mark Complete
+              </button>
+            )}
+            {onBulkDuplicate && (
+              <button
+                className="bulkActionButton bulkActionHealthy"
+                onClick={onBulkDuplicate}
+              >
+                Duplicate
+              </button>
+            )}
+            {onBulkDelete && (
+              <button
+                className="bulkActionButton danger"
+                onClick={onBulkDelete}
+              >
+                Delete
+              </button>
+            )}
           </div>
         </div>
       )}

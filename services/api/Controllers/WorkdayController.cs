@@ -243,6 +243,14 @@ public class WorkdayController : ControllerBase
         return NoContent();
     }
 
+    // POST: api/workdays/{id}/duplicate
+    [HttpPost("{id:guid}/duplicate")]
+    public async Task<ActionResult<Workday>> DuplicateWorkday(Guid id)
+    {
+        var workday = await _service.DuplicateWorkday(id);
+        return Ok(workday);
+    }
+
     // DELETE: api/workdays/{id}
     [HttpDelete("{id:guid}")]
     public async Task<ActionResult> DeleteWorkday(Guid id)

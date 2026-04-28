@@ -527,6 +527,55 @@ public class WorkdayService
         await _context.SaveChangesAsync();
     }
 
+    public async Task<Workday> DuplicateWorkday(Guid id)
+    {
+        var userId = GetCurrentUserId();
+
+        var source = await _context.Workdays
+            .AsNoTracking()
+            .Include(w => w.WorkdayCows)
+            .Include(w => w.Actions)
+            .FirstOrDefaultAsync(w => w.Id == id && w.UserId == userId)
+            ?? throw new NotFoundException("Workday not found.");
+
+        var newWorkday = new Workday
+        {
+            UserId = userId,
+            Title = source.Title,
+            Date = source.Date,
+            Summary = source.Summary,
+            Status = WorkdayStatus.Draft
+        };
+
+        _context.Workdays.Add(newWorkday);
+
+        var newCows = source.WorkdayCows.Select(wc => new WorkdayCow
+        {
+            WorkdayId = newWorkday.Id,
+            CowId = wc.CowId
+        }).ToList();
+
+        _context.WorkdayCows.AddRange(newCows);
+
+        var newActions = source.Actions.Select(a => new WorkdayAction
+        {
+            WorkdayId = newWorkday.Id,
+            Name = a.Name,
+            CreatedAt = DateTime.UtcNow
+        }).ToList();
+
+        _context.WorkdayActions.AddRange(newActions);
+
+        await _context.SaveChangesAsync();
+
+        if (newCows.Count > 0 && newActions.Count > 0)
+        {
+            await EnsureWorkdayEntryGridAsync(newWorkday.Id, userId);
+        }
+
+        return newWorkday;
+    }
+
     private async Task LogCowsAddedToWorkdayAsync(Guid workdayId, List<Guid> cowIds)
     {
         if (cowIds.Count == 0) return;
