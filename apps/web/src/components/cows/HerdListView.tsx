@@ -22,7 +22,8 @@ type HerdListViewProps = {
   onCancelSelect?: () => void;
   onToggleSelect?: (cowId: string) => void;
   onSelectAll?: () => void;
-  onBulkAction?: (action: "markHealthy" | "markNeedsTreatment" | "archive") => void;
+  onBulkAction?: (action: "markHealthy" | "markNeedsTreatment") => void;
+  onBulkRemove?: () => void;
 };
 
 type HerdStatFilter =
@@ -156,6 +157,7 @@ function HerdListView({
   onToggleSelect,
   onSelectAll,
   onBulkAction,
+  onBulkRemove,
 }: HerdListViewProps) {
   const [searchParams, setSearchParams] = useSearchParams();
   const [searchTerm, setSearchTerm] = useState("");
@@ -375,10 +377,10 @@ function HerdListView({
               Needs Treatment
             </button>
             <button
-              className="bulkActionButton bulkActionArchive"
-              onClick={() => onBulkAction?.("archive")}
+              className="bulkActionButton danger"
+              onClick={onBulkRemove}
             >
-              Archive
+              Remove from Herd
             </button>
           </div>
         </div>

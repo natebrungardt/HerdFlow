@@ -156,6 +156,14 @@ export async function toggleWorkdayEntry(
   });
 }
 
+export async function bulkCompleteWorkdays(ids: string[]): Promise<void> {
+  await Promise.all(ids.map((id) => completeWorkday(id)));
+}
+
+export async function bulkDeleteWorkdays(ids: string[]): Promise<void> {
+  await Promise.all(ids.map((id) => deleteWorkday(id)));
+}
+
 export async function setEntryCompletion(
   workdayId: string,
   cowId: string,

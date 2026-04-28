@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
-import { Link } from "react-router-dom";
 import type { Workday } from "../../types/workday";
+import WorkdayRowCard from "./WorkdayRowCard";
 
 type WorkdayListViewProps = {
   workdays: Workday[];
@@ -15,43 +15,15 @@ type WorkdayListViewProps = {
   sectionTitle?: string;
   getWorkdaySupplementaryMeta?: (workday: Workday) => string | null;
   showScheduledDateLabel?: boolean;
+  isSelecting?: boolean;
+  selectedWorkdayIds?: string[];
+  onEnterSelect?: () => void;
+  onCancelSelect?: () => void;
+  onToggleSelect?: (id: string) => void;
+  onSelectAll?: () => void;
+  onBulkComplete?: () => void;
+  onBulkDelete?: () => void;
 };
-
-function formatWorkdayDate(dateValue: string) {
-  const date = new Date(dateValue);
-
-  if (Number.isNaN(date.getTime())) {
-    return "Unknown date";
-  }
-
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  }).format(date);
-}
-
-function getWorkdayStatusLabel(status: Workday["status"]) {
-  switch (status) {
-    case "InProgress":
-      return "In Progress";
-    case "Completed":
-      return "Completed";
-    default:
-      return "Planned";
-  }
-}
-
-function getWorkdayStatusPillClassName(status: Workday["status"]) {
-  switch (status) {
-    case "InProgress":
-      return "statusPill workdayStatusPill inProgress";
-    case "Completed":
-      return "statusPill workdayStatusPill completed";
-    default:
-      return "statusPill workdayStatusPill draft";
-  }
-}
 
 function WorkdayListView({
   workdays,
@@ -64,8 +36,16 @@ function WorkdayListView({
   getWorkdayHref,
   emptyMessage = "No workdays found.",
   sectionTitle = "Workday Records",
-  getWorkdaySupplementaryMeta,
-  showScheduledDateLabel = true,
+  getWorkdaySupplementaryMeta: _getWorkdaySupplementaryMeta,
+  showScheduledDateLabel: _showScheduledDateLabel = true,
+  isSelecting = false,
+  selectedWorkdayIds = [],
+  onEnterSelect,
+  onCancelSelect,
+  onToggleSelect,
+  onSelectAll,
+  onBulkComplete,
+  onBulkDelete,
 }: WorkdayListViewProps) {
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -84,21 +64,53 @@ function WorkdayListView({
     });
   }, [workdays, searchTerm]);
 
+  const showActionBar = isSelecting && selectedWorkdayIds.length > 0;
+
   return (
     <div className="allCowsPage">
-      <div className="allCowsShell">
+      <div className={`allCowsShell${showActionBar ? " hasActionBar" : ""}`}>
         <div className="allCowsContent">
           <div className="allCowsHeader">
             <div className="titleBlock">
-              <h1 className="pageTitle">{title}</h1>
-              <p className="pageSubtitle">{subtitle}</p>
+              <h1 className="pageTitle">
+                {isSelecting
+                  ? selectedWorkdayIds.length === 0
+                    ? "Select workdays"
+                    : `${selectedWorkdayIds.length} selected`
+                  : title}
+              </h1>
+              {!isSelecting && <p className="pageSubtitle">{subtitle}</p>}
             </div>
 
-            {ctaLabel && onCtaClick ? (
-              <button className="addCowButton" onClick={onCtaClick}>
-                {ctaLabel}
-              </button>
-            ) : null}
+            <div className="headerActions">
+              {isSelecting ? (
+                <>
+                  {onSelectAll ? (
+                    <button className="selectButton" onClick={onSelectAll}>
+                      {selectedWorkdayIds.length === workdays.length
+                        ? "Deselect All"
+                        : "Select All"}
+                    </button>
+                  ) : null}
+                  <button className="cancelSelectButton" onClick={onCancelSelect}>
+                    Cancel
+                  </button>
+                </>
+              ) : (
+                <>
+                  {ctaLabel && onCtaClick ? (
+                    <button className="addCowButton" onClick={onCtaClick}>
+                      {ctaLabel}
+                    </button>
+                  ) : null}
+                  {onEnterSelect ? (
+                    <button className="selectButton" onClick={onEnterSelect}>
+                      Select
+                    </button>
+                  ) : null}
+                </>
+              )}
+            </div>
           </div>
 
           <div className="toolbarCard">
@@ -127,53 +139,49 @@ function WorkdayListView({
               <p className="emptyState">{emptyMessage}</p>
             ) : (
               filteredWorkdays.map((workday) => {
-                const href = getWorkdayHref?.(workday);
-                const supplementaryMeta = getWorkdaySupplementaryMeta?.(workday);
-                const content = (
-                  <>
-                    <div className="cowRowMain">
-                      <div className="cowRowTitle">{workday.title}</div>
-                      <div className="cowRowMeta">
-                        {workday.summary?.trim() || "No summary yet."}
-                      </div>
-                      {showScheduledDateLabel ? (
-                        <div className="cowRowOwner">
-                          Scheduled for {formatWorkdayDate(workday.date)}
-                        </div>
-                      ) : null}
-                      {supplementaryMeta ? (
-                        <div className="cowRowSupplementaryMeta">
-                          {supplementaryMeta}
-                        </div>
-                      ) : null}
-                    </div>
-
-                    <div className="cowRowActions">
-                      <div className={getWorkdayStatusPillClassName(workday.status)}>
-                        {getWorkdayStatusLabel(workday.status)}
-                      </div>
-                    </div>
-                  </>
-                );
-
-                if (!href) {
-                  return (
-                    <div key={workday.id} className="cowRowCard workdayRowCard">
-                      {content}
-                    </div>
-                  );
-                }
+                const isSelected = selectedWorkdayIds.includes(workday.id);
 
                 return (
-                  <Link key={workday.id} className="cowRowCard" to={href}>
-                    {content}
-                  </Link>
+                  <WorkdayRowCard
+                    key={workday.id}
+                    workday={workday}
+                    to={isSelecting ? undefined : getWorkdayHref?.(workday)}
+                    isSelecting={isSelecting}
+                    isSelected={isSelected}
+                    onToggle={
+                      isSelecting
+                        ? () => onToggleSelect?.(workday.id)
+                        : undefined
+                    }
+                  />
                 );
               })
             )}
           </div>
         </div>
       </div>
+
+      {showActionBar && (
+        <div className="bulkActionBar">
+          <span className="bulkActionCount">
+            {selectedWorkdayIds.length} selected
+          </span>
+          <div className="bulkActionButtons">
+            <button
+              className="bulkActionButton bulkActionHealthy"
+              onClick={onBulkComplete}
+            >
+              Mark Complete
+            </button>
+            <button
+              className="bulkActionButton danger"
+              onClick={onBulkDelete}
+            >
+              Delete
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import HerdListView from "../../components/cows/HerdListView";
+import Modal from "../../components/shared/Modal";
 import { bulkUpdateCows, getCows } from "../../services/cowService";
 import type { Cow } from "../../types/cow";
 import "../../styles/AllCows.css";
@@ -29,6 +30,7 @@ function AllCowPage() {
   const [error, setError] = useState("");
   const [isSelecting, setIsSelecting] = useState(false);
   const [selectedCowIds, setSelectedCowIds] = useState<string[]>([]);
+  const [isRemoveModalOpen, setIsRemoveModalOpen] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -69,7 +71,7 @@ function AllCowPage() {
   }
 
   async function handleBulkAction(
-    action: "markHealthy" | "markNeedsTreatment" | "archive",
+    action: "markHealthy" | "markNeedsTreatment",
   ) {
     try {
       await bulkUpdateCows(selectedCowIds, action);
@@ -83,28 +85,62 @@ function AllCowPage() {
     }
   }
 
+  async function handleConfirmRemove() {
+    try {
+      await bulkUpdateCows(selectedCowIds, "archive");
+      setIsRemoveModalOpen(false);
+      setIsSelecting(false);
+      setSelectedCowIds([]);
+      const data = await getCows();
+      setCows(data);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Failed to remove cows";
+      setError(message);
+      setIsRemoveModalOpen(false);
+    }
+  }
+
+  const removeCount = selectedCowIds.length;
+  const removeModalMessage =
+    removeCount === 1
+      ? "Are you sure you want to remove this cow from the herd? It will be moved to Archived Cows."
+      : `Are you sure you want to remove ${removeCount} cows from the herd? They will be moved to Archived Cows.`;
+
   return (
-    <HerdListView
-      cows={cows}
-      loading={loading}
-      error={error}
-      title="All Cows"
-      subtitle="View, search, and manage herd records across your operation."
-      ctaLabel="+ Add Cow"
-      onCtaClick={() => navigate("/add-cow")}
-      getCowHref={(cow) => `/cows/${cow.id}`}
-      getCowSupplementaryMeta={(cow) => {
-        const formattedDate = formatCreatedDate(cow.createdAt);
-        return formattedDate ? `Date Added: ${formattedDate}` : null;
-      }}
-      isSelecting={isSelecting}
-      selectedCowIds={selectedCowIds}
-      onEnterSelect={() => setIsSelecting(true)}
-      onCancelSelect={handleCancelSelect}
-      onToggleSelect={handleToggleSelect}
-      onSelectAll={handleSelectAll}
-      onBulkAction={handleBulkAction}
-    />
+    <>
+      <HerdListView
+        cows={cows}
+        loading={loading}
+        error={error}
+        title="All Cows"
+        subtitle="View, search, and manage herd records across your operation."
+        ctaLabel="+ Add Cow"
+        onCtaClick={() => navigate("/add-cow")}
+        getCowHref={(cow) => `/cows/${cow.id}`}
+        getCowSupplementaryMeta={(cow) => {
+          const formattedDate = formatCreatedDate(cow.createdAt);
+          return formattedDate ? `Date Added: ${formattedDate}` : null;
+        }}
+        isSelecting={isSelecting}
+        selectedCowIds={selectedCowIds}
+        onEnterSelect={() => setIsSelecting(true)}
+        onCancelSelect={handleCancelSelect}
+        onToggleSelect={handleToggleSelect}
+        onSelectAll={handleSelectAll}
+        onBulkAction={handleBulkAction}
+        onBulkRemove={() => setIsRemoveModalOpen(true)}
+      />
+
+      <Modal
+        isOpen={isRemoveModalOpen}
+        title="Remove from Herd"
+        message={removeModalMessage}
+        confirmText="Remove from Herd"
+        confirmVariant="danger"
+        onConfirm={handleConfirmRemove}
+        onCancel={() => setIsRemoveModalOpen(false)}
+      />
+    </>
   );
 }
 

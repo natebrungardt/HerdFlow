@@ -246,6 +246,22 @@
   border: 1.5px solid var(--card-border);
 }
 
+.bulkActionButtons .danger {
+  background: linear-gradient(180deg, #c74652 0%, #9f2e39 100%);
+  color: white;
+  box-shadow: 0 4px 14px rgba(199, 70, 82, 0.4);
+}
+
+.bulkActionButtons .danger:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(199, 70, 82, 0.6);
+}
+
+.bulkActionButtons .danger:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(199, 70, 82, 0.4);
+}
+
 .toolbarCard,
 .statsCard,
 .cowListCard {
