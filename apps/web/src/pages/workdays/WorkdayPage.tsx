@@ -414,42 +414,7 @@ function WorkdayPage() {
     event.currentTarget.blur();
   }
 
-  function handleAddCow(cowId: string) {
-    if (!workday || assignedCowIds.has(cowId)) {
-      return;
-    }
 
-    if (!appendAssignedCow(cowId)) {
-      return;
-    }
-
-    setError("");
-    const startedAt = performance.now();
-    logWorkdayMutation("addCow:start", { workdayId: workday.id, cowId });
-
-    void addCowsToWorkday(workday.id, [cowId])
-      .then(() => {
-        logWorkdayMutation("addCow:mutationResponse", {
-          workdayId: workday.id,
-          cowId,
-          elapsedMs: Math.round(performance.now() - startedAt),
-        });
-        void refreshWorkday();
-      })
-      .catch((err) => {
-        removeAssignedCow(cowId);
-        const message =
-          err instanceof Error ? err.message : "Failed to add cow to workday";
-        setError(message);
-      })
-      .finally(() => {
-        logWorkdayMutation("addCow:done", {
-          workdayId: workday.id,
-          cowId,
-          elapsedMs: Math.round(performance.now() - startedAt),
-        });
-      });
-  }
 
   function handleToggleCow(cowId: string) {
     setSelectedCowIds((prev) => {
