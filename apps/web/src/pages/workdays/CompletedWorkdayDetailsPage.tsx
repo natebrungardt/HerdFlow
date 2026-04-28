@@ -164,7 +164,7 @@ function CompletedWorkdayDetailsPage() {
             </div>
 
             <div className="workdayHeaderActions workday-actions">
-              <div className="statusPill workdayStatusPill completed">
+              <div className="statusPill workdayStatusPill completed healthy">
                 Completed
               </div>
               <button

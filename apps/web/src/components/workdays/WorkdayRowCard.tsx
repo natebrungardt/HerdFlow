@@ -39,7 +39,7 @@ function getWorkdayStatusPillClassName(status: Workday["status"]) {
     case "InProgress":
       return "statusPill workdayStatusPill inProgress";
     case "Completed":
-      return "statusPill workdayStatusPill completed";
+      return "statusPill workdayStatusPill completed healthy";
     default:
       return "statusPill workdayStatusPill draft";
   }

@@ -160,8 +160,8 @@
 }
 
 .metricToggleButton.isActive.isNeedsTreatment {
-  background: linear-gradient(180deg, #c74652 0%, #9f2e39 100%);
-  box-shadow: 0 10px 25px rgba(217, 76, 87, 0.22);
+  background: linear-gradient(180deg, #c46363 0%, #9f3f3f 100%);
+  box-shadow: 0 10px 25px rgba(196, 99, 99, 0.22);
 }
 
 .metricToggleButton.isActive.isHasCalfYes {

@@ -51,7 +51,7 @@ function CowRowCard({
 }: CowRowCardProps) {
   const statusClassName =
     cow.healthStatus === "Healthy"
-      ? "statusPill"
+      ? "statusPill healthy"
       : "statusPill needsTreatment";
   const resolvedSecondaryText = secondaryText ?? supplementaryMeta;
 
