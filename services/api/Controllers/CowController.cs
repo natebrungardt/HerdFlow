@@ -113,6 +113,13 @@ public class CowController : ControllerBase
         return Ok(result);
     }
 
+    [HttpPut("bulk-update")]
+    public async Task<IActionResult> BulkUpdateCows([FromBody] BulkUpdateCowsDto dto)
+    {
+        await _cowService.BulkUpdateCowsAsync(dto);
+        return NoContent();
+    }
+
     [HttpGet("{id:guid}/activities")]
     public async Task<IActionResult> GetActivities(Guid id)
     {

@@ -16,6 +16,13 @@ type HerdListViewProps = {
   sectionTitle?: string;
   getCowSupplementaryMeta?: (cow: Cow) => string | null;
   sortCows?: (cows: Cow[]) => Cow[];
+  isSelecting?: boolean;
+  selectedCowIds?: string[];
+  onEnterSelect?: () => void;
+  onCancelSelect?: () => void;
+  onToggleSelect?: (cowId: string) => void;
+  onSelectAll?: () => void;
+  onBulkAction?: (action: "markHealthy" | "markNeedsTreatment" | "archive") => void;
 };
 
 type HerdStatFilter =
@@ -142,6 +149,13 @@ function HerdListView({
   sectionTitle = "Herd Records",
   getCowSupplementaryMeta,
   sortCows = defaultSortCows,
+  isSelecting = false,
+  selectedCowIds = [],
+  onEnterSelect,
+  onCancelSelect,
+  onToggleSelect,
+  onSelectAll,
+  onBulkAction,
 }: HerdListViewProps) {
   const [searchParams, setSearchParams] = useSearchParams();
   const [searchTerm, setSearchTerm] = useState("");
@@ -230,21 +244,53 @@ function HerdListView({
       [cows],
     );
 
+  const showActionBar = isSelecting && selectedCowIds.length > 0;
+
   return (
     <div className="allCowsPage">
-      <div className="allCowsShell">
+      <div className={`allCowsShell${showActionBar ? " hasActionBar" : ""}`}>
         <div className="allCowsContent">
           <div className="allCowsHeader">
             <div className="titleBlock">
-              <h1 className="pageTitle">{title}</h1>
-              <p className="pageSubtitle">{subtitle}</p>
+              <h1 className="pageTitle">
+                {isSelecting
+                  ? selectedCowIds.length === 0
+                    ? "Select cows"
+                    : `${selectedCowIds.length} selected`
+                  : title}
+              </h1>
+              {!isSelecting && <p className="pageSubtitle">{subtitle}</p>}
             </div>
 
-            {ctaLabel && onCtaClick ? (
-              <button className="addCowButton" onClick={onCtaClick}>
-                {ctaLabel}
-              </button>
-            ) : null}
+            <div className="headerActions">
+              {isSelecting ? (
+                <>
+                  {onSelectAll ? (
+                    <button className="selectButton" onClick={onSelectAll}>
+                      {selectedCowIds.length === cows.length
+                        ? "Deselect All"
+                        : "Select All"}
+                    </button>
+                  ) : null}
+                  <button className="cancelSelectButton" onClick={onCancelSelect}>
+                    Cancel
+                  </button>
+                </>
+              ) : (
+                <>
+                  {ctaLabel && onCtaClick ? (
+                    <button className="addCowButton" onClick={onCtaClick}>
+                      {ctaLabel}
+                    </button>
+                  ) : null}
+                  {onEnterSelect ? (
+                    <button className="selectButton" onClick={onEnterSelect}>
+                      Select
+                    </button>
+                  ) : null}
+                </>
+              )}
+            </div>
           </div>
 
           <div className="toolbarCard">
@@ -286,13 +332,22 @@ function HerdListView({
             ) : (
               filteredCows.map((cow) => {
                 const supplementaryMeta = getCowSupplementaryMeta?.(cow);
+                const isSelected = selectedCowIds.includes(cow.id);
 
                 return (
                   <CowRowCard
                     key={cow.id}
                     cow={cow}
                     supplementaryMeta={supplementaryMeta}
-                    to={getCowHref(cow)}
+                    to={isSelecting ? undefined : getCowHref(cow)}
+                    onClick={isSelecting ? undefined : undefined}
+                    isSelecting={isSelecting}
+                    isSelected={isSelected}
+                    onToggle={
+                      isSelecting
+                        ? () => onToggleSelect?.(cow.id)
+                        : undefined
+                    }
                   />
                 );
               })
@@ -300,6 +355,34 @@ function HerdListView({
           </div>
         </div>
       </div>
+
+      {showActionBar && (
+        <div className="bulkActionBar">
+          <span className="bulkActionCount">
+            {selectedCowIds.length} selected
+          </span>
+          <div className="bulkActionButtons">
+            <button
+              className="bulkActionButton bulkActionHealthy"
+              onClick={() => onBulkAction?.("markHealthy")}
+            >
+              Mark Healthy
+            </button>
+            <button
+              className="bulkActionButton bulkActionTreatment"
+              onClick={() => onBulkAction?.("markNeedsTreatment")}
+            >
+              Needs Treatment
+            </button>
+            <button
+              className="bulkActionButton bulkActionArchive"
+              onClick={() => onBulkAction?.("archive")}
+            >
+              Archive
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import HerdListView from "../../components/cows/HerdListView";
-import { getCows } from "../../services/cowService";
+import { bulkUpdateCows, getCows } from "../../services/cowService";
 import type { Cow } from "../../types/cow";
 import "../../styles/AllCows.css";
 
@@ -27,6 +27,8 @@ function AllCowPage() {
   const [cows, setCows] = useState<Cow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [isSelecting, setIsSelecting] = useState(false);
+  const [selectedCowIds, setSelectedCowIds] = useState<string[]>([]);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -47,6 +49,40 @@ function AllCowPage() {
     loadCows();
   }, []);
 
+  function handleToggleSelect(cowId: string) {
+    setSelectedCowIds((prev) =>
+      prev.includes(cowId) ? prev.filter((id) => id !== cowId) : [...prev, cowId],
+    );
+  }
+
+  function handleSelectAll() {
+    if (selectedCowIds.length === cows.length) {
+      setSelectedCowIds([]);
+    } else {
+      setSelectedCowIds(cows.map((c) => c.id));
+    }
+  }
+
+  function handleCancelSelect() {
+    setIsSelecting(false);
+    setSelectedCowIds([]);
+  }
+
+  async function handleBulkAction(
+    action: "markHealthy" | "markNeedsTreatment" | "archive",
+  ) {
+    try {
+      await bulkUpdateCows(selectedCowIds, action);
+      setIsSelecting(false);
+      setSelectedCowIds([]);
+      const data = await getCows();
+      setCows(data);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Bulk action failed";
+      setError(message);
+    }
+  }
+
   return (
     <HerdListView
       cows={cows}
@@ -61,6 +97,13 @@ function AllCowPage() {
         const formattedDate = formatCreatedDate(cow.createdAt);
         return formattedDate ? `Date Added: ${formattedDate}` : null;
       }}
+      isSelecting={isSelecting}
+      selectedCowIds={selectedCowIds}
+      onEnterSelect={() => setIsSelecting(true)}
+      onCancelSelect={handleCancelSelect}
+      onToggleSelect={handleToggleSelect}
+      onSelectAll={handleSelectAll}
+      onBulkAction={handleBulkAction}
     />
   );
 }

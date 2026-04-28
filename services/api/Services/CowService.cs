@@ -234,6 +234,48 @@ public class CowService
         await _activityLogService.LogAsync(cow.Id, "Cow archived from herd", "CowArchived");
     }
 
+    public async Task BulkUpdateCowsAsync(BulkUpdateCowsDto dto)
+    {
+        var userId = GetCurrentUserId();
+        var cows = await _context.Cows
+            .Where(c => dto.CowIds.Contains(c.Id) && c.UserId == userId && !c.IsRemoved)
+            .ToListAsync();
+
+        var now = DateTime.UtcNow;
+        foreach (var cow in cows)
+        {
+            switch (dto.Action)
+            {
+                case "markHealthy":
+                    cow.HealthStatus = HealthStatusType.Healthy;
+                    break;
+                case "markNeedsTreatment":
+                    cow.HealthStatus = HealthStatusType.NeedsTreatment;
+                    break;
+                case "archive":
+                    cow.IsRemoved = true;
+                    cow.RemovedAt = now;
+                    break;
+            }
+        }
+
+        await _context.SaveChangesAsync();
+
+        foreach (var cow in cows)
+        {
+            var (description, eventType) = dto.Action switch
+            {
+                "markHealthy" => ($"Tag {cow.TagNumber} marked as healthy", ActivityEventTypes.HealthStatusChanged),
+                "markNeedsTreatment" => ($"Tag {cow.TagNumber} marked as needs treatment", ActivityEventTypes.HealthStatusChanged),
+                "archive" => ("Cow archived from herd", "CowArchived"),
+                _ => (null, null)
+            };
+
+            if (description is not null && eventType is not null)
+                await _activityLogService.LogAsync(cow.Id, description, eventType);
+        }
+    }
+
     public async Task<List<CowResponseDto>> GetRemovedCowsAsync()
     {
         var userId = GetCurrentUserId();

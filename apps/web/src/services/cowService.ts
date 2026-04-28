@@ -226,6 +226,16 @@ export async function importCowsCsv(file: File): Promise<ImportResult> {
   return response.json();
 }
 
+export async function bulkUpdateCows(
+  cowIds: string[],
+  action: "markHealthy" | "markNeedsTreatment" | "archive",
+): Promise<void> {
+  await apiFetch("/cows/bulk-update", {
+    method: "PUT",
+    body: JSON.stringify({ cowIds, action }),
+  });
+}
+
 export async function updateCow(
   id: string,
   cowData: CreateCowInput,

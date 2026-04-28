@@ -83,6 +83,169 @@
   transform: translateY(0);
 }
 
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-shrink: 0;
+}
+
+.selectButton {
+  border: 1.5px solid var(--card-border);
+  border-radius: 12px;
+  padding: 12px 16px;
+  min-width: 80px;
+  background: transparent;
+  color: var(--text-primary);
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition:
+    border-color 0.18s ease,
+    background 0.18s ease,
+    transform 0.18s ease;
+}
+
+.selectButton:hover {
+  border-color: var(--color-primary);
+  transform: translateY(-1px);
+}
+
+.selectButton:active {
+  transform: translateY(0);
+}
+
+.cancelSelectButton {
+  border: none;
+  border-radius: 12px;
+  padding: 12px 16px;
+  min-width: 80px;
+  background: var(--surface-subtle);
+  color: var(--text-primary);
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition:
+    background 0.18s ease,
+    transform 0.18s ease;
+}
+
+.cancelSelectButton:hover {
+  transform: translateY(-1px);
+  background: var(--surface-subtle-hover);
+}
+
+.cancelSelectButton:active {
+  transform: translateY(0);
+}
+
+.cowSelectionCheckbox {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid var(--card-border);
+  background: var(--surface-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: var(--space-2);
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
+  color: #fff;
+}
+
+.cowSelectionCheckbox.checked {
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+}
+
+.cowRowCardSelected {
+  background: var(--success-bg-subtle, rgba(76, 122, 91, 0.06));
+  border-color: var(--color-primary) !important;
+}
+
+.cowRowCardSelected:hover {
+  border-color: var(--color-primary) !important;
+}
+
+.allCowsShell.hasActionBar {
+  padding-bottom: calc(var(--space-5) + 72px);
+}
+
+.bulkActionBar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: 14px var(--space-5);
+  background: var(--card-bg);
+  border-top: 1px solid var(--card-border);
+  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.1);
+}
+
+.bulkActionCount {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+.bulkActionButtons {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.bulkActionButton {
+  border: none;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    transform 0.15s ease,
+    filter 0.15s ease;
+}
+
+.bulkActionButton:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.06);
+}
+
+.bulkActionButton:active {
+  transform: translateY(0);
+}
+
+.bulkActionHealthy {
+  background: linear-gradient(
+    180deg,
+    var(--color-primary) 0%,
+    var(--color-primary-hover) 100%
+  );
+  color: #f8fafc;
+}
+
+.bulkActionTreatment {
+  background: #e8514a;
+  color: #fff;
+}
+
+.bulkActionArchive {
+  background: var(--surface-subtle);
+  color: var(--text-primary);
+  border: 1.5px solid var(--card-border);
+}
+
 .toolbarCard,
 .statsCard,
 .cowListCard {

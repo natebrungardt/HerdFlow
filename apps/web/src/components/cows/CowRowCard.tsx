@@ -9,6 +9,9 @@ type CowRowCardProps = {
   to?: string;
   onClick?: () => void;
   variant?: "default" | "calf-history";
+  isSelecting?: boolean;
+  isSelected?: boolean;
+  onToggle?: () => void;
 };
 
 function formatHealthStatus(status: string | null | undefined) {
@@ -42,6 +45,9 @@ function CowRowCard({
   to,
   onClick,
   variant = "default",
+  isSelecting = false,
+  isSelected = false,
+  onToggle,
 }: CowRowCardProps) {
   const statusClassName =
     cow.healthStatus === "Healthy"
@@ -49,7 +55,7 @@ function CowRowCard({
       : "statusPill needsTreatment";
   const resolvedSecondaryText = secondaryText ?? supplementaryMeta;
 
-  const content =
+  const innerContent =
     variant === "calf-history" ? (
       <>
         <div className="cowRowMain cowCardContent leftContent">
@@ -79,6 +85,15 @@ function CowRowCard({
       </>
     ) : (
       <>
+        {isSelecting && (
+          <div className={`cowSelectionCheckbox${isSelected ? " checked" : ""}`} aria-hidden="true">
+            {isSelected && (
+              <svg width="12" height="10" viewBox="0 0 12 10" fill="none">
+                <path d="M1 5L4.5 8.5L11 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            )}
+          </div>
+        )}
         <div className="cowRowMain">
           <div className="cowRowTitle">
             Tag #{cow.tagNumber}
@@ -103,10 +118,22 @@ function CowRowCard({
       </>
     );
 
+  if (isSelecting) {
+    return (
+      <button
+        type="button"
+        className={`cowRowCard cowCard${isSelected ? " cowRowCardSelected" : ""}`}
+        onClick={onToggle}
+      >
+        {innerContent}
+      </button>
+    );
+  }
+
   if (to) {
     return (
       <Link className="cowRowCard cowCard" to={to}>
-        {content}
+        {innerContent}
       </Link>
     );
   }
@@ -117,7 +144,7 @@ function CowRowCard({
       className="cowRowCard cowCard calfHistoryCowCard"
       onClick={onClick}
     >
-      {content}
+      {innerContent}
     </button>
   );
 }
