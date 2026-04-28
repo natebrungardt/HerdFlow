@@ -18,7 +18,11 @@ type WorkdayAddCowsPanelProps = {
   onToggleLivestockGroup: (value: string) => void;
   onToggleSex: (value: string) => void;
   onTogglePregnancyStatus: (value: string) => void;
-  onAddCow: (cowId: string) => void;
+  selectedCowIds: Set<string>;
+  isAdding: boolean;
+  onToggleCow: (cowId: string) => void;
+  onSelectAll: () => void;
+  onAdd: () => void;
 };
 
 function WorkdayAddCowsPanel({
@@ -38,13 +42,19 @@ function WorkdayAddCowsPanel({
   onToggleLivestockGroup,
   onToggleSex,
   onTogglePregnancyStatus,
-  onAddCow,
+  selectedCowIds,
+  isAdding,
+  onToggleCow,
+  onSelectAll,
+  onAdd,
 }: WorkdayAddCowsPanelProps) {
   return (
     <section className="dashboardCard workdayAddCowsCard">
       <div className="dataCardHeader">
-        <h2 className="cardTitle">Add More Cows</h2>
-        <span className="cardSubtle">Search the active herd</span>
+        <div>
+          <h2 className="cardTitle">Add More Cows</h2>
+          <span className="cardSubtle">Search the active herd</span>
+        </div>
       </div>
 
       <div className="workdayCreateLayout">
@@ -66,7 +76,11 @@ function WorkdayAddCowsPanel({
           onToggleLivestockGroup={onToggleLivestockGroup}
           onToggleSex={onToggleSex}
           onTogglePregnancyStatus={onTogglePregnancyStatus}
-          onAddCow={onAddCow}
+          selectedCowIds={selectedCowIds}
+          isAdding={isAdding}
+          onToggleCow={onToggleCow}
+          onSelectAll={onSelectAll}
+          onAdd={onAdd}
         />
       </div>
     </section>

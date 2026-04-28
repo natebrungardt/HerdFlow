@@ -1301,6 +1301,58 @@
   cursor: progress;
 }
 
+/* Workday cow selector filter chip overrides */
+.workdayFilterRow .filterChip {
+  padding: 4px 10px;
+}
+
+.workdayFilterRow .filterChip.active {
+  background: var(--success-bg-subtle);
+  border-color: var(--success-border-subtle);
+  color: var(--color-primary);
+}
+
+.workdaySelectableRow .cowRowOwner {
+  font-weight: 400;
+  color: var(--text-muted-soft);
+}
+
+.cowSelectorCountRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-1) 0 var(--space-2);
+}
+
+.cowSelectorSelectAll {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--color-primary);
+  cursor: pointer;
+}
+
+.cowSelectorSelectAll:hover {
+  text-decoration: underline;
+}
+
+.cowSelectorActionBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 14px;
+  margin-top: var(--space-3);
+  border-top: 1px solid var(--card-border);
+}
+
+.cowSelectorActionCount {
+  font-size: 0.9rem;
+  color: var(--text-subtle);
+  font-weight: 500;
+}
+
 .statusPill {
   display: inline-flex;
   align-items: center;

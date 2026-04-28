@@ -4,11 +4,6 @@ import { useNavigate, useParams } from "react-router-dom";
 import Modal from "../../components/shared/Modal";
 import WorkdayAddCowsPanel from "../../components/workdays/WorkdayAddCowsPanel";
 import WorkdaySetupWorkspacePanel from "../../components/workdays/WorkdaySetupWorkspacePanel";
-import {
-  livestockGroupOptions,
-  pregnancyStatusOptions,
-  sexOptions,
-} from "../../constants/cowFormOptions";
 import { useUnsavedChangesGuard } from "../../context/UnsavedChangesContext";
 import { getCows } from "../../services/cowService";
 import {
@@ -84,19 +79,15 @@ function WorkdayPage() {
   >(null);
   const [removeSuccessMessage, setRemoveSuccessMessage] = useState("");
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [selectedCowIds, setSelectedCowIds] = useState<Set<string>>(new Set());
+  const [isAdding, setIsAdding] = useState(false);
   const actionInputRef = useRef<HTMLInputElement>(null);
   const titleDebounceRef = useRef<number | null>(null);
 
   const healthStatusFilters = ["Healthy", "Needs Treatment"];
-  const livestockGroupFilters = livestockGroupOptions.map(
-    (option) => option.value,
-  );
-  const sexFilters = sexOptions
-    .filter((option) => option.value !== "")
-    .map((option) => option.value);
-  const pregnancyStatusFilters = pregnancyStatusOptions
-    .filter((option) => option.value !== "N/A")
-    .map((option) => option.value);
+  const livestockGroupFilters = ["Calf", "Breeding", "Feeder", "Market"];
+  const sexFilters = ["Cow", "Heifer", "Bull", "Steer"];
+  const pregnancyStatusFilters = ["Open", "Bred"];
 
   useEffect(() => {
     async function loadPage() {
@@ -460,6 +451,47 @@ function WorkdayPage() {
       });
   }
 
+  function handleToggleCow(cowId: string) {
+    setSelectedCowIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(cowId)) {
+        next.delete(cowId);
+      } else {
+        next.add(cowId);
+      }
+      return next;
+    });
+  }
+
+  function handleSelectAll() {
+    if (selectedCowIds.size === filteredAvailableCows.length) {
+      setSelectedCowIds(new Set());
+    } else {
+      setSelectedCowIds(new Set(filteredAvailableCows.map((c) => c.id)));
+    }
+  }
+
+  async function handleAddSelected() {
+    if (!workday || selectedCowIds.size === 0) return;
+
+    const ids = [...selectedCowIds];
+    setIsAdding(true);
+    ids.forEach((id) => appendAssignedCow(id));
+
+    try {
+      await addCowsToWorkday(workday.id, ids);
+      setSelectedCowIds(new Set());
+      await refreshWorkday();
+    } catch (err) {
+      ids.forEach((id) => removeAssignedCow(id));
+      const message =
+        err instanceof Error ? err.message : "Failed to add cows to workday";
+      setError(message);
+    } finally {
+      setIsAdding(false);
+    }
+  }
+
   async function handleRemoveCow(cowId: string) {
     if (!workday) return;
 
@@ -781,7 +813,11 @@ function WorkdayPage() {
             onTogglePregnancyStatus={(value) =>
               toggleFilter(value, setActivePregnancyStatuses)
             }
-            onAddCow={handleAddCow}
+            selectedCowIds={selectedCowIds}
+            isAdding={isAdding}
+            onToggleCow={handleToggleCow}
+            onSelectAll={handleSelectAll}
+            onAdd={handleAddSelected}
           />
         </div>
       </div>
