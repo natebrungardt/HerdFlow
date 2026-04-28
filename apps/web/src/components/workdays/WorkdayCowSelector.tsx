@@ -132,7 +132,7 @@ function WorkdayCowSelector({
                 </div>
 
                 <div className="cowRowActions">
-                  <div className="statusPill needsTreatment">Add</div>
+                  <div className="statusPill addCowPill">Add</div>
                 </div>
               </button>
             );

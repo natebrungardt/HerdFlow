@@ -161,7 +161,7 @@
 }
 
 .feedbackRemoveFile:hover {
-  color: #d11a2a;
+  color: var(--color-danger);
 }
 
 .feedbackFieldError,

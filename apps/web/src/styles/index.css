@@ -13,7 +13,9 @@
   --color-surface-elevated: #f8fafc;
   --color-surface-hover: #eef3ed;
   --color-primary: #4c7a5b;
-  --color-primary-hover: #3f684d;
+  --color-primary-hover: #3e664c;
+  --color-danger: #c74652;
+  --color-danger-hover: #9f2e39;
   --color-accent: #8d6c4b;
   --color-text: #18211c;
   --color-text-muted: #5f6c67;
@@ -249,12 +251,12 @@ img {
 }
 
 .btn-danger {
-  background-color: #dc2626;
+  background-color: var(--color-danger);
   color: #ffffff;
 }
 
 .btn-danger:hover {
-  background-color: #b91c1c;
+  background-color: var(--color-danger-hover);
 }
 
 .btn:disabled {

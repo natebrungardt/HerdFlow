@@ -236,7 +236,7 @@
 }
 
 .bulkActionTreatment {
-  background: #e8514a;
+  background: var(--color-danger);
   color: #fff;
 }
 
@@ -247,7 +247,7 @@
 }
 
 .bulkActionButtons .danger {
-  background: linear-gradient(180deg, #c74652 0%, #9f2e39 100%);
+  background: linear-gradient(180deg, var(--color-danger) 0%, var(--color-danger-hover) 100%);
   color: white;
   box-shadow: 0 4px 14px rgba(199, 70, 82, 0.4);
 }
@@ -1283,6 +1283,17 @@
 .workdaySelectableRow .cowRowActions,
 .workdaySelectableRow .statusPill {
   flex: 0 0 auto;
+}
+
+.workdaySelectableRow .addCowPill {
+  background: linear-gradient(180deg, #44c767 0%, #2eaa53 100%);
+  box-shadow: 0 6px 16px rgba(68, 199, 103, 0.18);
+  transition: filter 0.15s ease, transform 0.15s ease;
+}
+
+.workdaySelectableRow:hover .addCowPill {
+  filter: brightness(1.06);
+  transform: translateY(-1px);
 }
 
 .workdaySelectableRowPending {
