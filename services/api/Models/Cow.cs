@@ -43,7 +43,6 @@ public class Cow
 
     public HeatStatusType? HeatStatus { get; set; }
     public string? PregnancyStatus { get; set; }
-    public bool HasCalf { get; set; } = false;
 
     [Column(TypeName = "numeric")]
     public decimal? PurchasePrice { get; set; }

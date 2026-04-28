@@ -18,20 +18,17 @@ public class WorkdayService
     private readonly AppDbContext _context;
     private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly ILogger<WorkdayService> _logger;
-    private readonly ActivityLogService _activityLogService;
     private readonly IServiceProvider _serviceProvider;
 
     public WorkdayService(
         AppDbContext context,
         IHttpContextAccessor httpContextAccessor,
         ILogger<WorkdayService> logger,
-        ActivityLogService activityLogService,
         IServiceProvider serviceProvider)
     {
         _context = context;
         _httpContextAccessor = httpContextAccessor;
         _logger = logger;
-        _activityLogService = activityLogService;
         _serviceProvider = serviceProvider;
     }
 
@@ -272,7 +269,6 @@ public class WorkdayService
             result.InsertedAssignmentCount);
 
         await EnsureWorkdayEntryGridAsync(id, userId);
-        await LogCowsAddedToWorkdayAsync(id, distinctCowIds);
     }
 
     public async Task RemoveCowFromWorkday(Guid id, Guid cowId)
@@ -316,37 +312,6 @@ public class WorkdayService
             id,
             cowId,
             stopwatch.ElapsedMilliseconds);
-
-        var tag = await _context.Cows
-            .AsNoTracking()
-            .Where(c => c.Id == cowId)
-            .Select(c => c.TagNumber)
-            .FirstOrDefaultAsync();
-
-        if (string.IsNullOrWhiteSpace(tag))
-        {
-            return;
-        }
-
-        var workdayTitle = await _context.Workdays
-            .AsNoTracking()
-            .Where(w => w.Id == id)
-            .Select(w => w.Title)
-            .FirstOrDefaultAsync() ?? "workday";
-
-        _ = Task.Run(async () =>
-        {
-            try
-            {
-                using var scope = _serviceProvider.CreateScope();
-                var activityService = scope.ServiceProvider.GetRequiredService<ActivityLogService>();
-                await activityService.LogAsync(cowId, $"Tag {tag} removed from {workdayTitle}", "CowRemovedFromWorkday", id);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "[RemoveCowFromWorkday] Background log failed");
-            }
-        });
     }
 
     public async Task UpdateCowWorkdayStatus(Guid id, Guid cowId, bool isWorked)
@@ -544,21 +509,6 @@ public class WorkdayService
         await _context.WorkdayCows
             .Where(c => c.WorkdayId == workdayId)
             .ExecuteUpdateAsync(s => s.SetProperty(c => c.Status, (string?)null));
-
-        var title = workday.Title;
-        _ = Task.Run(async () =>
-        {
-            try
-            {
-                using var scope = _serviceProvider.CreateScope();
-                var activityService = scope.ServiceProvider.GetRequiredService<ActivityLogService>();
-                await activityService.LogAsync(null, $"{title} reset", "WorkdayReset", workdayId);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "[ResetWorkday] Background log failed");
-            }
-        });
     }
 
     public async Task DeleteWorkday(Guid id)
@@ -616,27 +566,6 @@ public class WorkdayService
         }
 
         return newWorkday;
-    }
-
-    private async Task LogCowsAddedToWorkdayAsync(Guid workdayId, List<Guid> cowIds)
-    {
-        if (cowIds.Count == 0) return;
-
-        var workdayTitle = await _context.Workdays
-            .AsNoTracking()
-            .Where(w => w.Id == workdayId)
-            .Select(w => w.Title)
-            .FirstOrDefaultAsync() ?? "workday";
-
-        var cowTags = await _context.Cows
-            .AsNoTracking()
-            .Where(c => cowIds.Contains(c.Id))
-            .Select(c => new { c.Id, c.TagNumber })
-            .ToListAsync();
-
-        await _activityLogService.LogBulkAsync(
-            cowTags.Select(c => ((Guid?)c.Id, $"Tag {c.TagNumber} added to {workdayTitle}", "CowAddedToWorkday")),
-            workdayId);
     }
 
     private async Task<Workday> FindWorkdayAsync(Guid id)
@@ -916,8 +845,6 @@ public class WorkdayService
                 "WorkdayService.AddCowsToWorkday after SaveChangesAsync for workday {WorkdayId} in {ElapsedMilliseconds}ms",
                 id,
                 stopwatch.ElapsedMilliseconds);
-
-        await LogCowsAddedToWorkdayAsync(id, newCowIds);
         }
         catch (DbUpdateException ex)
         {

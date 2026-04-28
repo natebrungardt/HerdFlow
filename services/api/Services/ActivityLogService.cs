@@ -61,10 +61,6 @@ public class ActivityLogService
         await _context.SaveChangesAsync();
     }
 
-    // Backward-compat wrapper
-    public Task LogAsync(Guid cowId, string description)
-        => LogAsync(cowId, description, "CowUpdate");
-
     public async Task<List<ActivityLogEntry>> GetByCowIdAsync(Guid cowId)
     {
         var userId = GetCurrentUserId();

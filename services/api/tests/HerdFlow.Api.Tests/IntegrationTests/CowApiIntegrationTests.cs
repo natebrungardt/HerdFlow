@@ -319,7 +319,6 @@ public class CowApiIntegrationTests
             healthStatus = calf.HealthStatus.ToString(),
             heatStatus = calf.HeatStatus?.ToString(),
             pregnancyStatus = calf.PregnancyStatus,
-            hasCalf = calf.HasCalf,
             purchasePrice = calf.PurchasePrice,
             salePrice = calf.SalePrice,
             purchaseDate = calf.PurchaseDate,

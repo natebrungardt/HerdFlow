@@ -156,7 +156,6 @@ public class CowService
         cow.HealthStatus = dto.HealthStatus;
         cow.HeatStatus = dto.HeatStatus;
         cow.PregnancyStatus = dto.PregnancyStatus;
-        cow.HasCalf = dto.HasCalf;
         cow.PurchasePrice = dto.PurchasePrice;
         cow.SalePrice = dto.SalePrice;
         cow.PurchaseDate = dto.PurchaseDate;
@@ -216,7 +215,6 @@ public class CowService
                 HealthStatus = HealthStatusType.Healthy,
                 HeatStatus = null,
                 PregnancyStatus = "N/A",
-                HasCalf = false,
                 PurchaseDate = null,
                 SaleDate = null,
                 PurchasePrice = null,
@@ -234,7 +232,10 @@ public class CowService
         cow.IsRemoved = true;
         cow.RemovedAt = DateTime.UtcNow;
         await _context.SaveChangesAsync();
-        await _activityLogService.LogAsync(cow.Id, "Cow archived from herd", "CowArchived");
+        await _activityLogService.LogAsync(
+            cow.Id,
+            $"Tag {cow.TagNumber} archived from herd",
+            "CowArchived");
     }
 
     public async Task BulkUpdateCowsAsync(BulkUpdateCowsDto dto)
@@ -276,7 +277,7 @@ public class CowService
             {
                 "markHealthy" => ((Guid?)cow.Id, $"Tag {cow.TagNumber} marked as healthy", ActivityEventTypes.HealthStatusChanged),
                 "markNeedsTreatment" => ((Guid?)cow.Id, $"Tag {cow.TagNumber} marked as needs treatment", ActivityEventTypes.HealthStatusChanged),
-                "archive" => ((Guid?)cow.Id, "Cow archived from herd", "CowArchived"),
+                "archive" => ((Guid?)cow.Id, $"Tag {cow.TagNumber} archived from herd", "CowArchived"),
                 _ => ((Guid?)null, (string?)null, (string?)null)
             })
             .Where(e => e.Item2 is not null)
@@ -342,7 +343,6 @@ public class CowService
             EscapeCsv("Health Status"),
             EscapeCsv("Heat Status"),
             EscapeCsv("Pregnancy Status"),
-            EscapeCsv("Has Calf"),
             EscapeCsv("Purchase Price"),
             EscapeCsv("Sale Price"),
             EscapeCsv("Purchase Date"),
@@ -370,7 +370,6 @@ public class CowService
                 EscapeCsv(cow.HealthStatus.ToString()),
                 EscapeCsv(cow.HeatStatus?.ToString()),
                 EscapeCsv(cow.PregnancyStatus),
-                EscapeCsv(cow.HasCalf ? "Yes" : "No"),
                 EscapeCsv(FormatDecimal(cow.PurchasePrice)),
                 EscapeCsv(FormatDecimal(cow.SalePrice)),
                 EscapeCsv(FormatDate(cow.PurchaseDate)),
@@ -388,7 +387,10 @@ public class CowService
         cow.IsRemoved = false;
         cow.RemovedAt = null;
         await _context.SaveChangesAsync();
-        await _activityLogService.LogAsync(cow.Id, "Cow restored to herd", "CowRestored");
+        await _activityLogService.LogAsync(
+            cow.Id,
+            $"Tag {cow.TagNumber} restored to herd",
+            "CowRestored");
     }
 
     private async Task<Cow> FindCowAsync(Guid id)
@@ -501,7 +503,6 @@ public class CowService
         {
             var d when d.Contains("marked as")          => ActivityEventTypes.HealthStatusChanged,
             var d when d.StartsWith("pregnancy status") => ActivityEventTypes.PregnancyStatusChanged,
-            var d when d.StartsWith("has calf")         => ActivityEventTypes.HasCalfChanged,
             _ => null,
         };
     }
@@ -542,7 +543,6 @@ public class CowService
             HealthStatus = dto.HealthStatus,
             HeatStatus = dto.HeatStatus,
             PregnancyStatus = NormalizePregnancyStatus(dto.PregnancyStatus),
-            HasCalf = dto.HasCalf,
             PurchasePrice = dto.PurchasePrice,
             SalePrice = dto.SalePrice,
             PurchaseDate = dto.PurchaseDate,
@@ -574,7 +574,10 @@ public class CowService
             throw new ConflictException("Tag number already exists.");
         }
 
-        await _activityLogService.LogAsync(cow.Id, "Cow record created", ActivityEventTypes.CowCreated);
+        await _activityLogService.LogAsync(
+            cow.Id,
+            $"Tag {cow.TagNumber} created",
+            ActivityEventTypes.CowCreated);
         var createdCow = await FindCowWithParentsAsync(cow.Id, asNoTracking: true);
         return MapCowResponse(createdCow);
     }
@@ -683,7 +686,6 @@ public class CowService
             HealthStatus = cow.HealthStatus,
             HeatStatus = cow.HeatStatus,
             PregnancyStatus = cow.PregnancyStatus,
-            HasCalf = cow.HasCalf,
             PurchasePrice = cow.PurchasePrice,
             SalePrice = cow.SalePrice,
             PurchaseDate = cow.PurchaseDate,
@@ -725,7 +727,6 @@ public class CowService
             EscapeCsv("Health Status"),
             EscapeCsv("Heat Status"),
             EscapeCsv("Pregnancy Status"),
-            EscapeCsv("Has Calf"),
             EscapeCsv("Purchase Price"),
             EscapeCsv("Sale Price"),
             EscapeCsv("Purchase Date"),
@@ -748,7 +749,6 @@ public class CowService
             EscapeCsv("Healthy"),
             EscapeCsv("None"),
             EscapeCsv("Pregnant"),
-            EscapeCsv("No"),
             EscapeCsv("1500"),
             EscapeCsv(""),
             EscapeCsv("2022-01-10"),
@@ -907,24 +907,6 @@ public class CowService
                     });
             }
 
-            var hasCalf = false;
-            var hasCalfStr = GetField("Has Calf");
-            if (!string.IsNullOrWhiteSpace(hasCalfStr))
-            {
-                var lower = hasCalfStr.ToLowerInvariant();
-                if (lower is "yes" or "true" or "1")
-                    hasCalf = true;
-                else if (lower is "no" or "false" or "0")
-                    hasCalf = false;
-                else
-                    warnings.Add(new ImportWarningRowDto
-                    {
-                        RowNumber = rowNumber,
-                        Field = "Has Calf",
-                        Message = $"Unrecognized value \"{hasCalfStr}\". Defaulted to No.",
-                    });
-            }
-
             DateOnly? dateOfBirth = null;
             var dobStr = GetField("Date of Birth");
             if (!string.IsNullOrWhiteSpace(dobStr))
@@ -1027,7 +1009,6 @@ public class CowService
                 HealthStatus = healthStatus,
                 HeatStatus = heatStatus,
                 PregnancyStatus = NormalizePregnancyStatus(pregnancyStatus),
-                HasCalf = hasCalf,
                 PurchasePrice = purchasePrice,
                 SalePrice = salePrice,
                 PurchaseDate = purchaseDate,

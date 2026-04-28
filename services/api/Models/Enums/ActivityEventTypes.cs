@@ -8,5 +8,4 @@ public static class ActivityEventTypes
     public const string WorkdayStarted = "WorkdayStarted";
     public const string WorkdayCompleted = "WorkdayCompleted";
     public const string PregnancyStatusChanged = "PregnancyStatusChanged";
-    public const string HasCalfChanged = "HasCalfChanged";
 }

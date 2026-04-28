@@ -42,7 +42,6 @@ public class CowChangeLogService
         AddChange(changes, cow.SaleDate, dto.SaleDate, "Sale date");
         AddChange(changes, cow.HeatStatus, dto.HeatStatus, "Heat status");
         AddChange(changes, cow.PregnancyStatus, dto.PregnancyStatus, "Pregnancy status");
-        AddChange(changes, cow.HasCalf, dto.HasCalf, "Has calf");
 
         return changes;
     }
