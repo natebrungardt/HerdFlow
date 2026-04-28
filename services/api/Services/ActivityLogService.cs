@@ -47,6 +47,19 @@ public class ActivityLogService
         }
     }
 
+    public async Task LogBulkAsync(IEnumerable<(Guid? CowId, string Description, string EventType)> entries)
+    {
+        var userId = GetCurrentUserId();
+        _context.ActivityLogEntries.AddRange(entries.Select(e => new ActivityLogEntry
+        {
+            CowId = e.CowId,
+            EventType = e.EventType,
+            Description = e.Description,
+            UserId = userId,
+        }));
+        await _context.SaveChangesAsync();
+    }
+
     // Backward-compat wrapper
     public Task LogAsync(Guid cowId, string description)
         => LogAsync(cowId, description, "CowUpdate");

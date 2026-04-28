@@ -23,19 +23,22 @@ public class CowService
     private readonly CowChangeLogService _cowChangeLogService;
     private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly ILogger<CowService> _logger;
+    private readonly IServiceProvider _serviceProvider;
 
     public CowService(
         AppDbContext context,
         ActivityLogService activityLogService,
         CowChangeLogService cowChangeLogService,
         IHttpContextAccessor httpContextAccessor,
-        ILogger<CowService> logger)
+        ILogger<CowService> logger,
+        IServiceProvider serviceProvider)
     {
         _context = context;
         _activityLogService = activityLogService;
         _cowChangeLogService = cowChangeLogService;
         _httpContextAccessor = httpContextAccessor;
         _logger = logger;
+        _serviceProvider = serviceProvider;
     }
 
     private void ValidateCreateCow(CreateCowDto dto)
@@ -236,10 +239,15 @@ public class CowService
 
     public async Task BulkUpdateCowsAsync(BulkUpdateCowsDto dto)
     {
+        var sw = System.Diagnostics.Stopwatch.StartNew();
+
         var userId = GetCurrentUserId();
         var cows = await _context.Cows
             .Where(c => dto.CowIds.Contains(c.Id) && c.UserId == userId && !c.IsRemoved)
             .ToListAsync();
+
+        Console.WriteLine($"[BulkUpdate] Fetch cows: {sw.ElapsedMilliseconds}ms");
+        sw.Restart();
 
         var now = DateTime.UtcNow;
         foreach (var cow in cows)
@@ -260,20 +268,34 @@ public class CowService
         }
 
         await _context.SaveChangesAsync();
+        Console.WriteLine($"[BulkUpdate] SaveChanges (cow updates): {sw.ElapsedMilliseconds}ms");
+        sw.Restart();
 
-        foreach (var cow in cows)
-        {
-            var (description, eventType) = dto.Action switch
+        var logEntries = cows
+            .Select(cow => dto.Action switch
             {
-                "markHealthy" => ($"Tag {cow.TagNumber} marked as healthy", ActivityEventTypes.HealthStatusChanged),
-                "markNeedsTreatment" => ($"Tag {cow.TagNumber} marked as needs treatment", ActivityEventTypes.HealthStatusChanged),
-                "archive" => ("Cow archived from herd", "CowArchived"),
-                _ => (null, null)
-            };
+                "markHealthy" => ((Guid?)cow.Id, $"Tag {cow.TagNumber} marked as healthy", ActivityEventTypes.HealthStatusChanged),
+                "markNeedsTreatment" => ((Guid?)cow.Id, $"Tag {cow.TagNumber} marked as needs treatment", ActivityEventTypes.HealthStatusChanged),
+                "archive" => ((Guid?)cow.Id, "Cow archived from herd", "CowArchived"),
+                _ => ((Guid?)null, (string?)null, (string?)null)
+            })
+            .Where(e => e.Item2 is not null)
+            .Select(e => (e.Item1, e.Item2!, e.Item3!))
+            .ToList();
 
-            if (description is not null && eventType is not null)
-                await _activityLogService.LogAsync(cow.Id, description, eventType);
-        }
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                using var scope = _serviceProvider.CreateScope();
+                var activityService = scope.ServiceProvider.GetRequiredService<ActivityLogService>();
+                await activityService.LogBulkAsync(logEntries);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[BulkUpdate] Background log failed: {ex.Message}");
+            }
+        });
     }
 
     public async Task<List<CowResponseDto>> GetRemovedCowsAsync()

@@ -87,8 +87,6 @@ export async function apiFetch(
     data: { session },
   } = await supabase.auth.getSession();
 
-  console.log("WEB USER:", session?.user?.id, session?.user?.email);
-
   const headers = new Headers(init.headers);
 
   if (
