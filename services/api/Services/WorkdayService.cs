@@ -334,30 +334,33 @@ public class WorkdayService
             .Select(w => w.Title)
             .FirstOrDefaultAsync() ?? "workday";
 
-        await _activityLogService.LogAsync(
-            cowId,
-            $"Tag {tag} removed from {workdayTitle}",
-            "CowRemovedFromWorkday",
-            id);
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                using var scope = _serviceProvider.CreateScope();
+                var activityService = scope.ServiceProvider.GetRequiredService<ActivityLogService>();
+                await activityService.LogAsync(cowId, $"Tag {tag} removed from {workdayTitle}", "CowRemovedFromWorkday", id);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "[RemoveCowFromWorkday] Background log failed");
+            }
+        });
     }
 
     public async Task UpdateCowWorkdayStatus(Guid id, Guid cowId, bool isWorked)
     {
         var userId = GetCurrentUserId();
-        var workdayCow = await _context.WorkdayCows
-            .Include(wc => wc.Workday)
-            .FirstOrDefaultAsync(wc =>
+        var updated = await _context.WorkdayCows
+            .Where(wc =>
                 wc.WorkdayId == id &&
                 wc.CowId == cowId &&
-                wc.Workday.UserId == userId);
+                _context.Workdays.Any(w => w.Id == wc.WorkdayId && w.UserId == userId))
+            .ExecuteUpdateAsync(s => s.SetProperty(wc => wc.Status, isWorked ? "Worked" : null));
 
-        if (workdayCow == null)
-        {
+        if (updated == 0)
             throw new NotFoundException("Workday cow assignment not found.");
-        }
-
-        workdayCow.Status = isWorked ? "Worked" : null;
-        await _context.SaveChangesAsync();
     }
 
     public async Task<WorkdayAction> AddActionToWorkday(Guid workdayId, string actionName)
@@ -451,21 +454,16 @@ public class WorkdayService
     public async Task SetEntryCompletion(Guid workdayId, Guid cowId, Guid actionId, bool completed)
     {
         var userId = GetCurrentUserId();
-        var entry = await _context.WorkdayEntries
-            .Include(e => e.Workday)
-            .FirstOrDefaultAsync(e =>
+        var updated = await _context.WorkdayEntries
+            .Where(e =>
                 e.WorkdayId == workdayId &&
                 e.CowId == cowId &&
                 e.ActionId == actionId &&
-                e.Workday.UserId == userId);
+                _context.Workdays.Any(w => w.Id == e.WorkdayId && w.UserId == userId))
+            .ExecuteUpdateAsync(s => s.SetProperty(e => e.IsCompleted, completed));
 
-        if (entry == null)
-        {
+        if (updated == 0)
             throw new NotFoundException("Workday entry not found.");
-        }
-
-        entry.IsCompleted = completed;
-        await _context.SaveChangesAsync();
     }
 
     public async Task StartWorkday(Guid workdayId)
@@ -488,7 +486,19 @@ public class WorkdayService
             .Select(w => w.Title)
             .FirstOrDefaultAsync() ?? "Workday";
 
-        await _activityLogService.LogAsync(null, $"{title} started", ActivityEventTypes.WorkdayStarted, workdayId);
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                using var scope = _serviceProvider.CreateScope();
+                var activityService = scope.ServiceProvider.GetRequiredService<ActivityLogService>();
+                await activityService.LogAsync(null, $"{title} started", ActivityEventTypes.WorkdayStarted, workdayId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "[StartWorkday] Background log failed");
+            }
+        });
     }
 
     public async Task CompleteWorkday(Guid workdayId)
@@ -519,7 +529,7 @@ public class WorkdayService
                 _logger.LogError(ex, "[CompleteWorkday] Background log failed");
             }
         });
-        _logger.LogInformation("[CompleteWorkday] LogAsync (fire-and-forget dispatched): {ms} ms", sw.ElapsedMilliseconds);
+        _logger.LogInformation("[CompleteWorkday] Activity log dispatched");
     }
 
     public async Task ResetWorkdayAsync(Guid workdayId)
@@ -527,27 +537,28 @@ public class WorkdayService
         var workday = await FindWorkdayAsync(workdayId);
         await EnsureWorkdayEntryGridAsync(workdayId, workday.UserId);
 
-        var entries = await _context.WorkdayEntries
+        await _context.WorkdayEntries
             .Where(e => e.WorkdayId == workdayId)
-            .ToListAsync();
+            .ExecuteUpdateAsync(s => s.SetProperty(e => e.IsCompleted, false));
 
-        foreach (var entry in entries)
-        {
-            entry.IsCompleted = false;
-        }
-
-        var cows = await _context.WorkdayCows
+        await _context.WorkdayCows
             .Where(c => c.WorkdayId == workdayId)
-            .ToListAsync();
+            .ExecuteUpdateAsync(s => s.SetProperty(c => c.Status, (string?)null));
 
-        foreach (var cow in cows)
+        var title = workday.Title;
+        _ = Task.Run(async () =>
         {
-            cow.Status = null;
-        }
-
-        await _context.SaveChangesAsync();
-
-        await _activityLogService.LogAsync(null, $"{workday.Title} reset", "WorkdayReset", workdayId);
+            try
+            {
+                using var scope = _serviceProvider.CreateScope();
+                var activityService = scope.ServiceProvider.GetRequiredService<ActivityLogService>();
+                await activityService.LogAsync(null, $"{title} reset", "WorkdayReset", workdayId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "[ResetWorkday] Background log failed");
+            }
+        });
     }
 
     public async Task DeleteWorkday(Guid id)
@@ -623,14 +634,9 @@ public class WorkdayService
             .Select(c => new { c.Id, c.TagNumber })
             .ToListAsync();
 
-        foreach (var cow in cowTags)
-        {
-            await _activityLogService.LogAsync(
-                cow.Id,
-                $"Tag {cow.TagNumber} added to {workdayTitle}",
-                "CowAddedToWorkday",
-                workdayId);
-        }
+        await _activityLogService.LogBulkAsync(
+            cowTags.Select(c => ((Guid?)c.Id, $"Tag {c.TagNumber} added to {workdayTitle}", "CowAddedToWorkday")),
+            workdayId);
     }
 
     private async Task<Workday> FindWorkdayAsync(Guid id)
@@ -786,7 +792,20 @@ public class WorkdayService
 
         if (string.IsNullOrWhiteSpace(originalTitle) && !string.IsNullOrWhiteSpace(updatedTitle))
         {
-            await _activityLogService.LogAsync(null, $"{updatedTitle} created", ActivityEventTypes.WorkdayCreated, workday.Id);
+            var workdayId = workday.Id;
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    using var scope = _serviceProvider.CreateScope();
+                    var activityService = scope.ServiceProvider.GetRequiredService<ActivityLogService>();
+                    await activityService.LogAsync(null, $"{updatedTitle} created", ActivityEventTypes.WorkdayCreated, workdayId);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "[UpdateWorkday] Background log failed");
+                }
+            });
         }
 
         return workday;

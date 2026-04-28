@@ -47,12 +47,13 @@ public class ActivityLogService
         }
     }
 
-    public async Task LogBulkAsync(IEnumerable<(Guid? CowId, string Description, string EventType)> entries)
+    public async Task LogBulkAsync(IEnumerable<(Guid? CowId, string Description, string EventType)> entries, Guid? workdayId = null)
     {
         var userId = GetCurrentUserId();
         _context.ActivityLogEntries.AddRange(entries.Select(e => new ActivityLogEntry
         {
             CowId = e.CowId,
+            WorkdayId = workdayId,
             EventType = e.EventType,
             Description = e.Description,
             UserId = userId,
