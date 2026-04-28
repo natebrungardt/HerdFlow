@@ -24,6 +24,8 @@ type HerdListViewProps = {
   onSelectAll?: () => void;
   onBulkAction?: (action: "markHealthy" | "markNeedsTreatment") => void;
   onBulkRemove?: () => void;
+  onBulkRestore?: () => void;
+  onBulkDelete?: () => void;
 };
 
 type HerdStatFilter =
@@ -158,6 +160,8 @@ function HerdListView({
   onSelectAll,
   onBulkAction,
   onBulkRemove,
+  onBulkRestore,
+  onBulkDelete,
 }: HerdListViewProps) {
   const [searchParams, setSearchParams] = useSearchParams();
   const [searchTerm, setSearchTerm] = useState("");
@@ -364,24 +368,46 @@ function HerdListView({
             {selectedCowIds.length} selected
           </span>
           <div className="bulkActionButtons">
-            <button
-              className="bulkActionButton bulkActionHealthy"
-              onClick={() => onBulkAction?.("markHealthy")}
-            >
-              Mark Healthy
-            </button>
-            <button
-              className="bulkActionButton bulkActionTreatment"
-              onClick={() => onBulkAction?.("markNeedsTreatment")}
-            >
-              Needs Treatment
-            </button>
-            <button
-              className="bulkActionButton danger"
-              onClick={onBulkRemove}
-            >
-              Remove from Herd
-            </button>
+            {onBulkAction && (
+              <>
+                <button
+                  className="bulkActionButton bulkActionHealthy"
+                  onClick={() => onBulkAction("markHealthy")}
+                >
+                  Mark Healthy
+                </button>
+                <button
+                  className="bulkActionButton bulkActionTreatment"
+                  onClick={() => onBulkAction("markNeedsTreatment")}
+                >
+                  Needs Treatment
+                </button>
+              </>
+            )}
+            {onBulkRestore && (
+              <button
+                className="bulkActionButton bulkActionHealthy"
+                onClick={onBulkRestore}
+              >
+                Restore to Herd
+              </button>
+            )}
+            {onBulkRemove && (
+              <button
+                className="bulkActionButton danger"
+                onClick={onBulkRemove}
+              >
+                Remove from Herd
+              </button>
+            )}
+            {onBulkDelete && (
+              <button
+                className="bulkActionButton danger"
+                onClick={onBulkDelete}
+              >
+                Delete
+              </button>
+            )}
           </div>
         </div>
       )}

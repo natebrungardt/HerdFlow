@@ -185,6 +185,14 @@ export async function restoreCow(id: string): Promise<void> {
   });
 }
 
+export async function bulkRestoreCows(ids: string[]): Promise<void> {
+  await Promise.all(ids.map((id) => restoreCow(id)));
+}
+
+export async function bulkDeleteCows(ids: string[]): Promise<void> {
+  await Promise.all(ids.map((id) => deleteCow(id)));
+}
+
 export type ImportResult = {
   importedCount: number;
   skippedRows: ImportSkippedRow[];

@@ -730,7 +730,7 @@ function CowDetailPage() {
               className="btn btn-primary"
               onClick={() => setShowRestoreModal(true)}
             >
-              Restore Cow
+              Restore to Herd
             </button>
           ) : (
             <button
@@ -946,9 +946,9 @@ function CowDetailPage() {
 
       <Modal
         isOpen={showRestoreModal}
-        title="Restore Cow"
+        title="Restore to Herd"
         message={`Are you sure you want to restore cow #${cow.tagNumber}? This will move it back to your active herd.`}
-        confirmText="Restore Cow"
+        confirmText="Restore to Herd"
         confirmVariant="success"
         onCancel={() => setShowRestoreModal(false)}
         onConfirm={async () => {
