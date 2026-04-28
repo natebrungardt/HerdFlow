@@ -13,23 +13,56 @@ import type { Workday } from "../types/workday";
 import "../styles/AllCows.css";
 import "../styles/CowDetailPage.css";
 
-function formatActivityTime(dateStr: string) {
+function formatActivityTime(
+  dateStr: string,
+  section: "today" | "yesterday" | "last7",
+) {
   const date = new Date(dateStr);
+  if (section === "last7") {
+    return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  }
+  return date.toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
+
+type ActivityGroups = {
+  today: RecentActivityEntry[];
+  yesterday: RecentActivityEntry[];
+  last7: RecentActivityEntry[];
+};
+
+function groupActivities(activities: RecentActivityEntry[]): ActivityGroups {
   const now = new Date();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const yesterday = new Date(today.getTime() - 86400000);
-  const itemDay = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  const yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+  const sevenDaysAgo = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7);
 
-  if (itemDay.getTime() === today.getTime()) {
-    return date.toLocaleTimeString("en-US", {
-      hour: "numeric",
-      minute: "2-digit",
-    });
+  const groups: ActivityGroups = { today: [], yesterday: [], last7: [] };
+
+  for (const item of activities) {
+    const d = new Date(item.createdAt);
+    const itemDay = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    const t = itemDay.getTime();
+
+    if (t === today.getTime()) {
+      groups.today.push(item);
+    } else if (t === yesterday.getTime()) {
+      groups.yesterday.push(item);
+    } else if (t >= sevenDaysAgo.getTime()) {
+      groups.last7.push(item);
+    }
   }
-  if (itemDay.getTime() === yesterday.getTime()) {
-    return "Yesterday";
+
+  for (const key of ["today", "yesterday", "last7"] as const) {
+    groups[key].sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+    );
   }
-  return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+
+  return groups;
 }
 
 function parseDateValue(dateValue: string) {
@@ -94,6 +127,11 @@ function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [refreshKey, setRefreshKey] = useState(0);
+  const [expanded, setExpanded] = useState({
+    today: false,
+    yesterday: false,
+    last7: false,
+  });
   const farmLabel = getDashboardFarmLabel(user);
   const hasFarmName = Boolean(getUserFarmName(user));
 
@@ -114,7 +152,7 @@ function Dashboard() {
             getCows(),
             getRemovedCows(),
             getActiveWorkdays(),
-            getRecentActivity(10),
+            getRecentActivity(200),
           ]);
 
         setCows(activeCows);
@@ -351,28 +389,74 @@ function Dashboard() {
               <section className="dashboardCard">
                 <div className="dataCardHeader">
                   <h2 className="cardTitle">Recent Activity</h2>
-                  <span className="cardSubtle">
-                    {recentActivity.length} events
-                  </span>
+                  <span className="cardSubtle">Last 7 days</span>
                 </div>
 
-                {recentActivity.length === 0 ? (
-                  <p className="emptyState">No recent activity yet.</p>
-                ) : (
-                  <div className="activityList">
-                    {recentActivity.map((item) => (
-                      <div key={item.id} className="activityRow">
-                        <div className="activityDot" />
-                        <div className="cowRowMain">
-                          <div className="cowRowTitle">{item.description}</div>
-                        </div>
-                        <span className="cardSubtle">
-                          {formatActivityTime(item.createdAt)}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                {(() => {
+                  const groups = groupActivities(recentActivity);
+                  const PREVIEW = 5;
+
+                  const sections = [
+                    { key: "today" as const, label: "Today" },
+                    { key: "yesterday" as const, label: "Yesterday" },
+                    { key: "last7" as const, label: "Last 7 Days" },
+                  ].filter(({ key }) => groups[key].length > 0);
+
+                  if (sections.length === 0) {
+                    return (
+                      <p className="emptyState">No recent activity yet.</p>
+                    );
+                  }
+
+                  return (
+                    <div className="activityList">
+                      {sections.map(({ key, label }) => {
+                        const items = groups[key];
+                        const isExpanded = expanded[key];
+                        const visible = isExpanded
+                          ? items
+                          : items.slice(0, PREVIEW);
+                        const hasMore = items.length > PREVIEW;
+
+                        return (
+                          <div key={key}>
+                            <div className="activitySectionHeader">
+                              {label}
+                            </div>
+                            {visible.map((item) => (
+                              <div key={item.id} className="activityRow">
+                                <div className="activityDot" />
+                                <div className="cowRowMain">
+                                  <div className="cowRowTitle">
+                                    {item.description}
+                                  </div>
+                                </div>
+                                <span className="cardSubtle">
+                                  {formatActivityTime(item.createdAt, key)}
+                                </span>
+                              </div>
+                            ))}
+                            {hasMore && (
+                              <button
+                                className="activityToggleBtn"
+                                onClick={() =>
+                                  setExpanded((prev) => ({
+                                    ...prev,
+                                    [key]: !prev[key],
+                                  }))
+                                }
+                              >
+                                {isExpanded
+                                  ? "Show less"
+                                  : `Show all (${items.length})`}
+                              </button>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  );
+                })()}
               </section>
             </>
           )}
